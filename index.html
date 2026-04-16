@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Brian</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #F4F1EC;
+    --card: #FFFFFF;
+    --card-dark: #1A1A1A;
+    --card-warm: #E8DDD3;
+    --card-accent: #C9D5CA;
+    --text-primary: #1A1A1A;
+    --text-secondary: #6B6560;
+    --text-light: #F4F1EC;
+    --text-muted: #9B9590;
+    --radius: 28px;
+    --radius-lg: 36px;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html {
+    scroll-behavior: smooth;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text-primary);
+    font-family: 'Outfit', sans-serif;
+    font-weight: 400;
+    line-height: 1.6;
+  }
+
+  .site-wrapper {
+    max-width: 820px;
+    margin: 0 auto;
+    padding: 40px 20px 80px;
+  }
+
+  /* ── NAV ── */
+  nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 0;
+    margin-bottom: 40px;
+  }
+
+  nav .logo {
+    font-family: 'DM Serif Display', serif;
+    font-size: 22px;
+    letter-spacing: -0.5px;
+  }
+
+  nav .nav-links {
+    display: flex;
+    gap: 28px;
+    list-style: none;
+  }
+
+  nav .nav-links a {
+    text-decoration: none;
+    color: var(--text-secondary);
+    font-size: 14px;
+    font-weight: 500;
+    letter-spacing: 0.3px;
+    transition: color 0.3s;
+  }
+
+  nav .nav-links a:hover {
+    color: var(--text-primary);
+  }
+
+  /* ── CARD SYSTEM ── */
+  .card {
+    border-radius: var(--radius-lg);
+    padding: 48px;
+    margin-bottom: 20px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .card-white { background: var(--card); }
+  .card-dark { background: var(--card-dark); color: var(--text-light); }
+  .card-warm { background: var(--card-warm); }
+  .card-green { background: var(--card-accent); }
+
+  /* ── HERO ── */
+  .hero {
+    padding: 0;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    min-height: 480px;
+    align-items: stretch;
+  }
+
+  .hero-content {
+    padding: 56px 48px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+  }
+
+  .hero-eyebrow {
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 24px;
+    opacity: 0;
+    animation: fadeUp 0.8s ease forwards 0.2s;
+  }
+
+  .hero h1 {
+    font-family: 'DM Serif Display', serif;
+    font-size: clamp(36px, 5vw, 52px);
+    line-height: 1.1;
+    letter-spacing: -1.5px;
+    font-weight: 400;
+    margin-bottom: 24px;
+    opacity: 0;
+    animation: fadeUp 0.8s ease forwards 0.4s;
+  }
+
+  .hero-sub {
+    font-size: 16px;
+    color: var(--text-secondary);
+    max-width: 380px;
+    line-height: 1.7;
+    font-weight: 300;
+    opacity: 0;
+    animation: fadeUp 0.8s ease forwards 0.6s;
+  }
+
+  .hero-image {
+    position: relative;
+    overflow: hidden;
+    min-height: 100%;
+  }
+
+  .hero-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center 15%;
+    display: block;
+  }
+
+  /* ── JOURNEY SECTION ── */
+  .section-label {
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 32px;
+  }
+
+  .card-dark .section-label {
+    color: rgba(244,241,236,0.45);
+  }
+
+  .journey-top {
+    margin-bottom: 40px;
+    border-radius: 20px;
+    overflow: hidden;
+    max-height: 300px;
+  }
+
+  .journey-top img {
+    width: 100%;
+    height: 300px;
+    object-fit: cover;
+    object-position: center 20%;
+    display: block;
+  }
+
+  .journey-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 0;
+  }
+
+  .journey-stop {
+    position: relative;
+    padding: 0 20px;
+  }
+
+  .journey-stop:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    right: 0;
+    top: 10%;
+    height: 80%;
+    width: 1px;
+    background: rgba(244,241,236,0.12);
+  }
+
+  .journey-stop .city {
+    font-family: 'DM Serif Display', serif;
+    font-size: 26px;
+    margin-bottom: 6px;
+    letter-spacing: -0.5px;
+  }
+
+  .journey-stop .region {
+    font-size: 14px;
+    color: rgba(244,241,236,0.45);
+    margin-bottom: 16px;
+    font-weight: 300;
+  }
+
+  .journey-stop .detail {
+    font-size: 14px;
+    line-height: 1.65;
+    color: rgba(244,241,236,0.7);
+    font-weight: 300;
+  }
+
+  /* ── ABOUT / INTERESTS ── */
+  .about-text {
+    font-size: 20px;
+    line-height: 1.75;
+    color: var(--text-primary);
+    font-weight: 300;
+  }
+
+  .about-text strong {
+    font-weight: 500;
+  }
+
+  /* ── INTERESTS PILLS ── */
+  .pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 32px;
+  }
+
+  .pill {
+    padding: 10px 22px;
+    border-radius: 100px;
+    font-size: 14px;
+    font-weight: 500;
+    background: var(--bg);
+    color: var(--text-primary);
+    letter-spacing: 0.2px;
+  }
+
+  .card-green .pill {
+    background: rgba(255,255,255,0.55);
+  }
+
+  /* ── STAT CARD ── */
+  .stat-card {
+    display: flex;
+    align-items: baseline;
+    gap: 24px;
+    padding: 44px 48px;
+  }
+
+  .stat-number {
+    font-family: 'DM Serif Display', serif;
+    font-size: clamp(72px, 12vw, 112px);
+    line-height: 1;
+    letter-spacing: -3px;
+    flex-shrink: 0;
+  }
+
+  .stat-right {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .stat-label {
+    font-size: 18px;
+    font-weight: 500;
+    color: var(--text-primary);
+    letter-spacing: -0.2px;
+  }
+
+  .stat-text {
+    font-size: 16px;
+    line-height: 1.6;
+    font-weight: 300;
+    max-width: 320px;
+  }
+
+  .card-warm .stat-text {
+    color: var(--text-secondary);
+  }
+
+  @media (max-width: 680px) {
+    .stat-card {
+      flex-direction: column;
+      gap: 12px;
+      padding: 36px 28px;
+    }
+  }
+
+  /* ── TWO-COL ── */
+  .two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+  }
+
+  /* ── NOW SECTION ── */
+  .now-heading {
+    font-family: 'DM Serif Display', serif;
+    font-size: 32px;
+    margin-bottom: 20px;
+    letter-spacing: -0.5px;
+  }
+
+  .now-text {
+    font-size: 16px;
+    line-height: 1.75;
+    color: var(--text-secondary);
+    font-weight: 300;
+  }
+
+  /* ── CONNECT ── */
+  .connect-heading {
+    font-family: 'DM Serif Display', serif;
+    font-size: 32px;
+    margin-bottom: 8px;
+    letter-spacing: -0.5px;
+  }
+
+  .connect-sub {
+    font-size: 15px;
+    color: var(--text-secondary);
+    margin-bottom: 28px;
+    font-weight: 300;
+  }
+
+  .connect-links {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .connect-link {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 20px;
+    background: var(--bg);
+    border-radius: 16px;
+    text-decoration: none;
+    color: var(--text-primary);
+    font-size: 15px;
+    font-weight: 500;
+    transition: transform 0.2s, background 0.2s;
+  }
+
+  .connect-link:hover {
+    transform: translateX(4px);
+    background: #EBE6DF;
+  }
+
+  .connect-link .arrow {
+    font-size: 18px;
+    color: var(--text-muted);
+    transition: transform 0.2s;
+  }
+
+  .connect-link:hover .arrow {
+    transform: translateX(3px);
+  }
+
+  /* ── FOOTER ── */
+  .footer {
+    text-align: center;
+    padding: 40px 0 0;
+    font-size: 13px;
+    color: var(--text-muted);
+    font-weight: 300;
+  }
+
+  /* ── ANIMATIONS ── */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(18px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .fade-in {
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.7s ease, transform 0.7s ease;
+  }
+
+  .fade-in.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 680px) {
+    .card { padding: 36px 28px; }
+    .hero {
+      grid-template-columns: 1fr;
+      min-height: auto;
+    }
+    .hero-content {
+      padding: 40px 28px;
+      order: 2;
+    }
+    .hero-image {
+      height: 320px;
+      order: 1;
+    }
+    .journey-top { max-height: 200px; }
+    .journey-top img { height: 200px; }
+    .journey-grid {
+      grid-template-columns: 1fr;
+      gap: 32px;
+    }
+    .journey-stop:not(:last-child)::after { display: none; }
+    .journey-stop { padding: 0; }
+    .two-col {
+      grid-template-columns: 1fr;
+    }
+    nav .nav-links { gap: 18px; }
+    nav .nav-links a { font-size: 13px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="site-wrapper">
+
+  <!-- NAV -->
+  <nav>
+    <div class="logo">Brian Hirsh</div>
+    <ul class="nav-links">
+      <li><a href="#journey">Journey</a></li>
+      <li><a href="#about">About</a></li>
+      <li><a href="#now">Now</a></li>
+      <li><a href="#connect">Connect</a></li>
+    </ul>
+  </nav>
+
+  <!-- HERO -->
+  <div class="card card-white hero">
+    <div class="hero-content">
+      <div class="hero-eyebrow">Founder · Builder · Explorer</div>
+      <h1>Building things,<br>one city at a time.</h1>
+      <p class="hero-sub">Repeat founder who loves turning ideas into products. Washington DC native, shaped by five years in Shenzhen, now putting down roots in New York.</p>
+    </div>
+    <div class="hero-image">
+      <img src="1B3A2533.jpg" alt="Brian">
+    </div>
+  </div>
+
+  <!-- JOURNEY -->
+  <div class="card card-dark fade-in" id="journey">
+    <div class="section-label">The Journey</div>
+    <div class="journey-top">
+      <img src="IMG_2917.JPG" alt="Brian speaking at a conference in China">
+    </div>
+    <div class="journey-grid">
+      <div class="journey-stop">
+        <div class="city">Washington, DC</div>
+        <div class="region">Where it started</div>
+        <div class="detail">Born and raised. The place that gave me my hustle and first taste of how systems and institutions actually work.</div>
+      </div>
+      <div class="journey-stop">
+        <div class="city">Shenzhen</div>
+        <div class="region">5+ years in China</div>
+        <div class="detail">The hardware capital of the world. Learned to build fast, ship faster, and navigate a completely different way of doing business.</div>
+      </div>
+      <div class="journey-stop">
+        <div class="city">New York</div>
+        <div class="region">Setting down roots</div>
+        <div class="detail">Home base. Where the energy of the city meets everything I've learned — building the next chapter from here.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- COUNTRIES -->
+  <div class="card card-warm stat-card fade-in">
+    <div class="stat-number">85+</div>
+    <div class="stat-right">
+      <div class="stat-label">Countries visited</div>
+      <div class="stat-text">Curiosity doesn't stop at borders.</div>
+    </div>
+  </div>
+
+  <!-- ABOUT + INTERESTS -->
+  <div class="two-col" id="about">
+    <div class="card card-warm fade-in">
+      <div class="section-label">About</div>
+      <p class="about-text">I'm a <strong>repeat founder</strong> drawn to the intersection of technology, design, and what people actually need. I've built products from zero across hardware and software — from factory floors in China to launch days in the US.</p>
+    </div>
+    <div class="card card-green fade-in">
+      <div class="section-label">Interests</div>
+      <div class="pills">
+        <span class="pill">0 → 1</span>
+        <span class="pill">Products</span>
+        <span class="pill">Hardware</span>
+        <span class="pill">Culture</span>
+        <span class="pill">Startups</span>
+        <span class="pill">Venture Capital</span>
+        <span class="pill">NYC</span>
+        <span class="pill">Smart Homes</span>
+        <span class="pill">AI / ML</span>
+        <span class="pill">Travel</span>
+        <span class="pill">Blockchain</span>
+        <span class="pill">Governance</span>
+        <span class="pill">Music</span>
+        <span class="pill">Books</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- NOW -->
+  <div class="card card-white fade-in" id="now">
+    <div class="section-label">What I'm Up To Now</div>
+    <div class="now-heading">Looking to build.</div>
+    <p class="now-text">Currently in exploration mode — researching markets, talking to users, and looking for the right problem. Open to connecting with builders and operators.</p>
+  </div>
+
+  <!-- CONNECT -->
+  <div class="card card-white fade-in" id="connect">
+    <div class="connect-heading">Say hello</div>
+    <p class="connect-sub">I'm always happy to connect — especially if you're building something.</p>
+    <div class="connect-links">
+      <a href="mailto:brian@brianhirsh.com" class="connect-link">
+        <span>Email</span>
+        <span class="arrow">→</span>
+      </a>
+      <a href="https://www.linkedin.com/in/bphirsh/" class="connect-link" target="_blank">
+        <span>LinkedIn</span>
+        <span class="arrow">→</span>
+      </a>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <div class="footer">Brian · NYC · 2026</div>
+
+</div>
+
+<script>
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+      }
+    });
+  }, { threshold: 0.15 });
+
+  document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
+</script>
+
+</body>
+</html>
