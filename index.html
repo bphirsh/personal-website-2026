@@ -228,6 +228,75 @@
     font-weight: 300;
   }
 
+  /* ── JOURNEY GLOBE ── */
+  .journey-globe-header {
+    display: flex;
+    align-items: baseline;
+    gap: 24px;
+    margin-top: 56px;
+    margin-bottom: 8px;
+  }
+
+  .journey-globe-number {
+    font-family: 'DM Serif Display', serif;
+    font-size: clamp(56px, 10vw, 88px);
+    line-height: 1;
+    letter-spacing: -3px;
+    color: var(--text-light);
+    flex-shrink: 0;
+  }
+
+  .journey-globe-text {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .journey-globe-label {
+    font-size: 18px;
+    font-weight: 500;
+    color: var(--text-light);
+    letter-spacing: -0.2px;
+  }
+
+  .journey-globe-sub {
+    font-size: 15px;
+    color: rgba(244,241,236,0.7);
+    font-weight: 300;
+  }
+
+  .globe-container {
+    display: flex;
+    justify-content: center;
+    position: relative;
+    margin-top: 16px;
+  }
+
+  #globe-canvas {
+    cursor: grab;
+    max-width: 100%;
+    touch-action: none;
+    display: block;
+    margin: 0 auto;
+  }
+
+  #globe-canvas:active {
+    cursor: grabbing;
+  }
+
+  .journey-globe-caption {
+    text-align: center;
+    font-size: 14px;
+    line-height: 1.65;
+    color: rgba(244,241,236,0.7);
+    font-weight: 300;
+    margin-top: 16px;
+  }
+
+  @media (max-width: 680px) {
+    .journey-globe-header { flex-direction: column; gap: 8px; margin-top: 40px; }
+  }
+
   /* ── ABOUT / INTERESTS ── */
   .about-text {
     font-size: 20px;
@@ -819,6 +888,10 @@
         <div class="detail">Home base. Where the energy of the city meets everything I've learned — building the next chapter from here.</div>
       </div>
     </div>
+    <div class="globe-container">
+      <canvas id="globe-canvas"></canvas>
+    </div>
+    <div class="journey-globe-caption">85+ countries visited.</div>
   </div>
 
   <!-- PHOTOS -->
@@ -835,15 +908,6 @@
       <img class="photo-img" src="caroselpics/IMG_4771_compressed.jpg" alt="">
       <img class="photo-img" src="caroselpics/IMG_8089_compressed.jpg" alt="">
       <img class="photo-img" src="caroselpics/IMG_8142_compressed.jpg" alt="">
-    </div>
-  </div>
-
-  <!-- COUNTRIES -->
-  <div class="card card-warm stat-card fade-in">
-    <div class="stat-number">85+</div>
-    <div class="stat-right">
-      <div class="stat-label">Countries visited</div>
-      <div class="stat-text">Curiosity doesn't stop at borders.</div>
     </div>
   </div>
 
@@ -1225,6 +1289,133 @@
       return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
     }
   })();
+</script>
+
+<script type="module">
+import createGlobe from 'https://esm.sh/cobe@2.0.1';
+
+const MARKER_SIZE = 0.03;
+const KEY_CITY_SIZE = 0.025;
+const MARKER_COLOR = [0.831, 0.647, 0.455];
+
+const KEY_CITIES = [
+  [38.9, -77.04],
+  [22.49, 113.93],
+  [40.71, -74.01],
+];
+
+const LOCATIONS = [
+  [33.96, -116.5],[18.22, -63.07],[12.51, -69.97],[-34.93, 138.6],[-34.98, 138.52],
+  [-28.0, 153.43],[-38.66, 143.11],[-37.81, 144.96],[-33.88, 151.17],[48.21, 16.37],
+  [50.85, 4.35],[11.56, 104.92],[13.36, 103.86],[43.65, -79.38],[42.31, -83.04],
+  [19.33, -81.24],[39.89, 116.39],[30.66, 104.05],[29.56, 106.55],[46.59, 125.1],
+  [28.45, 100.34],[23.13, 113.26],[25.27, 110.29],[26.65, 106.63],[30.27, 120.15],
+  [22.27, 114.17],[30.75, 120.76],[30.05, 101.96],[36.06, 103.83],[30.0, 100.27],
+  [22.2, 113.55],[29.77, 102.11],[31.23, 121.47],[27.83, 99.7],[23.35, 116.68],
+  [22.49, 113.93],[35.19, 102.52],[24.48, 118.09],[24.77, 110.49],[22.27, 113.58],
+  [4.71, -74.07],[3.44, -76.52],[10.39, -75.51],[6.25, -75.56],[10.41, -84.76],
+  [42.64, 18.09],[42.96, 17.13],[43.51, 16.44],[50.08, 14.44],[48.81, 14.32],
+  [-0.18, -78.47],[48.87, 2.1],[45.83, 6.86],[43.7, 7.26],[48.87, 2.32],
+  [48.82, 2.2],[48.8, 2.13],[52.52, 13.41],[48.1, 9.79],[37.97, 23.73],
+  [47.5, 19.04],[-8.65, 115.14],[-8.64, 115.14],[-8.72, 115.59],[-8.51, 115.26],
+  [31.77, 35.23],[32.09, 34.78],[41.12, 16.86],[37.5, 15.09],[44.12, 9.73],
+  [45.91, 8.89],[44.41, 8.93],[40.67, 16.6],[41.9, 12.5],[37.07, 15.29],
+  [45.07, 7.69],[45.44, 12.33],[33.59, 130.4],[34.39, 132.45],[34.68, 135.18],
+  [34.98, 135.76],[34.69, 135.8],[34.62, 133.59],[34.67, 135.49],[35.67, 139.76],
+  [35.28, 139.67],[30.32, 35.48],[-1.29, 36.8],[19.88, 102.13],[18.92, 102.45],
+  [3.14, 101.69],[35.9, 14.51],[14.64, -61.02],[21.02, -101.26],[19.43, -99.13],
+  [32.51, -117.04],[20.68, -88.57],[33.59, -7.62],[35.17, -5.26],[34.03, -5.0],
+  [31.63, -8.0],[35.78, -5.81],[52.37, 4.9],[51.92, 4.48],[52.08, 4.3],
+  [52.51, 6.09],[-13.52, -71.97],[-14.07, -75.73],[-3.75, -73.25],[-12.05, -77.04],
+  [-5.19, -80.63],[-15.84, -70.02],[10.32, 123.9],[9.74, 118.74],[38.71, -9.13],
+  [18.47, -66.12],[55.76, 37.62],[59.93, 30.32],[-2.07, 29.36],[-1.95, 30.08],
+  [-1.68, 29.25],[1.35, 103.82],[37.48, 126.95],[41.39, 2.16],[40.42, -3.7],
+  [47.05, 8.31],[47.24, 8.47],[13.76, 100.5],[18.79, 98.98],[19.91, 99.83],
+  [9.7, 100.02],[14.8, 100.62],[19.36, 98.44],[7.9, 98.3],[36.8, 10.17],
+  [25.2, 55.27],[51.13, 1.31],[55.95, -3.19],[51.95, -0.28],[50.69, -1.33],
+  [51.49, -0.24],[51.18, -1.83],[61.22, -149.9],[38.98, -76.49],[37.73, -78.93],
+  [30.27, -97.74],[39.29, -76.61],[40.01, -105.27],[41.76, -75.06],[38.03, -78.48],
+  [41.88, -87.63],[25.72, -80.27],[36.38, -75.83],[39.74, -104.99],[37.47, -122.14],
+  [40.2, -75.79],[21.31, -157.86],[42.29, -85.59],[24.56, -81.78],[36.17, -115.14],
+  [40.3, -74.73],[34.05, -118.24],[43.4, -72.7],[43.07, -89.4],[43.04, -87.91],
+  [40.76, -74.0],[35.96, -75.62],[36.16, -86.78],[29.95, -90.07],[40.71, -74.01],
+  [33.77, -116.73],[33.83, -116.55],[39.95, -75.18],[37.51, -122.26],[32.71, -117.16],
+  [37.78, -122.42],[33.5, -117.66],[47.61, -122.33],[32.99, -117.27],[35.17, -79.39],
+  [38.63, -90.2],[41.31, -74.01],[62.75, -150.04],[38.9, -77.04],[37.54, -119.67],
+  [37.74, -119.6],[0.32, 32.57],[16.05, 108.22],[20.86, 106.68],[21.03, 105.85],
+  [10.82, 106.63],[20.96, 107.04],
+];
+
+const isKeyCity = (loc) => KEY_CITIES.some(kc =>
+  Math.abs(kc[0] - loc[0]) < 0.5 && Math.abs(kc[1] - loc[1]) < 0.5
+);
+
+const MARKERS = LOCATIONS.map(loc => ({
+  location: loc,
+  size: isKeyCity(loc) ? KEY_CITY_SIZE : MARKER_SIZE
+}));
+
+const canvas = document.getElementById('globe-canvas');
+const containerWidth = canvas.parentElement.offsetWidth;
+const size = Math.min(550, containerWidth);
+canvas.width = size * 2;
+canvas.height = size * 2;
+canvas.style.width = size + 'px';
+canvas.style.height = size + 'px';
+
+let currentPhi = 0;
+let dragDelta = 0;
+let pointerDown = false;
+let lastX = 0;
+let velocity = 0;
+
+canvas.addEventListener('pointerdown', (e) => {
+  pointerDown = true;
+  lastX = e.clientX;
+  velocity = 0;
+  e.preventDefault();
+});
+window.addEventListener('pointerup', () => {
+  pointerDown = false;
+});
+window.addEventListener('pointermove', (e) => {
+  if (pointerDown) {
+    const delta = e.clientX - lastX;
+    lastX = e.clientX;
+    velocity = delta * 0.01;
+    dragDelta += delta * 0.005;
+  }
+});
+
+const globe = createGlobe(canvas, {
+  devicePixelRatio: Math.min(window.devicePixelRatio, 2),
+  width: size * 2,
+  height: size * 2,
+  phi: 0,
+  theta: 0.15,
+  dark: 1,
+  diffuse: 0,
+  mapSamples: 20000,
+  mapBrightness: 100,
+  mapBaseBrightness: 0,
+  baseColor: [0.91, 0.867, 0.827],
+  markerColor: MARKER_COLOR,
+  markerElevation: 0,
+  glowColor: [0.102, 0.102, 0.102],
+  markers: MARKERS,
+});
+
+function animate() {
+  if (!pointerDown) {
+    velocity *= 0.95;
+    currentPhi += 0.003 + velocity;
+  } else {
+    currentPhi += velocity;
+  }
+  globe.update({ phi: currentPhi + dragDelta });
+  requestAnimationFrame(animate);
+}
+animate();
 </script>
 
 </body>
