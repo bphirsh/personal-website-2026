@@ -275,6 +275,8 @@
   #globe-canvas {
     cursor: grab;
     max-width: 100%;
+    height: auto !important;
+    aspect-ratio: 1 / 1;
     touch-action: none;
     display: block;
     margin: 0 auto;
@@ -821,8 +823,8 @@
       height: 320px;
       order: 1;
     }
-    .journey-top { max-height: 200px; }
-    .journey-top img { height: 200px; }
+    .journey-top { max-height: 500px; }
+    .journey-top img { height: 500px; object-position: center; }
     .journey-grid {
       grid-template-columns: 1fr;
       gap: 32px;
@@ -869,7 +871,10 @@
   <div class="card card-dark fade-in" id="journey">
     <div class="section-label">The Journey</div>
     <div class="journey-top">
-      <img src="dcsznyc.jpg" alt="Brian speaking at a conference in China">
+      <picture>
+        <source media="(max-width: 680px)" srcset="dcsznyc-mobile.png">
+        <img src="dcsznyc.jpg" alt="Brian speaking at a conference in China">
+      </picture>
     </div>
     <div class="journey-grid">
       <div class="journey-stop">
