@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -17,6 +18,8 @@ body {
   font-size: 9.5pt;
   line-height: 1.5;
   padding: 0 56pt;
+  max-width: 900px;
+  margin: 0 auto;
 }
 
 /* ── ACCENT BAR ── */
@@ -273,6 +276,47 @@ body {
   color: #6b6760;
   line-height: 1.55;
   margin-top: 1pt;
+}
+
+@media screen and (max-width: 600px) {
+  body {
+    padding: 0 16px;
+    font-size: 10pt;
+  }
+
+  .accent-bar { display: none; }
+
+  /* Stack header vertically */
+  .header-table,
+  .header-table tbody,
+  .header-table tr,
+  .header-table td {
+    display: block;
+    width: 100% !important;
+    text-align: left !important;
+  }
+
+  .header-table td:last-child {
+    margin-top: 10pt;
+  }
+
+  .name { font-size: 28pt; }
+
+  /* Stack body columns vertically */
+  .body-table,
+  .body-table tbody,
+  .body-table tr,
+  .body-table td {
+    display: block;
+    width: 100% !important;
+  }
+
+  .col-main {
+    padding-right: 0;
+    margin-bottom: 20pt;
+  }
+
+  .col-sidebar { width: 100%; }
 }
 </style>
 </head>
