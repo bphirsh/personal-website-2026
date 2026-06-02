@@ -3,48 +3,46 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Brian Hirsh — Resume</title>
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
-
-@page {
-  size: letter;
-  margin: 56pt 0;
-}
 
 body {
   font-family: Georgia, 'Times New Roman', serif;
   background: #faf8f5;
   color: #1a1714;
-  font-size: 9.5pt;
+  font-size: 15px;
   line-height: 1.5;
-  padding: 0 56pt;
-  max-width: 900px;
+}
+
+.page {
+  max-width: 960px;
   margin: 0 auto;
+  padding: 40px 24px;
 }
 
 /* ── ACCENT BAR ── */
 .accent-bar {
   position: fixed;
   left: 0; top: 0; bottom: 0;
-  width: 3.5pt;
+  width: 4px;
   background-color: #b8460f;
 }
 
 /* ── HEADER ── */
-.header-table {
-  width: 100%;
-  border-collapse: collapse;
-  border-bottom: 0.75pt solid #d8d4cd;
-  padding-bottom: 18pt;
-  margin-bottom: 20pt;
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 24px;
+  border-bottom: 1px solid #d8d4cd;
+  padding-bottom: 24px;
+  margin-bottom: 32px;
 }
-
-.header-table td { vertical-align: bottom; padding: 0; }
-.header-table td:last-child { text-align: right; }
 
 .name {
   font-family: Georgia, serif;
-  font-size: 38pt;
+  font-size: 52px;
   line-height: 1;
   color: #1a1714;
   font-weight: normal;
@@ -57,70 +55,69 @@ body {
 
 .tagline {
   font-family: Arial, sans-serif;
-  font-size: 7.5pt;
+  font-size: 11px;
   letter-spacing: 0.12em;
   text-transform: uppercase;
   color: #6b6760;
-  margin-top: 6pt;
-  font-weight: normal;
+  margin-top: 8px;
 }
 
 .contact {
   font-family: Arial, sans-serif;
-  font-size: 8pt;
+  font-size: 13px;
   color: #6b6760;
   line-height: 1.9;
-  font-weight: normal;
+  text-align: right;
+  flex-shrink: 0;
 }
 
-.contact-accent { color: #b8460f; }
-
-/* ── BODY: two-col table ── */
-.body-table {
-  width: 100%;
-  border-collapse: collapse;
+.contact a {
+  color: #b8460f;
+  text-decoration: none;
 }
 
-.body-table > tbody > tr > td {
-  vertical-align: top;
-  padding: 0;
+.contact a:hover { text-decoration: underline; }
+
+/* ── BODY LAYOUT ── */
+.body {
+  display: flex;
+  gap: 40px;
+  align-items: flex-start;
 }
 
-.col-main { width: 68%; padding-right: 28pt; }
-.col-sidebar { width: 32%; }
+.col-main { flex: 1 1 0; min-width: 0; }
+.col-sidebar { flex: 0 0 240px; }
 
 /* ── SECTION LABELS ── */
 .section-label {
   font-family: Arial, sans-serif;
-  font-size: 6.5pt;
+  font-size: 10px;
   font-weight: bold;
   letter-spacing: 0.22em;
   text-transform: uppercase;
   color: #b8460f;
-  margin-bottom: 9pt;
-  border-bottom: 0.5pt solid #d8d4cd;
-  padding-bottom: 3pt;
+  margin-bottom: 12px;
+  border-bottom: 1px solid #d8d4cd;
+  padding-bottom: 4px;
 }
 
 /* ── SUMMARY ── */
 .summary {
   font-family: Arial, sans-serif;
-  font-size: 8.5pt;
-  font-weight: normal;
+  font-size: 14px;
   color: #3d3a36;
   line-height: 1.75;
-  padding: 10pt 13pt;
+  padding: 14px 18px;
   background-color: #f5ede8;
-  border-left: 2.5pt solid #b8460f;
-  margin-bottom: 20pt;
+  border-left: 3px solid #b8460f;
+  margin-bottom: 28px;
 }
 
 /* ── JOBS ── */
 .job {
-  margin-bottom: 16pt;
-  padding-bottom: 16pt;
-  border-bottom: 0.5pt solid #d8d4cd;
-  page-break-inside: avoid;
+  margin-bottom: 24px;
+  padding-bottom: 24px;
+  border-bottom: 1px solid #d8d4cd;
 }
 
 .job:last-child {
@@ -129,43 +126,41 @@ body {
   padding-bottom: 0;
 }
 
-.job-header-table {
-  width: 100%;
-  border-collapse: collapse;
-  margin-bottom: 1pt;
+.job-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+  margin-bottom: 2px;
 }
-
-.job-header-table td { padding: 0; vertical-align: baseline; }
-.job-header-table td:last-child { text-align: right; }
 
 .job-company {
   font-family: Georgia, serif;
-  font-size: 13pt;
+  font-size: 20px;
   color: #1a1714;
   font-weight: normal;
-  font-style: normal;
 }
 
 .job-company-note {
   font-family: Arial, sans-serif;
-  font-size: 8pt;
+  font-size: 13px;
   color: #6b6760;
-  font-weight: normal;
 }
 
 .job-date {
   font-family: Arial, sans-serif;
-  font-size: 7.5pt;
+  font-size: 12px;
   color: #9c9890;
   white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .job-meta {
   font-family: Arial, sans-serif;
-  font-size: 8pt;
+  font-size: 13px;
   color: #6b6760;
   font-style: italic;
-  margin-bottom: 6pt;
+  margin-bottom: 10px;
 }
 
 .job-bullets {
@@ -176,11 +171,11 @@ body {
 
 .job-bullets li {
   font-family: Arial, sans-serif;
-  font-size: 8.5pt;
+  font-size: 13px;
   color: #3d3a36;
-  line-height: 1.6;
-  padding-left: 12pt;
-  margin-bottom: 3pt;
+  line-height: 1.65;
+  padding-left: 16px;
+  margin-bottom: 5px;
   position: relative;
 }
 
@@ -190,21 +185,14 @@ body {
   left: 0;
 }
 
-/* ── SIDEBAR SECTIONS ── */
-.sidebar-section {
-  margin-bottom: 18pt;
-  page-break-inside: avoid;
-}
+/* ── SIDEBAR ── */
+.sidebar-section { margin-bottom: 28px; }
 
-/* Stats */
-.stat-row {
-  margin-bottom: 5pt;
-  page-break-inside: avoid;
-}
+.stat-row { margin-bottom: 8px; }
 
 .stat-number {
   font-family: Georgia, serif;
-  font-size: 17pt;
+  font-size: 26px;
   color: #b8460f;
   line-height: 1;
   font-style: italic;
@@ -212,111 +200,92 @@ body {
 
 .stat-label {
   font-family: Arial, sans-serif;
-  font-size: 7.5pt;
+  font-size: 12px;
   color: #6b6760;
   line-height: 1.4;
-  margin-top: 1pt;
+  margin-top: 2px;
 }
 
-/* Skills */
-.skill-group { margin-bottom: 8pt; }
+.skill-group { margin-bottom: 12px; }
 
 .skill-group-label {
   font-family: Arial, sans-serif;
-  font-size: 6pt;
+  font-size: 9px;
   font-weight: bold;
   letter-spacing: 0.15em;
   text-transform: uppercase;
   color: #9c9890;
-  margin-bottom: 4pt;
+  margin-bottom: 6px;
 }
 
 .skill-tag {
   font-family: Arial, sans-serif;
-  font-size: 7.5pt;
+  font-size: 12px;
   color: #3d3a36;
   background-color: white;
-  border: 0.5pt solid #d8d4cd;
-  padding: 1.5pt 5pt;
+  border: 1px solid #d8d4cd;
+  padding: 2px 8px;
   display: inline-block;
-  margin: 0 2pt 2pt 0;
+  margin: 0 3px 4px 0;
+  border-radius: 2px;
 }
 
-/* Education */
-.edu-item { margin-bottom: 8pt; page-break-inside: avoid; }
+.edu-item { margin-bottom: 12px; }
 
 .edu-school {
   font-family: Arial, sans-serif;
-  font-size: 8.5pt;
+  font-size: 14px;
   font-weight: bold;
   color: #1a1714;
 }
 
 .edu-detail {
   font-family: Arial, sans-serif;
-  font-size: 7.5pt;
+  font-size: 12px;
   color: #6b6760;
-  margin-top: 1pt;
+  margin-top: 2px;
   line-height: 1.5;
 }
 
-/* Activities */
-.activity-item { margin-bottom: 8pt; page-break-inside: avoid; }
+.activity-item { margin-bottom: 12px; }
 
 .activity-title {
   font-family: Arial, sans-serif;
   font-weight: bold;
-  font-size: 8.5pt;
+  font-size: 14px;
   color: #1a1714;
 }
 
 .activity-desc {
   font-family: Arial, sans-serif;
-  font-size: 7.5pt;
+  font-size: 12px;
   color: #6b6760;
   line-height: 1.55;
-  margin-top: 1pt;
+  margin-top: 2px;
 }
 
-@media screen and (max-width: 600px) {
-  body {
-    padding: 0 16px;
-    font-size: 10pt;
-  }
-
+/* ── MOBILE ── */
+@media (max-width: 640px) {
   .accent-bar { display: none; }
 
-  /* Stack header vertically */
-  .header-table,
-  .header-table tbody,
-  .header-table tr,
-  .header-table td {
-    display: block;
-    width: 100% !important;
-    text-align: left !important;
+  .page { padding: 28px 20px; }
+
+  .header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
   }
 
-  .header-table td:last-child {
-    margin-top: 10pt;
+  .name { font-size: 36px; }
+
+  .contact { text-align: left; }
+
+  .body {
+    flex-direction: column;
+    gap: 32px;
   }
 
-  .name { font-size: 28pt; }
-
-  /* Stack body columns vertically */
-  .body-table,
-  .body-table tbody,
-  .body-table tr,
-  .body-table td {
-    display: block;
-    width: 100% !important;
-  }
-
-  .col-main {
-    padding-right: 0;
-    margin-bottom: 20pt;
-  }
-
-  .col-sidebar { width: 100%; }
+  .col-sidebar { flex: none; width: 100%; }
 }
 </style>
 </head>
@@ -324,188 +293,190 @@ body {
 
 <div class="accent-bar"></div>
 
-<!-- HEADER -->
-<table class="header-table"><tbody><tr>
-  <td>
-    <div class="name">Brian <span class="name-italic">Hirsh</span></div>
-    <div class="tagline">Founder &nbsp;·&nbsp; Product Leader &nbsp;·&nbsp; AI-Native Builder</div>
-  </td>
-  <td>
+<div class="page">
+
+  <!-- HEADER -->
+  <header class="header">
+    <div>
+      <div class="name">Brian <span class="name-italic">Hirsh</span></div>
+      <div class="tagline">Founder &nbsp;·&nbsp; Product Leader &nbsp;·&nbsp; AI-Native Builder</div>
+    </div>
     <div class="contact">
       New York, NY<br>
       202-489-4095<br>
-      <span class="contact-accent">2brianhirsh@gmail.com</span><br>
-      <span class="contact-accent">linkedin.com/in/bphirsh</span><br>
-      <span class="contact-accent">brianhirsh.com</span>
+      <a href="mailto:2brianhirsh@gmail.com">2brianhirsh@gmail.com</a><br>
+      <a href="https://linkedin.com/in/bphirsh" target="_blank">linkedin.com/in/bphirsh</a><br>
+      <a href="https://brianhirsh.com" target="_blank">brianhirsh.com</a>
     </div>
-  </td>
-</tr></tbody></table>
+  </header>
 
-<!-- BODY -->
-<table class="body-table"><tbody><tr>
+  <!-- BODY -->
+  <div class="body">
 
-  <!-- MAIN -->
-  <td class="col-main">
+    <!-- MAIN -->
+    <main class="col-main">
 
-    <div class="section-label">Profile</div>
-    <p class="summary">2.5x founder with a track record of zero-to-one product builds across fintech, SaaS, and IoT — from solo-launched platforms to a Google/Nest acquisition and a Series B raise. I've spent my career turning ambiguous problems into products customers love, talking to users obsessively, and shipping fast with small teams. Deeply AI-native: I build with AI tooling daily and design systems for human-AI collaboration. Now looking to bring founder-level ownership to a high-velocity product role.</p>
+      <div class="section-label">Profile</div>
+      <p class="summary">2.5x founder with a track record of zero-to-one product builds across fintech, SaaS, and IoT — from solo-launched platforms to a Google/Nest acquisition and a Series B raise. I've spent my career turning ambiguous problems into products customers love, talking to users obsessively, and shipping fast with small teams. Deeply AI-native: I build with AI tooling daily and design systems for human-AI collaboration. Now looking to bring founder-level ownership to a high-velocity product role.</p>
 
-    <div class="section-label">Experience</div>
+      <div class="section-label">Experience</div>
 
-    <div class="job">
-      <table class="job-header-table"><tbody><tr>
-        <td><span class="job-company">Athenic</span></td>
-        <td><span class="job-date">Mar 2024 – Present</span></td>
-      </tr></tbody></table>
-      <p class="job-meta">Founder &amp; Product Lead &nbsp;·&nbsp; New York, NY</p>
-      <ul class="job-bullets">
-        <li><span class="bullet-dash">—</span>Solo-designed and built a full-stack fintech platform enabling tax-advantaged DeFi investing via self-custodied IRAs — concept to paying customers in 9 months, built entirely with AI-assisted tooling (Cursor)</li>
-        <li><span class="bullet-dash">—</span>Conducted 20+ pre-launch customer discovery interviews and 20+ post-launch user sessions; shaped core product decisions around custodian integrations, onboarding flow, and pricing structure</li>
-        <li><span class="bullet-dash">—</span>Grew to ~100 paying customers with 98% monthly retention; automated operations to ~2 hrs/month, demonstrating tight product-market fit in an underserved niche</li>
-        <li><span class="bullet-dash">—</span>Pricing designed and validated through direct customer conversations: $250–$850 setup fee + $19–$49/month SaaS</li>
-      </ul>
-    </div>
-
-    <div class="job">
-      <table class="job-header-table"><tbody><tr>
-        <td><span class="job-company">Lifeform</span></td>
-        <td><span class="job-date">Jun 2021 – Sep 2023</span></td>
-      </tr></tbody></table>
-      <p class="job-meta">Interim CEO &nbsp;·&nbsp; Global / APAC</p>
-      <ul class="job-bullets">
-        <li><span class="bullet-dash">—</span>Led product strategy for a decentralized identity (DID) protocol powering avatar-based universal login across Web3 gaming ecosystems</li>
-        <li><span class="bullet-dash">—</span>Directed cross-functional product and go-to-market execution across a 100-person org, scaled from 10 people through Series B</li>
-        <li><span class="bullet-dash">—</span>Raised $30M+ at $300M valuation (Binance, IDG Capital); grew to ~$5M ARR with 45+ enterprise gaming partnerships across APAC</li>
-        <li><span class="bullet-dash">—</span>Owned horizontal platform expansion across multiple Web3 gaming verticals — managing competing buyer types, use cases, and integration requirements simultaneously</li>
-      </ul>
-    </div>
-
-    <div class="job">
-      <table class="job-header-table"><tbody><tr>
-        <td><span class="job-company">Brightwood</span></td>
-        <td><span class="job-date">Jan 2018 – Jun 2021</span></td>
-      </tr></tbody></table>
-      <p class="job-meta">Founder &amp; CEO &nbsp;·&nbsp; Shenzhen, China</p>
-      <ul class="job-bullets">
-        <li><span class="bullet-dash">—</span>Founded and exited via acquisition a hospitality SaaS platform for Chinese hotel chains — raised $1M seed, scaled to ~$400K ARR across 200+ hotels</li>
-        <li><span class="bullet-dash">—</span>Owned full product roadmap and execution across guest apps (iOS, Android, WeChat Miniprogram), staff management tools, and hotel management dashboard</li>
-        <li><span class="bullet-dash">—</span>Pivoted product focus based on direct hotelier research: discovered IoT smart room features required property-owner approval while room service and pre-arrival bookings were operator decisions — refocused roadmap, directly driving adoption</li>
-        <li><span class="bullet-dash">—</span>Zero hotel churn through acquisition; integrated IoT hardware, PMS platforms, and payment providers</li>
-      </ul>
-    </div>
-
-    <div class="job">
-      <table class="job-header-table"><tbody><tr>
-        <td><span class="job-company">Fantem</span></td>
-        <td><span class="job-date">Mar 2015 – Apr 2018</span></td>
-      </tr></tbody></table>
-      <p class="job-meta">Head of Product &nbsp;·&nbsp; Chicago, IL → Shenzhen, China</p>
-      <ul class="job-bullets">
-        <li><span class="bullet-dash">—</span>Led product for a consumer smart home platform: connected devices, mobile apps, hub hardware, and a dedicated home controller tablet</li>
-        <li><span class="bullet-dash">—</span>Solved core UX challenge of non-technical users managing complex device ecosystems — simplified setup into a three-category framework (security, automation, control) that became the product's defining interaction model</li>
-        <li><span class="bullet-dash">—</span>Compressed release cycles from 4 months to 4 weeks; managed full product lifecycle within a 45-person engineering org</li>
-        <li><span class="bullet-dash">—</span>Led crowdfunding campaign raising ~$2M; relocated to Shenzhen to lead hardware production</li>
-      </ul>
-    </div>
-
-    <div class="job">
-      <table class="job-header-table"><tbody><tr>
-        <td><span class="job-company">Revolv</span> <span class="job-company-note">(acquired by Google/Nest)</span></td>
-        <td><span class="job-date">May 2014 – Mar 2015</span></td>
-      </tr></tbody></table>
-      <p class="job-meta">Early Team Member &nbsp;·&nbsp; Boulder, CO</p>
-      <ul class="job-bullets">
-        <li><span class="bullet-dash">—</span>Part of the core team through Google/Nest acquisition — one of the earliest players in the connected home ecosystem</li>
-      </ul>
-    </div>
-
-  </td>
-
-  <!-- SIDEBAR -->
-  <td class="col-sidebar">
-
-    <div class="sidebar-section">
-      <div class="section-label">Numbers</div>
-      <div class="stat-row">
-        <div class="stat-number">2.5×</div>
-        <div class="stat-label">founder exits &amp; raises</div>
+      <div class="job">
+        <div class="job-header">
+          <span class="job-company">Athenic</span>
+          <span class="job-date">Mar 2024 – Present</span>
+        </div>
+        <p class="job-meta">Founder &amp; Product Lead &nbsp;·&nbsp; New York, NY</p>
+        <ul class="job-bullets">
+          <li><span class="bullet-dash">—</span>Solo-designed and built a full-stack fintech platform enabling tax-advantaged DeFi investing via self-custodied IRAs — concept to paying customers in 9 months, built entirely with AI-assisted tooling (Cursor)</li>
+          <li><span class="bullet-dash">—</span>Conducted 20+ pre-launch customer discovery interviews and 20+ post-launch user sessions; shaped core product decisions around custodian integrations, onboarding flow, and pricing structure</li>
+          <li><span class="bullet-dash">—</span>Grew to ~100 paying customers with 98% monthly retention; automated operations to ~2 hrs/month, demonstrating tight product-market fit in an underserved niche</li>
+          <li><span class="bullet-dash">—</span>Pricing designed and validated through direct customer conversations: $250–$850 setup fee + $19–$49/month SaaS</li>
+        </ul>
       </div>
-      <div class="stat-row">
-        <div class="stat-number">98%</div>
-        <div class="stat-label">monthly retention, Athenic</div>
-      </div>
-      <div class="stat-row">
-        <div class="stat-number">$30M+</div>
-        <div class="stat-label">Series B raised at $300M val.</div>
-      </div>
-      <div class="stat-row">
-        <div class="stat-number">200+</div>
-        <div class="stat-label">hotels on Brightwood at exit</div>
-      </div>
-      <div class="stat-row">
-        <div class="stat-number">40+</div>
-        <div class="stat-label">customer interviews per product</div>
-      </div>
-    </div>
 
-    <div class="sidebar-section">
-      <div class="section-label">Skills</div>
-      <div class="skill-group">
-        <div class="skill-group-label">Product</div>
-        <span class="skill-tag">Zero-to-one</span>
-        <span class="skill-tag">Customer discovery</span>
-        <span class="skill-tag">Roadmapping</span>
-        <span class="skill-tag">UX/UI</span>
-        <span class="skill-tag">Figma</span>
-        <span class="skill-tag">Go-to-market</span>
-        <span class="skill-tag">Metrics</span>
+      <div class="job">
+        <div class="job-header">
+          <span class="job-company">Lifeform</span>
+          <span class="job-date">Jun 2021 – Sep 2023</span>
+        </div>
+        <p class="job-meta">Interim CEO &nbsp;·&nbsp; Global / APAC</p>
+        <ul class="job-bullets">
+          <li><span class="bullet-dash">—</span>Led product strategy for a decentralized identity (DID) protocol powering avatar-based universal login across Web3 gaming ecosystems</li>
+          <li><span class="bullet-dash">—</span>Directed cross-functional product and go-to-market execution across a 100-person org, scaled from 10 people through Series B</li>
+          <li><span class="bullet-dash">—</span>Raised $30M+ at $300M valuation (Binance, IDG Capital); grew to ~$5M ARR with 45+ enterprise gaming partnerships across APAC</li>
+          <li><span class="bullet-dash">—</span>Owned horizontal platform expansion across multiple Web3 gaming verticals — managing competing buyer types, use cases, and integration requirements simultaneously</li>
+        </ul>
       </div>
-      <div class="skill-group">
-        <div class="skill-group-label">Technical</div>
-        <span class="skill-tag">AI-native dev</span>
-        <span class="skill-tag">Cursor</span>
-        <span class="skill-tag">APIs &amp; integrations</span>
-        <span class="skill-tag">Full-stack SaaS</span>
-        <span class="skill-tag">IoT</span>
-        <span class="skill-tag">Web3</span>
-        <span class="skill-tag">Fintech</span>
-      </div>
-      <div class="skill-group">
-        <div class="skill-group-label">Leadership</div>
-        <span class="skill-tag">Founding teams</span>
-        <span class="skill-tag">Fundraising</span>
-        <span class="skill-tag">Cross-functional</span>
-        <span class="skill-tag">APAC expansion</span>
-      </div>
-    </div>
 
-    <div class="sidebar-section">
-      <div class="section-label">Education</div>
-      <div class="edu-item">
-        <div class="edu-school">University of Miami</div>
-        <div class="edu-detail">BSBA · Summa Cum Laude · 3.9 GPA</div>
+      <div class="job">
+        <div class="job-header">
+          <span class="job-company">Brightwood</span>
+          <span class="job-date">Jan 2018 – Jun 2021</span>
+        </div>
+        <p class="job-meta">Founder &amp; CEO &nbsp;·&nbsp; Shenzhen, China</p>
+        <ul class="job-bullets">
+          <li><span class="bullet-dash">—</span>Founded and exited via acquisition a hospitality SaaS platform for Chinese hotel chains — raised $1M seed, scaled to ~$400K ARR across 200+ hotels</li>
+          <li><span class="bullet-dash">—</span>Owned full product roadmap and execution across guest apps (iOS, Android, WeChat Miniprogram), staff management tools, and hotel management dashboard</li>
+          <li><span class="bullet-dash">—</span>Pivoted product focus based on direct hotelier research: discovered IoT smart room features required property-owner approval while room service and pre-arrival bookings were operator decisions — refocused roadmap, directly driving adoption</li>
+          <li><span class="bullet-dash">—</span>Zero hotel churn through acquisition; integrated IoT hardware, PMS platforms, and payment providers</li>
+        </ul>
       </div>
-      <div class="edu-item">
-        <div class="edu-school">University of Sydney</div>
-        <div class="edu-detail">School of Business · Study Abroad</div>
-      </div>
-    </div>
 
-    <div class="sidebar-section">
-      <div class="section-label">Additional</div>
-      <div class="activity-item">
-        <div class="activity-title">Connect Shenzhen</div>
-        <div class="activity-desc">Founded professional community connecting AI, finance &amp; startup leaders. Bi-monthly events for 30–80 people.</div>
+      <div class="job">
+        <div class="job-header">
+          <span class="job-company">Fantem</span>
+          <span class="job-date">Mar 2015 – Apr 2018</span>
+        </div>
+        <p class="job-meta">Head of Product &nbsp;·&nbsp; Chicago, IL → Shenzhen, China</p>
+        <ul class="job-bullets">
+          <li><span class="bullet-dash">—</span>Led product for a consumer smart home platform: connected devices, mobile apps, hub hardware, and a dedicated home controller tablet</li>
+          <li><span class="bullet-dash">—</span>Solved core UX challenge of non-technical users managing complex device ecosystems — simplified setup into a three-category framework (security, automation, control) that became the product's defining interaction model</li>
+          <li><span class="bullet-dash">—</span>Compressed release cycles from 4 months to 4 weeks; managed full product lifecycle within a 45-person engineering org</li>
+          <li><span class="bullet-dash">—</span>Led crowdfunding campaign raising ~$2M; relocated to Shenzhen to lead hardware production</li>
+        </ul>
       </div>
-      <div class="activity-item">
-        <div class="activity-title">Public Speaker</div>
-        <div class="activity-desc">Spoken at conferences (1,500+ attendees) on AI, startups, IoT &amp; blockchain. Featured on CNBC China &amp; China Daily.</div>
+
+      <div class="job">
+        <div class="job-header">
+          <span class="job-company">Revolv <span class="job-company-note">(acquired by Google/Nest)</span></span>
+          <span class="job-date">May 2014 – Mar 2015</span>
+        </div>
+        <p class="job-meta">Early Team Member &nbsp;·&nbsp; Boulder, CO</p>
+        <ul class="job-bullets">
+          <li><span class="bullet-dash">—</span>Part of the core team through Google/Nest acquisition — one of the earliest players in the connected home ecosystem</li>
+        </ul>
       </div>
-    </div>
 
-  </td>
+    </main>
 
-</tr></tbody></table>
+    <!-- SIDEBAR -->
+    <aside class="col-sidebar">
+
+      <div class="sidebar-section">
+        <div class="section-label">Numbers</div>
+        <div class="stat-row">
+          <div class="stat-number">2.5×</div>
+          <div class="stat-label">founder exits &amp; raises</div>
+        </div>
+        <div class="stat-row">
+          <div class="stat-number">98%</div>
+          <div class="stat-label">monthly retention, Athenic</div>
+        </div>
+        <div class="stat-row">
+          <div class="stat-number">$30M+</div>
+          <div class="stat-label">Series B raised at $300M val.</div>
+        </div>
+        <div class="stat-row">
+          <div class="stat-number">200+</div>
+          <div class="stat-label">hotels on Brightwood at exit</div>
+        </div>
+        <div class="stat-row">
+          <div class="stat-number">40+</div>
+          <div class="stat-label">customer interviews per product</div>
+        </div>
+      </div>
+
+      <div class="sidebar-section">
+        <div class="section-label">Skills</div>
+        <div class="skill-group">
+          <div class="skill-group-label">Product</div>
+          <span class="skill-tag">Zero-to-one</span>
+          <span class="skill-tag">Customer discovery</span>
+          <span class="skill-tag">Roadmapping</span>
+          <span class="skill-tag">UX/UI</span>
+          <span class="skill-tag">Figma</span>
+          <span class="skill-tag">Go-to-market</span>
+          <span class="skill-tag">Metrics</span>
+        </div>
+        <div class="skill-group">
+          <div class="skill-group-label">Technical</div>
+          <span class="skill-tag">AI-native dev</span>
+          <span class="skill-tag">Cursor</span>
+          <span class="skill-tag">APIs &amp; integrations</span>
+          <span class="skill-tag">Full-stack SaaS</span>
+          <span class="skill-tag">IoT</span>
+          <span class="skill-tag">Web3</span>
+          <span class="skill-tag">Fintech</span>
+        </div>
+        <div class="skill-group">
+          <div class="skill-group-label">Leadership</div>
+          <span class="skill-tag">Founding teams</span>
+          <span class="skill-tag">Fundraising</span>
+          <span class="skill-tag">Cross-functional</span>
+          <span class="skill-tag">APAC expansion</span>
+        </div>
+      </div>
+
+      <div class="sidebar-section">
+        <div class="section-label">Education</div>
+        <div class="edu-item">
+          <div class="edu-school">University of Miami</div>
+          <div class="edu-detail">BSBA · Summa Cum Laude · 3.9 GPA</div>
+        </div>
+        <div class="edu-item">
+          <div class="edu-school">University of Sydney</div>
+          <div class="edu-detail">School of Business · Study Abroad</div>
+        </div>
+      </div>
+
+      <div class="sidebar-section">
+        <div class="section-label">Additional</div>
+        <div class="activity-item">
+          <div class="activity-title">Connect Shenzhen</div>
+          <div class="activity-desc">Founded professional community connecting AI, finance &amp; startup leaders. Bi-monthly events for 30–80 people.</div>
+        </div>
+        <div class="activity-item">
+          <div class="activity-title">Public Speaker</div>
+          <div class="activity-desc">Spoken at conferences (1,500+ attendees) on AI, startups, IoT &amp; blockchain. Featured on CNBC China &amp; China Daily.</div>
+        </div>
+      </div>
+
+    </aside>
+
+  </div><!-- /.body -->
+
+</div><!-- /.page -->
 
 </body>
 </html>
