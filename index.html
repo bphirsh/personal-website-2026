@@ -57,9 +57,16 @@
   }
 
   nav .logo {
-    font-family: 'DM Serif Display', serif;
-    font-size: 22px;
-    letter-spacing: -0.5px;
+    font-family: Georgia, 'Times New Roman', serif;
+    font-size: 24px;
+    font-weight: normal;
+    letter-spacing: -0.3px;
+    color: var(--text-primary);
+  }
+
+  nav .logo .logo-italic {
+    font-style: italic;
+    color: #b8460f;
   }
 
   nav .nav-links {
@@ -834,7 +841,12 @@
     .two-col {
       grid-template-columns: 1fr;
     }
-    nav .nav-links { gap: 18px; }
+    nav {
+      flex-direction: column;
+      align-items: center;
+      gap: 14px;
+    }
+    nav .nav-links { gap: 18px; justify-content: center; }
     nav .nav-links a { font-size: 13px; }
   }
 </style>
@@ -845,7 +857,7 @@
 
   <!-- NAV -->
   <nav>
-    <div class="logo">Brian Hirsh</div>
+    <div class="logo">Brian <span class="logo-italic">Hirsh</span></div>
     <ul class="nav-links">
       <li><a href="#journey">Journey</a></li>
       <li><a href="#about">About</a></li>
