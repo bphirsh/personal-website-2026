@@ -818,7 +818,7 @@
   /* Each line: flex with fixed-width key column for desktop alignment */
   .stack-line {
     display: flex;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
     align-items: baseline;
   }
 
@@ -828,7 +828,7 @@
     min-width: 14ch;
   }
 
-  .sv { flex: 1; }
+  .sv { flex: 1; white-space: nowrap; }
 
   @media (max-width: 640px) {
     /* Mobile: no alignment, just hanging indent so wrapped lines
