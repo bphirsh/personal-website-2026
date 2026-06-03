@@ -462,7 +462,7 @@
     margin-left: calc(-1 * var(--gutter-fade));
     cursor: grab;
     user-select: none;
-    touch-action: pan-y;
+    touch-action: pan-x pan-y;
     /* Always-on right fade at column_right; left fade only engages when --left-fade-end is non-zero (.is-scrolled) */
     -webkit-mask-image: linear-gradient(to right,
       transparent 0,
@@ -809,8 +809,8 @@
     border: 1px solid #d8d4cd;
     border-radius: 10px;
     padding: 18px 20px;
-    overflow-x: auto;
-    white-space: pre;
+    white-space: pre-wrap;
+    word-break: break-word;
   }
 
   .stack-code .key   { color: #b8460f; }
@@ -1029,11 +1029,16 @@
     <div class="stack-card-label">Current Stack</div>
     <div class="stack-code"><span class="punct">{</span>
   <span class="key">"agents"</span><span class="punct">:</span>     <span class="punct">[</span><span class="str">"OpenClaw"</span><span class="punct">,</span> <span class="str">"Claude Code"</span><span class="punct">],</span>
-  <span class="key">"models"</span><span class="punct">:</span>     <span class="punct">[</span><span class="str">"claude-opus-4"</span><span class="punct">,</span> <span class="str">"gemini-2.5-flash"</span><span class="punct">,</span> <span class="str">"deepseek-v3"</span><span class="punct">,</span> <span class="str">"qwen3-max"</span><span class="punct">],</span>
+  <span class="key">"models"</span><span class="punct">:</span>     <span class="punct">[</span><span class="str">"claude-opus-4"</span><span class="punct">,</span>
+               <span class="str">"gemini-2.5-flash"</span><span class="punct">,</span>
+               <span class="str">"deepseek-v3"</span><span class="punct">,</span>
+               <span class="str">"qwen3-max"</span><span class="punct">],</span>
   <span class="key">"notes"</span><span class="punct">:</span>      <span class="str">"Obsidian"</span><span class="punct">,</span>
   <span class="key">"chat"</span><span class="punct">:</span>       <span class="punct">[</span><span class="str">"Telegram"</span><span class="punct">,</span> <span class="str">"WhatsApp"</span><span class="punct">,</span> <span class="str">"WeChat"</span><span class="punct">],</span>
   <span class="key">"automation"</span><span class="punct">:</span> <span class="str">"n8n"</span><span class="punct">,</span>
-  <span class="key">"infra"</span><span class="punct">:</span>      <span class="punct">[</span><span class="str">"Mac Mini"</span><span class="punct">,</span> <span class="str">"MacBook Pro"</span><span class="punct">,</span> <span class="str">"Raspberry Pi 4"</span><span class="punct">],</span>
+  <span class="key">"infra"</span><span class="punct">:</span>      <span class="punct">[</span><span class="str">"Mac Mini"</span><span class="punct">,</span>
+               <span class="str">"MacBook Pro"</span><span class="punct">,</span>
+               <span class="str">"Raspberry Pi 4"</span><span class="punct">],</span>
   <span class="key">"memory"</span><span class="punct">:</span>     <span class="str">"Qdrant"</span>
 <span class="punct">}</span></div>
   </div>
@@ -1267,6 +1272,7 @@
       let activePointerId = null;
 
       carousel.addEventListener('pointerdown', (e) => {
+        if (e.pointerType === 'touch') return; // native scroll handles touch
         if (e.pointerType === 'mouse' && e.button !== 0) return;
         isDown = true;
         dragDist = 0;
