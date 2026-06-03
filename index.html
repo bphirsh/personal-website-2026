@@ -440,10 +440,6 @@
     padding: 8px 0 4px;
   }
 
-  .substack-section.has-controls {
-    margin-bottom: 32px;
-  }
-
   .substack-carousel {
     /* Width of the left gutter the carousel extends into; matched by the mask fade so the whole effect is just this narrow strip outside the column */
     --gutter-fade: 12px;
@@ -512,9 +508,12 @@
     box-shadow: 0 1px 2px rgba(0,0,0,0.04);
   }
 
-  .substack-card:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+  /* Only apply hover lift on devices that actually support hover (not touch) */
+  @media (hover: hover) {
+    .substack-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+    }
   }
 
   .substack-card-image {
@@ -577,8 +576,10 @@
     padding: 28px 26px;
   }
 
-  .substack-card-cta:hover {
-    background: #F25C0F;
+  @media (hover: hover) {
+    .substack-card-cta:hover {
+      background: #F25C0F;
+    }
   }
 
   .substack-cta-top {
@@ -789,6 +790,33 @@
     transform: translateX(3px);
   }
 
+  /* ── CURRENT STACK ── */
+  .stack-card-label {
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 16px;
+  }
+
+  .stack-code {
+    font-family: 'Menlo', 'Consolas', 'Monaco', monospace;
+    font-size: 13px;
+    line-height: 1.7;
+    background: #f0ece6;
+    color: #3d3a36;
+    border: 1px solid #d8d4cd;
+    border-radius: 10px;
+    padding: 18px 20px;
+    overflow-x: auto;
+    white-space: pre;
+  }
+
+  .stack-code .key   { color: #b8460f; }
+  .stack-code .str   { color: #5a7a4a; }
+  .stack-code .punct { color: #9c9890; }
+
   /* ── FOOTER ── */
   .footer {
     text-align: center;
@@ -972,6 +1000,7 @@
         <div class="substack-cta-arrow">Visit →</div>
       </a>
     </div>
+    <!-- Nav buttons hidden for now — uncomment to restore
     <div class="substack-controls">
       <button type="button" class="substack-nav" id="substack-prev" aria-label="Previous post">
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 6l-6 6 6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -980,6 +1009,7 @@
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
       </button>
     </div>
+    -->
   </div>
 
   <!-- NOW -->
@@ -992,6 +1022,20 @@
     <div class="now-image">
       <img src="5-levels-of-AI.jpg" alt="5 Levels of AI-Powered Productivity">
     </div>
+  </div>
+
+  <!-- CURRENT STACK -->
+  <div class="card card-white fade-in">
+    <div class="stack-card-label">Current Stack</div>
+    <div class="stack-code"><span class="punct">{</span>
+  <span class="key">"agents"</span><span class="punct">:</span>     <span class="punct">[</span><span class="str">"OpenClaw"</span><span class="punct">,</span> <span class="str">"Claude Code"</span><span class="punct">],</span>
+  <span class="key">"models"</span><span class="punct">:</span>     <span class="punct">[</span><span class="str">"claude-opus-4"</span><span class="punct">,</span> <span class="str">"gemini-2.5-flash"</span><span class="punct">,</span> <span class="str">"deepseek-v3"</span><span class="punct">,</span> <span class="str">"qwen3-max"</span><span class="punct">],</span>
+  <span class="key">"notes"</span><span class="punct">:</span>      <span class="str">"Obsidian"</span><span class="punct">,</span>
+  <span class="key">"chat"</span><span class="punct">:</span>       <span class="punct">[</span><span class="str">"Telegram"</span><span class="punct">,</span> <span class="str">"WhatsApp"</span><span class="punct">,</span> <span class="str">"WeChat"</span><span class="punct">],</span>
+  <span class="key">"automation"</span><span class="punct">:</span> <span class="str">"n8n"</span><span class="punct">,</span>
+  <span class="key">"infra"</span><span class="punct">:</span>      <span class="punct">[</span><span class="str">"Mac Mini"</span><span class="punct">,</span> <span class="str">"MacBook Pro"</span><span class="punct">,</span> <span class="str">"Raspberry Pi 4"</span><span class="punct">],</span>
+  <span class="key">"memory"</span><span class="punct">:</span>     <span class="str">"Qdrant"</span>
+<span class="punct">}</span></div>
   </div>
 
   <!-- CONNECT -->
