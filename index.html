@@ -1270,6 +1270,11 @@
         carousel.scrollBy({ left: scrollStep(), behavior: 'smooth' });
       });
 
+      // Left-fade toggle — runs regardless of whether nav buttons exist
+      carousel.addEventListener('scroll', () => {
+        carousel.classList.toggle('is-scrolled', carousel.scrollLeft > 1);
+      }, { passive: true });
+
       carousel.addEventListener('scroll', () => updateArrowState(carousel, prev, next), { passive: true });
       window.addEventListener('resize', () => updateArrowState(carousel, prev, next));
 
