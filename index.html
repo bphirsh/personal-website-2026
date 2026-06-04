@@ -1281,19 +1281,28 @@
       // Block native anchor drag-image, which would otherwise hijack the pointer
       carousel.addEventListener('dragstart', (e) => e.preventDefault());
 
-      // Drag-to-scroll (pointer events cover mouse + touch + pen)
+      // Drag-to-scroll with momentum (mouse only; touch uses native scroll)
       let isDown = false;
       let startX = 0;
       let startScroll = 0;
       let dragDist = 0;
       let activePointerId = null;
+      let lastX = 0;
+      let lastT = 0;
+      let velocity = 0;
+      let rafId = null;
 
       carousel.addEventListener('pointerdown', (e) => {
-        if (e.pointerType === 'touch') return; // native scroll handles touch
+        if (e.pointerType === 'touch') return;
         if (e.pointerType === 'mouse' && e.button !== 0) return;
+        // Cancel any ongoing momentum
+        if (rafId) { cancelAnimationFrame(rafId); rafId = null; }
         isDown = true;
         dragDist = 0;
+        velocity = 0;
         startX = e.clientX;
+        lastX = e.clientX;
+        lastT = performance.now();
         startScroll = carousel.scrollLeft;
         activePointerId = e.pointerId;
       });
@@ -1308,6 +1317,12 @@
         if (carousel.classList.contains('is-dragging')) {
           dragDist = Math.max(dragDist, Math.abs(dx));
           carousel.scrollLeft = startScroll - dx;
+          // Track instantaneous velocity (px/ms)
+          const now = performance.now();
+          const dt = now - lastT;
+          if (dt > 0) velocity = (e.clientX - lastX) / dt;
+          lastX = e.clientX;
+          lastT = now;
           e.preventDefault();
         }
       });
@@ -1320,7 +1335,15 @@
         if (carousel.classList.contains('is-dragging')) {
           carousel.classList.remove('is-dragging');
           if (dragDist > 4) {
-            // Eat the synthetic click that fires on the anchor after drag-release
+            // Momentum coast — decelerate at ~5% per frame
+            const coast = () => {
+              if (Math.abs(velocity) < 0.05) return;
+              carousel.scrollLeft -= velocity * 16;
+              velocity *= 0.92;
+              rafId = requestAnimationFrame(coast);
+            };
+            rafId = requestAnimationFrame(coast);
+            // Suppress the synthetic click fired on release after a drag
             const suppress = (ev) => { ev.preventDefault(); ev.stopPropagation(); };
             carousel.addEventListener('click', suppress, { capture: true, once: true });
             setTimeout(() => carousel.removeEventListener('click', suppress, { capture: true }), 0);
