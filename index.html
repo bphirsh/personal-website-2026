@@ -1201,30 +1201,29 @@
 
     setupCarouselControls(carousel, prevBtn, nextBtn);
 
-    const FEED_URL = 'https://brianhirsh.substack.com/feed';
-    const API_URL = 'https://api.rss2json.com/v1/api.json?rss_url=' + encodeURIComponent(FEED_URL);
+    // Substack's own public API — no third-party proxy, no rate limits
+    const API_URL = 'https://brianhirsh.substack.com/api/v1/posts?limit=12';
 
     fetch(API_URL)
       .then(r => r.json())
-      .then(data => {
-        if (data.status !== 'ok' || !Array.isArray(data.items)) return;
+      .then(posts => {
+        if (!Array.isArray(posts)) return;
 
         const frag = document.createDocumentFragment();
-        data.items.slice(0, 10).forEach(item => {
+        posts.forEach(post => {
           const card = document.createElement('a');
           card.className = 'substack-card';
-          card.href = item.link;
+          card.href = post.canonical_url;
           card.target = '_blank';
           card.rel = 'noopener';
 
           const imgWrap = document.createElement('div');
           imgWrap.className = 'substack-card-image';
 
-          const imgSrc = extractImage(item);
-          if (imgSrc) {
+          if (post.cover_image) {
             const img = document.createElement('img');
-            img.src = imgSrc;
-            img.alt = item.title || '';
+            img.src = post.cover_image;
+            img.alt = post.title || '';
             img.loading = 'lazy';
             img.onerror = () => {
               imgWrap.innerHTML = '';
@@ -1240,11 +1239,11 @@
 
           const title = document.createElement('div');
           title.className = 'substack-card-title';
-          title.textContent = decodeEntities(item.title || 'Untitled');
+          title.textContent = post.title || 'Untitled';
 
           const date = document.createElement('div');
           date.className = 'substack-card-date';
-          date.textContent = formatDate(item.pubDate);
+          date.textContent = formatDate(post.post_date);
 
           body.appendChild(title);
           body.appendChild(date);
