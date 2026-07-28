@@ -1201,12 +1201,14 @@
 
     setupCarouselControls(carousel, prevBtn, nextBtn);
 
-    // Substack's own public API — no third-party proxy, no rate limits
-    const API_URL = 'https://brianhirsh.substack.com/api/v1/posts?limit=12';
+    // Substack's API has no CORS headers, so proxy through allorigins.win
+    const SUBSTACK_API = 'https://brianhirsh.substack.com/api/v1/posts?limit=12';
+    const API_URL = 'https://api.allorigins.win/get?url=' + encodeURIComponent(SUBSTACK_API);
 
     fetch(API_URL)
       .then(r => r.json())
-      .then(posts => {
+      .then(data => {
+        const posts = JSON.parse(data.contents);
         if (!Array.isArray(posts)) return;
 
         const frag = document.createDocumentFragment();
