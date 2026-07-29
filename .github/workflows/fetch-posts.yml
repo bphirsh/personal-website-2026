@@ -1,0 +1,29 @@
+name: Fetch Substack Posts
+
+on:
+  schedule:
+    - cron: '0 */6 * * *'   # every 6 hours
+  workflow_dispatch:          # allow manual trigger
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Fetch posts from Substack
+        run: |
+          curl -sf "https://brianhirsh.substack.com/api/v1/posts?limit=20" \
+            -H "Accept: application/json" \
+            -o posts.json
+          echo "Fetched $(python3 -c 'import json; d=json.load(open("posts.json")); print(len(d))') posts"
+
+      - name: Commit if changed
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add posts.json
+          git diff --cached --quiet || git commit -m "chore: refresh Substack posts cache"
+          git push
