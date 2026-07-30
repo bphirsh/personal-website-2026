@@ -13,12 +13,60 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Fetch posts from Substack
+      - name: Fetch posts from Substack RSS
         run: |
-          curl -sf "https://brianhirsh.substack.com/api/v1/posts?limit=20" \
-            -H "Accept: application/json" \
-            -o posts.json
-          echo "Fetched $(python3 -c 'import json; d=json.load(open("posts.json")); print(len(d))') posts"
+          curl -s \
+            -A "Mozilla/5.0 (compatible; feed-fetcher)" \
+            -L \
+            --max-time 30 \
+            "https://brianhirsh.substack.com/feed" \
+            -o feed.xml
+
+          # Parse RSS into posts.json using Python
+          python3 - <<'EOF'
+import xml.etree.ElementTree as ET, json, re
+
+tree = ET.parse('feed.xml')
+root = tree.getroot()
+
+ns = {
+  'content': 'http://purl.org/rss/1.0/modules/content/',
+  'dc':      'http://purl.org/dc/elements/1.1/',
+}
+
+posts = []
+for item in root.findall('.//item'):
+  title     = (item.findtext('title') or '').strip()
+  url       = (item.findtext('link')  or '').strip()
+  pub_date  = (item.findtext('pubDate') or '').strip()
+  desc      = (item.findtext('description') or '').strip()
+
+  # Pull cover image from enclosure or first <img> in content
+  cover = None
+  enc = item.find('enclosure')
+  if enc is not None:
+    cover = enc.get('url')
+  if not cover:
+    body = item.findtext('content:encoded', namespaces=ns) or ''
+    m = re.search(r'<img[^>]+src=["\']([^"\']+)["\']', body)
+    if m:
+      cover = m.group(1)
+
+  posts.append({
+    'title':         title,
+    'canonical_url': url,
+    'post_date':     pub_date,
+    'cover_image':   cover,
+    'description':   desc,
+  })
+
+with open('posts.json', 'w') as f:
+  json.dump(posts, f, indent=2)
+
+print(f"Wrote {len(posts)} posts to posts.json")
+for p in posts:
+  print(f"  - {p['title']}")
+EOF
 
       - name: Commit if changed
         run: |
