@@ -1,9 +1,7 @@
 name: Fetch Substack Posts
 
 on:
-  schedule:
-    - cron: '0 9 * * *'
-  workflow_dispatch:
+  workflow_dispatch:   # manual trigger only — Substack blocks scheduled CI IPs
 
 jobs:
   fetch:
@@ -20,6 +18,8 @@ jobs:
             "https://brianhirsh.substack.com/feed" \
             -o feed.xml
           echo "Feed size: $(wc -c < feed.xml) bytes"
+          # Verify we got XML, not an error page
+          head -c 100 feed.xml | grep -q '<?xml' || { echo "ERROR: did not receive XML"; cat feed.xml | head -20; exit 1; }
 
       - name: Parse RSS into posts.json
         run: python3 .github/scripts/parse_feed.py
