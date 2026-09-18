@@ -1,0 +1,15 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "redirects": [
+    {
+      "source": "/workspace/beta-signup",
+      "destination": "/workspace/signup",
+      "permanent": false
+    },
+    {
+      "source": "/workspace/beta-download",
+      "destination": "/workspace/download",
+      "permanent": false
+    }
+  ]
+}

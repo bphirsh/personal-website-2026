@@ -1,9 +1,9 @@
 /**
- * POST /api/beta-auth — the password gate for the dev build.
+ * POST /api/download-auth — the password gate for the dev build.
  *
- * The filename, route and BETA_PASSWORD variable keep the 'beta' name on
- * purpose: renaming them would break an environment variable that is already
- * configured in Vercel, for no user-visible gain. Only the copy changed.
+ * The BETA_PASSWORD variable keeps its original name on purpose: renaming it
+ * would break a variable already configured in Vercel, for no user-visible
+ * gain. The file and route were renamed because they are reachable URLs.
  *
  * On a correct password this returns the Blob URL of the .dmg. The build is
  * NOT streamed through this function: at ~119MB that risks the function
@@ -72,7 +72,7 @@ module.exports = async (req, res) => {
 
   const expected = process.env.BETA_PASSWORD;
   if (!expected) {
-    console.error('beta-auth: BETA_PASSWORD is not set');
+    console.error('download-auth: BETA_PASSWORD is not set');
     res.status(500).json({ error: 'The download service is misconfigured.' });
     return;
   }
@@ -107,7 +107,7 @@ module.exports = async (req, res) => {
       }
     }
   } catch (err) {
-    console.error('beta-auth: HEAD on the build failed', err);
+    console.error('download-auth: HEAD on the build failed', err);
   }
 
   res.status(200).json({

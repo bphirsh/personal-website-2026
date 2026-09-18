@@ -112,7 +112,7 @@
 
       <div class="status" id="status" role="status" aria-live="polite"></div>
 
-      <p class="no-pw">Don't have a password? <a href="/workspace/beta-signup/">Request access →</a></p>
+      <p class="no-pw">Don't have a password? <a href="/workspace/signup/">Request access →</a></p>
     </div>
 
     <!-- UNLOCKED -->
@@ -155,7 +155,7 @@
 (function () {
   'use strict';
 
-  // The password is checked by /api/beta-auth, never here. There is no
+  // The password is checked by /api/download-auth, never here. There is no
   // password hash and no build URL in this page for anyone to find — the URL
   // is only returned by the server once the password is right, which is what
   // a client-side gate could never do.
@@ -211,7 +211,7 @@
     var controller = new AbortController();
     var timer = setTimeout(function () { controller.abort(); }, 12000);
 
-    fetch('/api/beta-auth', {
+    fetch('/api/download-auth', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ password: pw.value }),
