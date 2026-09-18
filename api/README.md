@@ -28,7 +28,12 @@ No CLI needed. The file is ~119MB against a 1GB Hobby allowance.
 
 Sign up at [resend.com](https://resend.com) and create an API key. The free tier is 3,000 emails/month, which is ~3,000× what this needs.
 
-Sending **to your own address** works immediately with Resend's shared `onboarding@resend.dev` sender, so you can skip domain verification entirely. If you'd rather the mail came from `brianhirsh.com`, verify the domain in Resend (it adds DNS records at Namecheap) and set `RESEND_FROM`.
+**The shared `onboarding@resend.dev` sender only delivers to the address your Resend account is registered with.** That single restriction decides what `NOTIFY_EMAIL` has to be:
+
+- **Didn't verify a domain?** Set `NOTIFY_EMAIL` to the exact address you signed up to Resend with. Anything else returns a 403 and the signup fails.
+- **Want mail from `brianhirsh.com`, or to send anywhere?** Verify the domain in Resend (it adds DNS records you enter at Namecheap), set `RESEND_FROM` to an address on it, and then `NOTIFY_EMAIL` can be whatever you like.
+
+For a dev build the first option is fine — you're the only recipient.
 
 ### 3. Set the environment variables
 
@@ -39,7 +44,7 @@ Vercel dashboard → your project → **Settings → Environment Variables**:
 | `BETA_PASSWORD` | The shared dev build password. Keeps the old name so an already-configured variable doesn't break. | yes |
 | `DMG_URL` | Blob URL from step 1 | yes |
 | `RESEND_API_KEY` | From step 2 | yes |
-| `NOTIFY_EMAIL` | `brian@brianhirsh.com` | yes |
+| `NOTIFY_EMAIL` | Where signups go. **Must be your Resend account's own address** unless you verified a domain — see step 2. | yes |
 | `DMG_VERSION` | e.g. `0.0.1` | no |
 | `DMG_ARCH` | defaults to `Apple Silicon (arm64)` | no |
 | `RESEND_FROM` | only if you verified a domain | no |
@@ -54,6 +59,8 @@ curl -s -X POST https://www.brianhirsh.com/api/download-auth \
 ```
 
 Should return `{"error":"Incorrect password."}`. Then try the real password and confirm you get a `url` back.
+
+For the signup path, submit the form on the live page and check the email arrives. A `502` with *"I couldn't record that just now"* almost always means `NOTIFY_EMAIL` isn't the address your Resend account is registered with — the exact 403 is in the Vercel function logs.
 
 ## Shipping a new build
 
