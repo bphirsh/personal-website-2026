@@ -75,7 +75,7 @@
 
     <div class="status" id="status" role="status" aria-live="polite"></div>
 
-    <p class="privacy">Your details go straight to a machine I own and aren't shared with anyone. Nothing else is collected — no analytics, no cookies, no tracking on this page.</p>
+    <p class="privacy">Your name and contact are emailed straight to me and nothing else is stored. I won't share them or add you to any list. No analytics, no cookies, no tracking on this page.</p>
   </div>
 
   <div class="footer">
@@ -84,12 +84,11 @@
 
 </div>
 
-<script src="/workspace/config.js"></script>
 <script>
 (function () {
   'use strict';
 
-  var cfg      = window.WORKSPACE_CONFIG || {};
+  var CONTACT_EMAIL = 'brian@brianhirsh.com';
   var form     = document.getElementById('signupForm');
   var nameEl   = document.getElementById('name');
   var contact  = document.getElementById('contact');
@@ -105,9 +104,9 @@
   }
 
   function fallbackLine(lead) {
-    var mail = cfg.CONTACT_EMAIL || 'brian@brianhirsh.com';
     return lead + ' In the meantime you can email me directly at ' +
-           '<a href="mailto:' + mail + '?subject=Workspace%20beta">' + mail + '</a>.';
+           '<a href="mailto:' + CONTACT_EMAIL + '?subject=Workspace%20beta">' +
+           CONTACT_EMAIL + '</a>.';
   }
 
   function setFieldError(input, box, message) {
@@ -178,28 +177,23 @@
     var kind = validate();
     if (!kind) return;
 
-    if (!cfg.API_BASE) {
-      show('bad', fallbackLine('The signup service isn\'t connected yet.'));
-      return;
-    }
-
     btn.disabled = true;
     btn.setAttribute('data-busy', 'true');
     label.textContent = 'Sending…';
     statusEl.removeAttribute('data-show');
 
-    // Don't let a sleeping Mac mini leave the visitor staring at a spinner.
+    // A cold function or a slow network should not leave the visitor staring
+    // at a spinner with no explanation.
     var controller = new AbortController();
     var timer = setTimeout(function () { controller.abort(); }, 12000);
 
-    fetch(cfg.API_BASE + '/api/signup', {
+    fetch('/api/signup', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         name: nameEl.value.trim(),
         contact: contact.value.trim(),
-        contact_kind: kind,
-        source: 'beta-signup'
+        contact_kind: kind
       }),
       signal: controller.signal
     })
@@ -221,8 +215,8 @@
       })
       .catch(function (err) {
         var lead = err.name === 'AbortError'
-          ? 'That took too long — my machine may be offline right now.'
-          : "I couldn't reach the signup service — it may be offline right now.";
+          ? 'That took too long — please try again in a moment.'
+          : "I couldn't reach the signup service just now.";
         show('bad', fallbackLine(lead));
       })
       .finally(function () {

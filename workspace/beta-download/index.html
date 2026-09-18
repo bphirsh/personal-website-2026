@@ -146,21 +146,16 @@
 
 </div>
 
-<script src="/workspace/config.js"></script>
 <script>
 (function () {
   'use strict';
 
-  // The password is checked on the Mac mini, not here.
-  //
-  // This matters: the .dmg is 119MB, which is over GitHub's 100MB file limit,
-  // so it cannot live in this repo at all. It is served by the beta-server
-  // behind the Cloudflare Tunnel, which only streams the file once it has
-  // verified the password and issued a short-lived token. There is no password
-  // hash and no file URL in this page for anyone to find — a reader of this
-  // source learns nothing that helps them get the build.
+  // The password is checked by /api/beta-auth, never here. There is no
+  // password hash and no build URL in this page for anyone to find — the URL
+  // is only returned by the server once the password is right, which is what
+  // a client-side gate could never do.
 
-  var cfg      = window.WORKSPACE_CONFIG || {};
+  var CONTACT_EMAIL = 'brian@brianhirsh.com';
   var form     = document.getElementById('gateForm');
   var pw       = document.getElementById('password');
   var btn      = document.getElementById('unlockBtn');
@@ -204,13 +199,6 @@
       return;
     }
 
-    if (!cfg.API_BASE) {
-      show('bad', "The download service isn't connected yet. Email " +
-        '<a href="mailto:' + (cfg.CONTACT_EMAIL || 'brian@brianhirsh.com') + '">' +
-        (cfg.CONTACT_EMAIL || 'brian@brianhirsh.com') + '</a> and I\'ll send you the build directly.');
-      return;
-    }
-
     btn.disabled = true;
     btn.setAttribute('data-busy', 'true');
     label.textContent = 'Checking…';
@@ -218,7 +206,7 @@
     var controller = new AbortController();
     var timer = setTimeout(function () { controller.abort(); }, 12000);
 
-    fetch(cfg.API_BASE + '/api/beta/auth', {
+    fetch('/api/beta-auth', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ password: pw.value }),
@@ -230,9 +218,8 @@
         });
       })
       .then(function (r) {
-        if (r.ok && r.body.token) {
-          dlLink.href = cfg.API_BASE + '/api/beta/download?token=' +
-                        encodeURIComponent(r.body.token);
+        if (r.ok && r.body.url) {
+          dlLink.href = r.body.url;
           dlLabel.textContent = 'Download for Mac' +
             (r.body.size ? ' · ' + fmtSize(r.body.size) : '');
 
@@ -258,13 +245,17 @@
         } else if (r.status === 503) {
           show('bad', escapeHtml(r.body.error || 'The build isn\'t available yet — check back shortly.'));
         } else {
-          show('bad', escapeHtml(r.body.error || 'Something went wrong on my end.'));
+          // Anything else is my problem, not theirs, so always leave a way to
+          // reach me rather than a dead end.
+          show('bad', escapeHtml(r.body.error || 'Something went wrong on my end.') +
+            ' Email <a href="mailto:' + CONTACT_EMAIL + '?subject=Workspace%20beta">' +
+            CONTACT_EMAIL + '</a> and I\'ll send you the build directly.');
         }
       })
       .catch(function (err) {
         show('bad', err.name === 'AbortError'
-          ? 'That took too long — my machine may be offline right now.'
-          : "I couldn't reach the download service — it may be offline right now.");
+          ? 'That took too long — please try again in a moment.'
+          : "I couldn't reach the download service just now.");
       })
       .finally(function () {
         clearTimeout(timer);
