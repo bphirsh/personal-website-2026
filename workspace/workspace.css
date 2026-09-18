@@ -212,6 +212,9 @@ h1.page-title {
   border: none;
   border-radius: 100px;
   cursor: pointer;
+  /* .btn is used on anchors as well as buttons, and an anchor would otherwise
+     render the label underlined. */
+  text-decoration: none;
   transition: opacity 0.2s, transform 0.2s;
 }
 
