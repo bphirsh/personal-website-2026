@@ -33,7 +33,6 @@
     font-size: 13px;
     color: var(--text-muted);
     font-weight: 300;
-    margin-top: 12px;
   }
   .build-line strong {
     font-weight: 600;
@@ -41,6 +40,8 @@
     font-variant-numeric: tabular-nums;
   }
   .gate-head { margin-bottom: 30px; }
+  /* With the lede gone, the version reads as a caption on the title. */
+  .gate-head h1 { margin-bottom: 10px; }
   .no-pw {
     font-size: 14px;
     color: var(--text-muted);
@@ -133,7 +134,6 @@
       <div class="gate-head">
         <div class="section-label">Dev Build</div>
         <h1 class="page-title">Download Workspace</h1>
-        <p class="lede">Enter the password to get the latest dev build.</p>
         <!-- Keep in sync with the DMG_VERSION environment variable, which
              drives the version shown after unlocking. -->
         <p class="build-line">Current build <strong>v0.1.5</strong></p>
@@ -144,11 +144,11 @@
           <label for="password">Password</label>
           <input type="password" id="password" name="password"
                  autocomplete="current-password" maxlength="200" required
-                 placeholder="••••••••••">
+                 placeholder="Enter password">
           <div class="error" id="pwError" aria-live="polite"></div>
         </div>
 
-        <button type="submit" class="btn" id="unlockBtn">
+        <button type="submit" class="btn" id="unlockBtn" disabled>
           <span class="spinner" aria-hidden="true"></span>
           <span id="unlockLabel">Unlock download</span>
         </button>
@@ -242,11 +242,24 @@
     return (bytes / (1024 * 1024)).toFixed(0) + ' MB';
   }
 
+  function syncButton() {
+    // Only disable while idle — during a request the submit handler owns the
+    // disabled state, and clobbering it here would re-enable mid-flight.
+    if (btn.getAttribute('data-busy') !== 'true') {
+      btn.disabled = pw.value.trim() === '';
+    }
+  }
+
   pw.addEventListener('input', function () {
     document.getElementById('pwError').textContent = '';
     pw.removeAttribute('aria-invalid');
     statusEl.removeAttribute('data-show');
+    syncButton();
   });
+
+  // Autofill and back-navigation restore a value without firing 'input'.
+  window.addEventListener('pageshow', syncButton);
+  syncButton();
 
   form.addEventListener('submit', function (e) {
     e.preventDefault();
@@ -317,8 +330,8 @@
       })
       .finally(function () {
         clearTimeout(timer);
-        btn.disabled = false;
         btn.removeAttribute('data-busy');
+        syncButton();
         label.textContent = 'Unlock download';
       });
   });
