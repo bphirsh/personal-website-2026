@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Download Workspace — Brian Hirsh</title>
-<meta name="description" content="Download the Workspace private beta.">
+<meta name="description" content="Download the Workspace dev build.">
 <meta name="robots" content="noindex">
 <link rel="icon" href="/favicon.ico" sizes="any">
 <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
@@ -90,9 +90,9 @@
       </div>
 
       <div class="gate-head">
-        <div class="section-label">Private Beta</div>
+        <div class="section-label">Dev Build</div>
         <h1 class="page-title">Download Workspace</h1>
-        <p class="lede">Enter the beta password to get the latest build.</p>
+        <p class="lede">Enter the password to get the latest dev build.</p>
       </div>
 
       <form id="gateForm" novalidate>
@@ -112,7 +112,7 @@
 
       <div class="status" id="status" role="status" aria-live="polite"></div>
 
-      <p class="no-pw">Don't have a password? <a href="/workspace/beta-signup/">Request beta access →</a></p>
+      <p class="no-pw">Don't have a password? <a href="/workspace/beta-signup/">Request access →</a></p>
     </div>
 
     <!-- UNLOCKED -->
@@ -132,10 +132,15 @@
         <strong>Installing</strong>
         <ol>
           <li>Open the <code>.dmg</code> and drag Workspace into Applications.</li>
-          <li>The first launch will warn that the app is from an unidentified developer — right-click the app and choose <strong>Open</strong> to get past it.</li>
+          <li>The first launch will be blocked, because the app isn't signed yet.
+              On <strong>macOS 15 and later</strong>, open it once, dismiss the warning,
+              then go to <strong>System Settings → Privacy &amp; Security</strong> and click
+              <strong>Open Anyway</strong>. On <strong>macOS 14 and earlier</strong>,
+              right-click the app and choose <strong>Open</strong>.</li>
         </ol>
+        This is a dev build, so expect rough edges and frequent updates.
         Hit a bug? Reply to the email I sent you, or write to
-        <a href="mailto:brian@brianhirsh.com?subject=Workspace%20beta%20feedback">brian@brianhirsh.com</a>.
+        <a href="mailto:brian@brianhirsh.com?subject=Workspace%20dev%20build%20feedback">brian@brianhirsh.com</a>.
       </div>
     </div>
   </div>
@@ -248,7 +253,7 @@
           // Anything else is my problem, not theirs, so always leave a way to
           // reach me rather than a dead end.
           show('bad', escapeHtml(r.body.error || 'Something went wrong on my end.') +
-            ' Email <a href="mailto:' + CONTACT_EMAIL + '?subject=Workspace%20beta">' +
+            ' Email <a href="mailto:' + CONTACT_EMAIL + '?subject=Workspace%20dev%20build">' +
             CONTACT_EMAIL + '</a> and I\'ll send you the build directly.');
         }
       })

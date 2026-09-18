@@ -1,5 +1,9 @@
 /**
- * POST /api/beta-auth — the password gate for the beta build.
+ * POST /api/beta-auth — the password gate for the dev build.
+ *
+ * The filename, route and BETA_PASSWORD variable keep the 'beta' name on
+ * purpose: renaming them would break an environment variable that is already
+ * configured in Vercel, for no user-visible gain. Only the copy changed.
  *
  * On a correct password this returns the Blob URL of the .dmg. The build is
  * NOT streamed through this function: at ~119MB that risks the function
@@ -8,7 +12,7 @@
  *
  * The trade, stated plainly: a Blob URL is unguessable but does not expire, so
  * a tester who gets it can forward it. That is acceptable for a short
- * friends-and-family beta and would not be acceptable at launch.
+ * short private dev build and would not be acceptable at launch.
  *
  * There is no per-IP rate limiting here because serverless instances share no
  * memory, so any in-process counter is trivially bypassed by hitting a
@@ -16,7 +20,7 @@
  * random passphrase and online guessing is hopeless.
  *
  * Environment variables (Vercel → Settings → Environment Variables):
- *   BETA_PASSWORD   the shared beta password
+ *   BETA_PASSWORD   the shared dev build password
  *   DMG_URL         public Blob URL of the .dmg
  *   DMG_VERSION     optional, e.g. "0.0.1"
  *   DMG_ARCH        optional, e.g. "Apple Silicon (arm64)"

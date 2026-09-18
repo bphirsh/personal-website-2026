@@ -1,10 +1,10 @@
 /**
- * POST /api/signup — beta signup form.
+ * POST /api/signup — dev build access request form.
  *
  * Validates a name plus an email-or-phone, then emails it to me. There is no
- * database on purpose: this is a friends-and-family beta lasting a couple of
- * months, and an inbox is a perfectly good record for that. The real system
- * gets built separately at launch.
+ * database on purpose: this is a handful of friends trying a dev build for a
+ * couple of months, and an inbox is a perfectly good record for that. The
+ * real system gets built separately at launch.
  *
  * Deliberately dependency-free — Resend's REST API is called with plain fetch
  * rather than its SDK, so no package.json is needed and the repo stays a
@@ -106,18 +106,18 @@ module.exports = async (req, res) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        from: process.env.RESEND_FROM || 'Workspace Beta <onboarding@resend.dev>',
+        from: process.env.RESEND_FROM || 'Workspace Dev <onboarding@resend.dev>',
         to: [to],
         ...(replyTo ? { reply_to: replyTo } : {}),
-        subject: `Workspace beta signup — ${name}`,
+        subject: `Workspace access request — ${name}`,
         html:
-          `<h2 style="font-family:system-ui,sans-serif">New Workspace beta signup</h2>` +
+          `<h2 style="font-family:system-ui,sans-serif">New Workspace access request</h2>` +
           `<table style="font-family:system-ui,sans-serif;font-size:15px;border-collapse:collapse">` +
           `<tr><td style="padding:4px 14px 4px 0"><strong>Name</strong></td><td>${safeName}</td></tr>` +
           `<tr><td style="padding:4px 14px 4px 0"><strong>${kind === 'email' ? 'Email' : 'Phone'}</strong></td><td>${safeContact}</td></tr>` +
           `<tr><td style="padding:4px 14px 4px 0"><strong>When</strong></td><td>${when}</td></tr>` +
           `</table>`,
-        text: `New Workspace beta signup\n\nName: ${name}\n${kind === 'email' ? 'Email' : 'Phone'}: ${contact}\nWhen: ${when}\n`,
+        text: `New Workspace access request\n\nName: ${name}\n${kind === 'email' ? 'Email' : 'Phone'}: ${contact}\nWhen: ${when}\n`,
       }),
     });
 

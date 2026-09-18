@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Page not found — Brian Hirsh</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="/favicon.ico" sizes="any">
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/site.webmanifest">
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #F4F1EC;
+    --card: #FFFFFF;
+    --text-primary: #1A1A1A;
+    --text-secondary: #6B6560;
+    --text-muted: #9B9590;
+    --accent: #b8460f;
+    --border: rgba(26, 26, 26, 0.10);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html { -webkit-font-smoothing: antialiased; }
+
+  body {
+    background: var(--bg);
+    color: var(--text-primary);
+    font-family: 'Outfit', sans-serif;
+    font-weight: 400;
+    line-height: 1.6;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .wrapper {
+    max-width: 820px;
+    width: 100%;
+    margin: 0 auto;
+    padding: 40px 20px 60px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+
+  nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 0;
+  }
+
+  nav .logo {
+    font-family: Georgia, 'Times New Roman', serif;
+    font-size: 24px;
+    letter-spacing: -0.3px;
+    color: var(--text-primary);
+    text-decoration: none;
+  }
+
+  nav .logo .logo-italic { font-style: italic; color: var(--accent); }
+
+  nav .nav-links { display: flex; gap: 28px; list-style: none; }
+
+  nav .nav-links a {
+    text-decoration: none;
+    color: var(--text-secondary);
+    font-size: 14px;
+    font-weight: 500;
+    letter-spacing: 0.3px;
+    transition: color 0.3s;
+  }
+
+  nav .nav-links a:hover { color: var(--text-primary); }
+
+  /* The card is centred in whatever space is left below the nav, so the page
+     looks deliberate on a laptop and on a phone without a fixed height. */
+  main {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 0;
+  }
+
+  .card {
+    background: var(--card);
+    border-radius: 36px;
+    padding: 64px 48px;
+    width: 100%;
+    text-align: center;
+    animation: fadeUp 0.7s ease forwards;
+  }
+
+  .code {
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 20px;
+  }
+
+  h1 {
+    font-family: 'DM Serif Display', serif;
+    font-size: clamp(34px, 5vw, 50px);
+    line-height: 1.1;
+    letter-spacing: -1.5px;
+    font-weight: 400;
+    margin-bottom: 18px;
+  }
+
+  .sub {
+    font-size: 17px;
+    color: var(--text-secondary);
+    font-weight: 300;
+    line-height: 1.7;
+    max-width: 44ch;
+    margin: 0 auto 36px;
+  }
+
+  .links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    justify-content: center;
+  }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+    padding: 14px 28px;
+    font-size: 15px;
+    font-weight: 500;
+    letter-spacing: 0.3px;
+    text-decoration: none;
+    border-radius: 100px;
+    transition: opacity 0.2s, border-color 0.2s, transform 0.2s;
+  }
+
+  .btn-solid { color: #F4F1EC; background: var(--text-primary); }
+  .btn-solid:hover { opacity: 0.86; }
+
+  .btn-ghost { color: var(--text-primary); border: 1px solid var(--border); }
+  .btn-ghost:hover { border-color: var(--text-muted); }
+
+  .btn:active { transform: translateY(1px); }
+
+  .footer {
+    text-align: center;
+    font-size: 13px;
+    color: var(--text-muted);
+    font-weight: 300;
+  }
+
+  .footer a { color: var(--text-muted); }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(18px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .card { animation: none; }
+  }
+
+  @media (max-width: 680px) {
+    .wrapper { padding: 28px 16px 40px; }
+    .card { padding: 48px 26px; border-radius: 28px; }
+    nav { flex-direction: column; gap: 14px; }
+    nav .nav-links { gap: 20px; }
+    .links { flex-direction: column; }
+    .btn { justify-content: center; }
+  }
+</style>
+</head>
+<body>
+
+<div class="wrapper">
+
+  <nav>
+    <a href="/" class="logo">Brian <span class="logo-italic">Hirsh</span></a>
+    <ul class="nav-links">
+      <li><a href="/">Home</a></li>
+      <li><a href="/#writing">Blog</a></li>
+      <li><a href="/resume/">Resume</a></li>
+    </ul>
+  </nav>
+
+  <main>
+    <div class="card">
+      <div class="code">Error 404</div>
+      <h1>This page doesn't exist.</h1>
+      <p class="sub">Either the link was wrong, or something used to live here and doesn't any more. Nothing's broken on your end.</p>
+      <div class="links">
+        <a href="/" class="btn btn-solid">Back home</a>
+        <a href="mailto:brian@brianhirsh.com" class="btn btn-ghost">Tell me about it</a>
+      </div>
+    </div>
+  </main>
+
+  <div class="footer">
+    <a href="/">Brian</a> · NYC · 2026
+  </div>
+
+</div>
+
+</body>
+</html>
