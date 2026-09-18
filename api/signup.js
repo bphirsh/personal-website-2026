@@ -123,10 +123,18 @@ module.exports = async (req, res) => {
 
     if (!resendRes.ok) {
       const detail = await resendRes.text().catch(() => '');
-      // Logged, not returned: the visitor can't act on it, and the body may
-      // carry provider details that don't belong in a public response.
+      // The body is logged but never returned — it can carry provider detail
+      // that doesn't belong in a public response. The bare status code is
+      // returned, because it tells an attacker nothing while turning a
+      // 10-minute log dig into an instant diagnosis during setup:
+      //   401 -> the API key is wrong
+      //   403 -> NOTIFY_EMAIL isn't this Resend account's own address
+      //          (the shared onboarding@resend.dev sender only delivers there)
       console.error('signup: resend failed', resendRes.status, detail.slice(0, 500));
-      res.status(502).json({ error: "I couldn't record that just now — please try again shortly." });
+      res.status(502).json({
+        error: "I couldn't record that just now — please try again shortly.",
+        upstream: resendRes.status,
+      });
       return;
     }
   } catch (err) {
