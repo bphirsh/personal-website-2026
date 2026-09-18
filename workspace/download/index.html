@@ -64,15 +64,16 @@
     margin: 18px 0 26px;
   }
   .build-meta strong { color: var(--text-secondary); font-weight: 500; }
-  /* Page-level, outside both the locked and unlocked states, so the terms are
-     read before a password is even entered rather than only after unlocking. */
+  /* Inside the unlocked panel and above the download button: the password is
+     the real gate, so the terms belong at the moment of download rather than
+     in front of everyone who lands on the page. */
   .terms {
     text-align: left;
     background: color-mix(in srgb, var(--accent) 7%, transparent);
     border: 1px solid color-mix(in srgb, var(--accent) 22%, transparent);
     border-radius: 18px;
     padding: 20px 22px;
-    margin: 30px 0 0;
+    margin: 4px 0 26px;
   }
 
   .terms h2 {
@@ -167,6 +168,14 @@
 
       <div class="build-meta" id="buildMeta"></div>
 
+      <section class="terms">
+          <h2>Before you install</h2>
+          <p><strong>This is an unreleased dev build, not a finished product.</strong> It may crash, behave strangely, lose data or change without warning. Please don't use it for anything you'd be upset to lose, and don't depend on it for real work.</p>
+          <p>It comes with no warranty of any kind, and I'm not liable for anything that goes wrong while you're using it.</p>
+          <p><strong>It's shared with you privately.</strong> Workspace and everything in it stays my property. Please don't pass on the app, the download link or the password, and don't copy, reuse, republish, decompile or reverse-engineer any part of it. All rights reserved.</p>
+          <p>Downloading it means you're happy with that. If you'd rather not be, just email me instead.</p>
+        </section>
+
       <a class="btn" id="downloadLink" href="#" download>
         <span id="downloadLabel">Download for Mac</span>
       </a>
@@ -187,14 +196,7 @@
       </div>
     </div>
 
-      <section class="terms">
-        <h2>Before you install</h2>
-        <p><strong>This is an unreleased dev build, not a finished product.</strong> It may crash, behave strangely, lose data or change without warning. Please don't use it for anything you'd be upset to lose, and don't depend on it for real work.</p>
-        <p>It comes with no warranty of any kind, and I'm not liable for anything that goes wrong while you're using it.</p>
-        <p><strong>It's shared with you privately.</strong> Workspace and everything in it stays my property. Please don't pass on the app, the download link or the password, and don't copy, reuse, republish, decompile or reverse-engineer any part of it. All rights reserved.</p>
-        <p>Downloading it means you're happy with that. If you'd rather not be, just email me instead.</p>
-      </section>
-  </div>
+    </div>
 
   <div class="footer">
     <a href="/">Brian</a> · NYC · 2026
