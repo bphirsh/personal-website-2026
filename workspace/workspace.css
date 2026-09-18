@@ -133,6 +133,13 @@ h1.page-title {
   max-width: 54ch;
 }
 
+/* The surrounding text is weight 300, so the browser's default bold would sit
+   too close to it. 600 is loaded and reads clearly against 300. */
+.lede strong {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
 /* ── FORM ── */
 .field { margin-bottom: 22px; }
 
