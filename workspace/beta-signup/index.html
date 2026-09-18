@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Join the Workspace beta — Brian Hirsh</title>
+<meta name="description" content="Sign up for the Workspace private beta.">
+<meta name="robots" content="noindex">
+<link rel="icon" href="/favicon.ico" sizes="any">
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="manifest" href="/site.webmanifest">
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/workspace/workspace.css">
+<style>
+  .form-card { max-width: 620px; margin: 0 auto 20px; }
+  .back-link {
+    display: inline-block;
+    font-size: 14px;
+    color: var(--text-secondary);
+    text-decoration: none;
+    margin-bottom: 26px;
+  }
+  .back-link:hover { color: var(--text-primary); }
+  .privacy {
+    font-size: 13px;
+    color: var(--text-muted);
+    font-weight: 300;
+    margin-top: 20px;
+    line-height: 1.6;
+  }
+  .form-head { margin-bottom: 32px; }
+  .form-head .lede { font-size: 16px; }
+</style>
+</head>
+<body>
+
+<div class="site-wrapper">
+
+  <nav>
+    <a href="/" class="logo">Brian <span class="logo-italic">Hirsh</span></a>
+    <ul class="nav-links">
+      <li><a href="/">Home</a></li>
+      <li><a href="/workspace/">Workspace</a></li>
+      <li><a href="/workspace/beta-signup/" aria-current="page">Join the beta</a></li>
+    </ul>
+  </nav>
+
+  <div class="card form-card fade-up">
+    <a href="/workspace/" class="back-link">← Workspace</a>
+
+    <div class="form-head">
+      <div class="section-label">Private Beta</div>
+      <h1 class="page-title">Join the beta</h1>
+      <p class="lede">Two fields. I'll reach out as spots open up.</p>
+    </div>
+
+    <form id="signupForm" novalidate>
+      <div class="field">
+        <label for="name">Name</label>
+        <input type="text" id="name" name="name" autocomplete="name"
+               maxlength="120" required placeholder="Your name">
+        <div class="error" id="nameError" aria-live="polite"></div>
+      </div>
+
+      <div class="field">
+        <label for="contact">Email or phone</label>
+        <input type="text" id="contact" name="contact" autocomplete="email"
+               maxlength="160" required placeholder="you@example.com or +1 555 123 4567">
+        <div class="hint">Either one works — whichever you'd rather be reached on.</div>
+        <div class="error" id="contactError" aria-live="polite"></div>
+      </div>
+
+      <!-- Honeypot: real people never see or fill this. -->
+      <div class="hp" aria-hidden="true">
+        <label for="website">Leave this blank</label>
+        <input type="text" id="website" name="website" tabindex="-1" autocomplete="off">
+      </div>
+
+      <button type="submit" class="btn" id="submitBtn">
+        <span class="spinner" aria-hidden="true"></span>
+        <span id="submitLabel">Request access</span>
+      </button>
+    </form>
+
+    <div class="status" id="status" role="status" aria-live="polite"></div>
+
+    <p class="privacy">Your details go straight to a machine I own and aren't shared with anyone. Nothing else is collected — no analytics, no cookies, no tracking on this page.</p>
+  </div>
+
+  <div class="footer">
+    <a href="/">Brian</a> · NYC · 2026
+  </div>
+
+</div>
+
+<script src="/workspace/config.js"></script>
+<script>
+(function () {
+  'use strict';
+
+  var cfg      = window.WORKSPACE_CONFIG || {};
+  var form     = document.getElementById('signupForm');
+  var nameEl   = document.getElementById('name');
+  var contact  = document.getElementById('contact');
+  var honey    = document.getElementById('website');
+  var btn      = document.getElementById('submitBtn');
+  var label    = document.getElementById('submitLabel');
+  var statusEl = document.getElementById('status');
+
+  function show(kind, html) {
+    statusEl.className = 'status ' + kind;
+    statusEl.innerHTML = html;
+    statusEl.setAttribute('data-show', 'true');
+  }
+
+  function fallbackLine(lead) {
+    var mail = cfg.CONTACT_EMAIL || 'brian@brianhirsh.com';
+    return lead + ' In the meantime you can email me directly at ' +
+           '<a href="mailto:' + mail + '?subject=Workspace%20beta">' + mail + '</a>.';
+  }
+
+  function setFieldError(input, box, message) {
+    box.textContent = message || '';
+    if (message) { input.setAttribute('aria-invalid', 'true'); }
+    else { input.removeAttribute('aria-invalid'); }
+  }
+
+  // Accept an email OR a phone number. Deliberately loose: the cost of
+  // rejecting a real person's valid-but-unusual contact is much higher than
+  // the cost of letting a typo through, which I'd spot by hand anyway.
+  function classifyContact(value) {
+    var v = value.trim();
+    if (v.indexOf('@') !== -1) {
+      return /^[^\s@]+@[^\s@.]+\.[^\s@]{2,}$/.test(v) ? 'email' : null;
+    }
+    var digits = v.replace(/[^\d]/g, '');
+    if (digits.length >= 7 && digits.length <= 15 && /^[\d\s+().-]+$/.test(v)) {
+      return 'phone';
+    }
+    return null;
+  }
+
+  function validate() {
+    var ok = true;
+
+    if (!nameEl.value.trim()) {
+      setFieldError(nameEl, document.getElementById('nameError'), 'Please add your name.');
+      ok = false;
+    } else {
+      setFieldError(nameEl, document.getElementById('nameError'), '');
+    }
+
+    var kind = classifyContact(contact.value);
+    if (!contact.value.trim()) {
+      setFieldError(contact, document.getElementById('contactError'), 'Please add an email or phone number.');
+      ok = false;
+    } else if (!kind) {
+      setFieldError(contact, document.getElementById('contactError'),
+        "That doesn't look like an email or a phone number — mind checking it?");
+      ok = false;
+    } else {
+      setFieldError(contact, document.getElementById('contactError'), '');
+    }
+
+    return ok ? kind : null;
+  }
+
+  // Clear a field's error as soon as the visitor starts fixing it.
+  [nameEl, contact].forEach(function (el) {
+    el.addEventListener('input', function () {
+      if (el.getAttribute('aria-invalid')) {
+        setFieldError(el, document.getElementById(el.id + 'Error'), '');
+      }
+    });
+  });
+
+  form.addEventListener('submit', function (e) {
+    e.preventDefault();
+
+    // Silently accept-and-drop anything that filled the honeypot.
+    if (honey.value) {
+      show('ok', "Thanks — you're on the list.");
+      form.style.display = 'none';
+      return;
+    }
+
+    var kind = validate();
+    if (!kind) return;
+
+    if (!cfg.API_BASE) {
+      show('bad', fallbackLine('The signup service isn\'t connected yet.'));
+      return;
+    }
+
+    btn.disabled = true;
+    btn.setAttribute('data-busy', 'true');
+    label.textContent = 'Sending…';
+    statusEl.removeAttribute('data-show');
+
+    // Don't let a sleeping Mac mini leave the visitor staring at a spinner.
+    var controller = new AbortController();
+    var timer = setTimeout(function () { controller.abort(); }, 12000);
+
+    fetch(cfg.API_BASE + '/api/signup', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name: nameEl.value.trim(),
+        contact: contact.value.trim(),
+        contact_kind: kind,
+        source: 'beta-signup'
+      }),
+      signal: controller.signal
+    })
+      .then(function (res) {
+        return res.json().catch(function () { return {}; }).then(function (body) {
+          return { ok: res.ok, status: res.status, body: body };
+        });
+      })
+      .then(function (r) {
+        if (r.ok) {
+          form.style.display = 'none';
+          show('ok', "<strong>You're on the list.</strong><br>I'll reach out at " +
+                     escapeHtml(contact.value.trim()) + ' when a spot opens up.');
+        } else if (r.status === 429) {
+          show('bad', 'That\'s a lot of requests in a short window — give it a minute and try again.');
+        } else {
+          show('bad', fallbackLine(escapeHtml(r.body.error || 'Something went wrong on my end.')));
+        }
+      })
+      .catch(function (err) {
+        var lead = err.name === 'AbortError'
+          ? 'That took too long — my machine may be offline right now.'
+          : "I couldn't reach the signup service — it may be offline right now.";
+        show('bad', fallbackLine(lead));
+      })
+      .finally(function () {
+        clearTimeout(timer);
+        btn.disabled = false;
+        btn.removeAttribute('data-busy');
+        label.textContent = 'Request access';
+      });
+  });
+
+  function escapeHtml(s) {
+    return String(s).replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  }
+})();
+</script>
+
+</body>
+</html>

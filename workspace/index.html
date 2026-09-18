@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Workspace — Brian Hirsh</title>
+<meta name="description" content="Workspace — an agentic workspace for your Mac. Currently in private beta.">
+<link rel="icon" href="/favicon.ico" sizes="any">
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/site.webmanifest">
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/workspace/workspace.css">
+<style>
+  .video-card {
+    padding: 0;
+    background: #000;
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    margin-bottom: 20px;
+    position: relative;
+  }
+
+  .video-stage {
+    position: relative;
+    width: 100%;
+    background: #000;
+    /* Set from JS to match the chosen file, so there is no layout shift
+       when the poster loads. */
+    aspect-ratio: 16 / 9;
+    transition: aspect-ratio 0.3s ease;
+  }
+
+  .video-stage video {
+    width: 100%;
+    height: 100%;
+    display: block;
+    object-fit: contain;
+    background: #000;
+  }
+
+  /* ── Play overlay ── */
+  .play-overlay {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 18px;
+    border: none;
+    cursor: pointer;
+    background: linear-gradient(180deg, rgba(0,0,0,0.12) 0%, rgba(0,0,0,0.42) 100%);
+    transition: opacity 0.35s ease, visibility 0.35s ease;
+    font-family: inherit;
+    padding: 0;
+  }
+
+  .play-overlay[hidden] {
+    opacity: 0;
+    visibility: hidden;
+    display: flex; /* keep flex so the fade-out still lays out */
+    pointer-events: none;
+  }
+
+  .play-ring {
+    width: 84px;
+    height: 84px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.94);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 8px 34px rgba(0, 0, 0, 0.32);
+    transition: transform 0.25s ease, background 0.25s ease;
+  }
+
+  .play-overlay:hover .play-ring { transform: scale(1.07); background: #fff; }
+  .play-overlay:focus-visible { outline: 3px solid var(--accent); outline-offset: -6px; }
+
+  .play-ring svg {
+    width: 30px;
+    height: 30px;
+    margin-left: 5px; /* optically centre the triangle in the circle */
+    fill: #1A1A1A;
+  }
+
+  .play-label {
+    color: #fff;
+    font-size: 14px;
+    font-weight: 500;
+    letter-spacing: 1.4px;
+    text-transform: uppercase;
+    text-shadow: 0 1px 10px rgba(0, 0, 0, 0.5);
+  }
+
+  .video-note {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    font-size: 13px;
+    color: var(--text-muted);
+    font-weight: 300;
+    padding: 0 6px;
+    margin: -6px 0 34px;
+  }
+
+  .variant-tag {
+    font-size: 11px;
+    letter-spacing: 1.4px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    border: 1px solid var(--border);
+    border-radius: 100px;
+    padding: 4px 12px;
+  }
+
+  /* ── Intro + actions ── */
+  .intro { text-align: center; margin-bottom: 34px; }
+  .intro .lede { margin: 0 auto; }
+
+  .eyebrow {
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 18px;
+  }
+
+  .actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+  }
+
+  .action-card {
+    background: var(--card);
+    border-radius: var(--radius);
+    padding: 34px;
+    text-decoration: none;
+    color: inherit;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    border: 1px solid transparent;
+    box-shadow: var(--shadow);
+    transition: transform 0.25s ease, border-color 0.25s ease;
+  }
+
+  @media (hover: hover) {
+    .action-card:hover {
+      transform: translateY(-3px);
+      border-color: var(--border);
+    }
+    .action-card:hover .arrow { transform: translateX(5px); }
+  }
+
+  .action-card h2 {
+    font-family: 'DM Serif Display', serif;
+    font-size: 25px;
+    font-weight: 400;
+    letter-spacing: -0.5px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+
+  .arrow {
+    color: var(--accent);
+    font-size: 21px;
+    transition: transform 0.25s ease;
+  }
+
+  .action-card p {
+    font-size: 15px;
+    color: var(--text-secondary);
+    font-weight: 300;
+    line-height: 1.6;
+  }
+
+  @media (max-width: 680px) {
+    .actions { grid-template-columns: 1fr; gap: 16px; }
+    .action-card { padding: 28px; }
+    .play-ring { width: 68px; height: 68px; }
+    .play-ring svg { width: 25px; height: 25px; }
+    .video-note { margin-bottom: 26px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="site-wrapper wide-wrapper">
+
+  <nav>
+    <a href="/" class="logo">Brian <span class="logo-italic">Hirsh</span></a>
+    <ul class="nav-links">
+      <li><a href="/">Home</a></li>
+      <li><a href="/workspace/" aria-current="page">Workspace</a></li>
+      <li><a href="/workspace/beta-signup/">Join the beta</a></li>
+    </ul>
+  </nav>
+
+  <div class="intro fade-up">
+    <div class="eyebrow">Private Beta</div>
+    <h1 class="page-title">Workspace</h1>
+    <p class="lede">An agentic workspace for your Mac — built so AI can work alongside you with full context, not just answer questions in a side panel.</p>
+  </div>
+
+  <!-- VIDEO -->
+  <div class="video-card fade-up" style="animation-delay:0.12s">
+    <div class="video-stage" id="stage">
+      <video id="film" playsinline preload="none" controls-list="nodownload"></video>
+      <button class="play-overlay" id="playBtn" type="button" aria-label="Play the Workspace film, with sound">
+        <span class="play-ring">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>
+        </span>
+        <span class="play-label">Play with sound</span>
+      </button>
+    </div>
+  </div>
+
+  <div class="video-note fade-up" style="animation-delay:0.18s">
+    <span>49 seconds, with sound.</span>
+    <span class="variant-tag" id="variantTag">—</span>
+  </div>
+
+  <!-- ACTIONS -->
+  <div class="actions fade-up" style="animation-delay:0.24s">
+    <a class="action-card" href="/workspace/beta-signup/">
+      <h2>Join the beta <span class="arrow">→</span></h2>
+      <p>Leave your name and either an email or a phone number. I'll be in touch as spots open up.</p>
+    </a>
+    <a class="action-card" href="/workspace/beta-download/">
+      <h2>Download <span class="arrow">→</span></h2>
+      <p>Already have a password? Grab the latest build for Apple Silicon Macs.</p>
+    </a>
+  </div>
+
+  <div class="footer">
+    <a href="/">Brian</a> · NYC · 2026
+  </div>
+
+</div>
+
+<script>
+(function () {
+  'use strict';
+
+  var video   = document.getElementById('film');
+  var stage   = document.getElementById('stage');
+  var playBtn = document.getElementById('playBtn');
+  var tag     = document.getElementById('variantTag');
+
+  // Two independent axes, four files.
+  //   theme  — prefers-color-scheme: day | night
+  //   shape  — viewport aspect ratio: wide (landscape) | vertical (portrait)
+  //
+  // Shape is chosen from the viewport's own aspect ratio rather than a user-agent
+  // sniff: it is what actually determines which cut fits the screen, it handles a
+  // narrow desktop window and a rotated tablet correctly, and it cannot go stale
+  // the way a device list does.
+  var darkQuery     = window.matchMedia('(prefers-color-scheme: dark)');
+  var portraitQuery = window.matchMedia('(max-aspect-ratio: 1/1)');
+
+  function chooseVariant() {
+    return {
+      theme: darkQuery.matches ? 'night' : 'day',
+      shape: portraitQuery.matches ? 'vertical' : 'wide'
+    };
+  }
+
+  var current = null;
+
+  function apply(variant, opts) {
+    opts = opts || {};
+    var name = variant.theme + '-' + variant.shape;
+    if (current === name) return;
+    current = name;
+
+    // Hold position and playback state across a swap, so flipping the system
+    // theme or rotating the phone mid-film doesn't restart it.
+    var wasPlaying = !video.paused && !video.ended;
+    var at = video.currentTime || 0;
+
+    stage.style.aspectRatio = variant.shape === 'vertical' ? '9 / 16' : '16 / 9';
+    video.poster = '/workspace/media/' + name + '.jpg';
+    video.src    = '/workspace/media/' + name + '.mp4';
+
+    tag.textContent = (variant.theme === 'night' ? 'Night' : 'Day') + ' · ' +
+                      (variant.shape === 'vertical' ? 'Vertical' : 'Wide');
+
+    if (opts.resume && (wasPlaying || at > 0)) {
+      video.addEventListener('loadedmetadata', function once() {
+        video.removeEventListener('loadedmetadata', once);
+        try { video.currentTime = Math.min(at, video.duration || at); } catch (e) {}
+        if (wasPlaying) { video.play().catch(function () {}); }
+      });
+      video.load();
+    }
+  }
+
+  apply(chooseVariant());
+
+  // Re-evaluate when the system theme flips or the window/device is reshaped.
+  function onChange() { apply(chooseVariant(), { resume: true }); }
+
+  // addEventListener on MediaQueryList is unsupported in older Safari;
+  // addListener is the documented fallback.
+  [darkQuery, portraitQuery].forEach(function (q) {
+    if (q.addEventListener) { q.addEventListener('change', onChange); }
+    else if (q.addListener) { q.addListener(onChange); }
+  });
+
+  // ── Click to play, with sound ──
+  // The visitor's click is the user gesture browsers require before unmuted
+  // playback, so no muted-autoplay fallback is needed here.
+  playBtn.addEventListener('click', function () {
+    video.controls = true;
+    video.muted = false;
+    video.volume = 1;
+    var p = video.play();
+    if (p && p.catch) {
+      p.catch(function () {
+        // Very rare with a real gesture, but if the browser still refuses
+        // unmuted playback, fall back to muted rather than doing nothing.
+        video.muted = true;
+        video.play().catch(function () {});
+      });
+    }
+    playBtn.hidden = true;
+  });
+
+  // Bring the overlay back once the film finishes, so it can be replayed.
+  video.addEventListener('ended', function () {
+    playBtn.hidden = false;
+    video.controls = false;
+  });
+})();
+</script>
+
+</body>
+</html>

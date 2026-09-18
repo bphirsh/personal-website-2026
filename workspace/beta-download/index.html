@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Download Workspace — Brian Hirsh</title>
+<meta name="description" content="Download the Workspace private beta.">
+<meta name="robots" content="noindex">
+<link rel="icon" href="/favicon.ico" sizes="any">
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="manifest" href="/site.webmanifest">
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/workspace/workspace.css">
+<style>
+  .gate-card { max-width: 560px; margin: 0 auto 20px; }
+  .back-link {
+    display: inline-block;
+    font-size: 14px;
+    color: var(--text-secondary);
+    text-decoration: none;
+    margin-bottom: 26px;
+  }
+  .back-link:hover { color: var(--text-primary); }
+  .lock {
+    width: 52px;
+    height: 52px;
+    border-radius: 16px;
+    background: color-mix(in srgb, var(--accent) 14%, transparent);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 22px;
+  }
+  .lock svg { width: 24px; height: 24px; fill: var(--accent); }
+  .gate-head { margin-bottom: 30px; }
+  .no-pw {
+    font-size: 14px;
+    color: var(--text-muted);
+    font-weight: 300;
+    margin-top: 24px;
+    padding-top: 22px;
+    border-top: 1px solid var(--border);
+  }
+  .no-pw a { color: var(--accent); font-weight: 500; }
+
+  /* Success panel */
+  .unlocked { display: none; }
+  .unlocked[data-show="true"] { display: block; animation: fadeUp 0.5s ease forwards; }
+  .build-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px 22px;
+    font-size: 13px;
+    color: var(--text-muted);
+    font-weight: 300;
+    margin: 18px 0 26px;
+  }
+  .build-meta strong { color: var(--text-secondary); font-weight: 500; }
+  .install-note {
+    font-size: 14px;
+    color: var(--text-secondary);
+    font-weight: 300;
+    line-height: 1.7;
+    margin-top: 26px;
+    padding-top: 22px;
+    border-top: 1px solid var(--border);
+  }
+  .install-note code {
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 13px;
+    background: color-mix(in srgb, var(--text-primary) 8%, transparent);
+    padding: 2px 6px;
+    border-radius: 5px;
+  }
+  .install-note ol { margin: 10px 0 0 20px; }
+  .install-note li { margin-bottom: 6px; }
+</style>
+</head>
+<body>
+
+<div class="site-wrapper">
+
+  <nav>
+    <a href="/" class="logo">Brian <span class="logo-italic">Hirsh</span></a>
+    <ul class="nav-links">
+      <li><a href="/">Home</a></li>
+      <li><a href="/workspace/">Workspace</a></li>
+      <li><a href="/workspace/beta-signup/">Join the beta</a></li>
+    </ul>
+  </nav>
+
+  <div class="card gate-card fade-up">
+    <a href="/workspace/" class="back-link">← Workspace</a>
+
+    <!-- LOCKED -->
+    <div id="gate">
+      <div class="lock">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 1a5 5 0 0 0-5 5v3H6a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-9a2 2 0 0 0-2-2h-1V6a5 5 0 0 0-5-5zm0 2a3 3 0 0 1 3 3v3H9V6a3 3 0 0 1 3-3zm0 11a2 2 0 0 1 1 3.73V19a1 1 0 0 1-2 0v-1.27A2 2 0 0 1 12 14z"/></svg>
+      </div>
+
+      <div class="gate-head">
+        <div class="section-label">Private Beta</div>
+        <h1 class="page-title">Download Workspace</h1>
+        <p class="lede">Enter the beta password to get the latest build.</p>
+      </div>
+
+      <form id="gateForm" novalidate>
+        <div class="field">
+          <label for="password">Password</label>
+          <input type="password" id="password" name="password"
+                 autocomplete="current-password" maxlength="200" required
+                 placeholder="••••••••••">
+          <div class="error" id="pwError" aria-live="polite"></div>
+        </div>
+
+        <button type="submit" class="btn" id="unlockBtn">
+          <span class="spinner" aria-hidden="true"></span>
+          <span id="unlockLabel">Unlock download</span>
+        </button>
+      </form>
+
+      <div class="status" id="status" role="status" aria-live="polite"></div>
+
+      <p class="no-pw">Don't have a password? <a href="/workspace/beta-signup/">Request beta access →</a></p>
+    </div>
+
+    <!-- UNLOCKED -->
+    <div id="unlocked" class="unlocked">
+      <div class="gate-head">
+        <div class="section-label">Unlocked</div>
+        <h1 class="page-title">Your download is ready</h1>
+      </div>
+
+      <div class="build-meta" id="buildMeta"></div>
+
+      <a class="btn" id="downloadLink" href="#" download>
+        <span id="downloadLabel">Download for Mac</span>
+      </a>
+
+      <div class="install-note">
+        <strong>Installing</strong>
+        <ol>
+          <li>Open the <code>.dmg</code> and drag Workspace into Applications.</li>
+          <li>The first launch will warn that the app is from an unidentified developer — right-click the app and choose <strong>Open</strong> to get past it.</li>
+        </ol>
+        Hit a bug? Reply to the email I sent you, or write to
+        <a href="mailto:brian@brianhirsh.com?subject=Workspace%20beta%20feedback">brian@brianhirsh.com</a>.
+      </div>
+    </div>
+  </div>
+
+  <div class="footer">
+    <a href="/">Brian</a> · NYC · 2026
+  </div>
+
+</div>
+
+<script src="/workspace/config.js"></script>
+<script>
+(function () {
+  'use strict';
+
+  // The password is checked on the Mac mini, not here.
+  //
+  // This matters: the .dmg is 119MB, which is over GitHub's 100MB file limit,
+  // so it cannot live in this repo at all. It is served by the beta-server
+  // behind the Cloudflare Tunnel, which only streams the file once it has
+  // verified the password and issued a short-lived token. There is no password
+  // hash and no file URL in this page for anyone to find — a reader of this
+  // source learns nothing that helps them get the build.
+
+  var cfg      = window.WORKSPACE_CONFIG || {};
+  var form     = document.getElementById('gateForm');
+  var pw       = document.getElementById('password');
+  var btn      = document.getElementById('unlockBtn');
+  var label    = document.getElementById('unlockLabel');
+  var statusEl = document.getElementById('status');
+  var gate     = document.getElementById('gate');
+  var unlocked = document.getElementById('unlocked');
+  var dlLink   = document.getElementById('downloadLink');
+  var dlLabel  = document.getElementById('downloadLabel');
+  var meta     = document.getElementById('buildMeta');
+
+  function show(kind, html) {
+    statusEl.className = 'status ' + kind;
+    statusEl.innerHTML = html;
+    statusEl.setAttribute('data-show', 'true');
+  }
+
+  function escapeHtml(s) {
+    return String(s).replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  }
+
+  function fmtSize(bytes) {
+    if (!bytes) return null;
+    return (bytes / (1024 * 1024)).toFixed(0) + ' MB';
+  }
+
+  pw.addEventListener('input', function () {
+    document.getElementById('pwError').textContent = '';
+    pw.removeAttribute('aria-invalid');
+    statusEl.removeAttribute('data-show');
+  });
+
+  form.addEventListener('submit', function (e) {
+    e.preventDefault();
+
+    if (!pw.value) {
+      document.getElementById('pwError').textContent = 'Enter the password.';
+      pw.setAttribute('aria-invalid', 'true');
+      return;
+    }
+
+    if (!cfg.API_BASE) {
+      show('bad', "The download service isn't connected yet. Email " +
+        '<a href="mailto:' + (cfg.CONTACT_EMAIL || 'brian@brianhirsh.com') + '">' +
+        (cfg.CONTACT_EMAIL || 'brian@brianhirsh.com') + '</a> and I\'ll send you the build directly.');
+      return;
+    }
+
+    btn.disabled = true;
+    btn.setAttribute('data-busy', 'true');
+    label.textContent = 'Checking…';
+
+    var controller = new AbortController();
+    var timer = setTimeout(function () { controller.abort(); }, 12000);
+
+    fetch(cfg.API_BASE + '/api/beta/auth', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ password: pw.value }),
+      signal: controller.signal
+    })
+      .then(function (res) {
+        return res.json().catch(function () { return {}; }).then(function (body) {
+          return { ok: res.ok, status: res.status, body: body };
+        });
+      })
+      .then(function (r) {
+        if (r.ok && r.body.token) {
+          dlLink.href = cfg.API_BASE + '/api/beta/download?token=' +
+                        encodeURIComponent(r.body.token);
+          dlLabel.textContent = 'Download for Mac' +
+            (r.body.size ? ' · ' + fmtSize(r.body.size) : '');
+
+          var bits = [];
+          if (r.body.version)  bits.push('<span><strong>Version</strong> ' + escapeHtml(r.body.version) + '</span>');
+          if (r.body.arch)     bits.push('<span><strong>Architecture</strong> ' + escapeHtml(r.body.arch) + '</span>');
+          if (r.body.size)     bits.push('<span><strong>Size</strong> ' + fmtSize(r.body.size) + '</span>');
+          if (r.body.built)    bits.push('<span><strong>Built</strong> ' + escapeHtml(r.body.built) + '</span>');
+          meta.innerHTML = bits.join('');
+
+          gate.style.display = 'none';
+          unlocked.setAttribute('data-show', 'true');
+
+          // Kick the download off automatically; the button stays for a retry.
+          setTimeout(function () { dlLink.click(); }, 350);
+
+        } else if (r.status === 401) {
+          pw.setAttribute('aria-invalid', 'true');
+          pw.select();
+          show('bad', "That password isn't right.");
+        } else if (r.status === 429) {
+          show('bad', 'Too many attempts. Wait a minute, then try again.');
+        } else if (r.status === 503) {
+          show('bad', escapeHtml(r.body.error || 'The build isn\'t available yet — check back shortly.'));
+        } else {
+          show('bad', escapeHtml(r.body.error || 'Something went wrong on my end.'));
+        }
+      })
+      .catch(function (err) {
+        show('bad', err.name === 'AbortError'
+          ? 'That took too long — my machine may be offline right now.'
+          : "I couldn't reach the download service — it may be offline right now.");
+      })
+      .finally(function () {
+        clearTimeout(timer);
+        btn.disabled = false;
+        btn.removeAttribute('data-busy');
+        label.textContent = 'Unlock download';
+      });
+  });
+})();
+</script>
+
+</body>
+</html>
