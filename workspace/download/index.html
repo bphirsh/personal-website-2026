@@ -21,17 +21,25 @@
     margin-bottom: 26px;
   }
   .back-link:hover { color: var(--text-primary); }
-  .lock {
-    width: 52px;
-    height: 52px;
-    border-radius: 16px;
-    background: color-mix(in srgb, var(--accent) 14%, transparent);
-    display: flex;
-    align-items: center;
-    justify-content: center;
+  .app-icon {
+    display: block;
+    width: 72px;
+    height: 72px;
     margin-bottom: 22px;
   }
-  .lock svg { width: 24px; height: 24px; fill: var(--accent); }
+  .app-icon img { width: 100%; height: 100%; display: block; }
+
+  .build-line {
+    font-size: 13px;
+    color: var(--text-muted);
+    font-weight: 300;
+    margin-top: 12px;
+  }
+  .build-line strong {
+    font-weight: 600;
+    color: var(--text-secondary);
+    font-variant-numeric: tabular-nums;
+  }
   .gate-head { margin-bottom: 30px; }
   .no-pw {
     font-size: 14px;
@@ -56,15 +64,15 @@
     margin: 18px 0 26px;
   }
   .build-meta strong { color: var(--text-secondary); font-weight: 500; }
-  /* Sits directly above the download button rather than below it, so it is
-     read before the click rather than after. */
+  /* Page-level, outside both the locked and unlocked states, so the terms are
+     read before a password is even entered rather than only after unlocking. */
   .terms {
     text-align: left;
     background: color-mix(in srgb, var(--accent) 7%, transparent);
     border: 1px solid color-mix(in srgb, var(--accent) 22%, transparent);
     border-radius: 18px;
     padding: 20px 22px;
-    margin: 4px 0 26px;
+    margin: 30px 0 0;
   }
 
   .terms h2 {
@@ -114,16 +122,20 @@
   <div class="card gate-card fade-up">
     <a href="/workspace/" class="back-link">← Workspace</a>
 
+    <picture class="app-icon">
+      <source media="(prefers-color-scheme: dark)" srcset="/workspace/media/workspace-logo-dark.svg">
+      <img src="/workspace/media/workspace-logo-light.svg" alt="" width="72" height="72" decoding="async">
+    </picture>
+
     <!-- LOCKED -->
     <div id="gate">
-      <div class="lock">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 1a5 5 0 0 0-5 5v3H6a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-9a2 2 0 0 0-2-2h-1V6a5 5 0 0 0-5-5zm0 2a3 3 0 0 1 3 3v3H9V6a3 3 0 0 1 3-3zm0 11a2 2 0 0 1 1 3.73V19a1 1 0 0 1-2 0v-1.27A2 2 0 0 1 12 14z"/></svg>
-      </div>
-
       <div class="gate-head">
         <div class="section-label">Dev Build</div>
         <h1 class="page-title">Download Workspace</h1>
         <p class="lede">Enter the password to get the latest dev build.</p>
+        <!-- Keep in sync with the DMG_VERSION environment variable, which
+             drives the version shown after unlocking. -->
+        <p class="build-line">Current build <strong>v0.1.5</strong></p>
       </div>
 
       <form id="gateForm" novalidate>
@@ -155,14 +167,6 @@
 
       <div class="build-meta" id="buildMeta"></div>
 
-      <section class="terms">
-        <h2>Before you install</h2>
-        <p><strong>This is an unreleased dev build, not a finished product.</strong> It may crash, behave strangely, lose data or change without warning. Please don't use it for anything you'd be upset to lose, and don't depend on it for real work.</p>
-        <p>It comes with no warranty of any kind, and I'm not liable for anything that goes wrong while you're using it.</p>
-        <p><strong>It's shared with you privately.</strong> Workspace and everything in it stays my property. Please don't pass on the app, the download link or the password, and don't copy, reuse, republish, decompile or reverse-engineer any part of it. All rights reserved.</p>
-        <p>Downloading it means you're happy with that. If you'd rather not be, just email me instead.</p>
-      </section>
-
       <a class="btn" id="downloadLink" href="#" download>
         <span id="downloadLabel">Download for Mac</span>
       </a>
@@ -182,6 +186,14 @@
         <a href="mailto:brian@brianhirsh.com?subject=Workspace%20dev%20build%20feedback">brian@brianhirsh.com</a>.
       </div>
     </div>
+
+      <section class="terms">
+        <h2>Before you install</h2>
+        <p><strong>This is an unreleased dev build, not a finished product.</strong> It may crash, behave strangely, lose data or change without warning. Please don't use it for anything you'd be upset to lose, and don't depend on it for real work.</p>
+        <p>It comes with no warranty of any kind, and I'm not liable for anything that goes wrong while you're using it.</p>
+        <p><strong>It's shared with you privately.</strong> Workspace and everything in it stays my property. Please don't pass on the app, the download link or the password, and don't copy, reuse, republish, decompile or reverse-engineer any part of it. All rights reserved.</p>
+        <p>Downloading it means you're happy with that. If you'd rather not be, just email me instead.</p>
+      </section>
   </div>
 
   <div class="footer">

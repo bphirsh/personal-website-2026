@@ -45,7 +45,7 @@ Vercel dashboard → your project → **Settings → Environment Variables**:
 | `DMG_URL` | Blob URL from step 1 | yes |
 | `RESEND_API_KEY` | From step 2 | yes |
 | `NOTIFY_EMAIL` | Where signups go. **Must be your Resend account's own address** unless you verified a domain — see step 2. | yes |
-| `DMG_VERSION` | e.g. `0.0.1` | no |
+| `DMG_VERSION` | e.g. `0.1.5`. Keep it matching the `Current build` line hard-coded on the download page. | no |
 | `DMG_ARCH` | defaults to `Apple Silicon (arm64)` | no |
 | `RESEND_FROM` | only if you verified a domain | no |
 
@@ -64,7 +64,7 @@ For the signup path, submit the form on the live page and check the email arrive
 
 ## Shipping a new build
 
-Upload the new `.dmg` to Blob, then update `DMG_URL` (and `DMG_VERSION`) and redeploy. The size and build date shown on the page are read from the file itself, so they can't go stale.
+Upload the new `.dmg` to Blob, then update `DMG_URL` and `DMG_VERSION`, edit the `Current build` line in `workspace/download/index.html` to match, and redeploy. The size and build date shown on the page are read from the file itself, so they can't go stale.
 
 ## What's protected, and what isn't
 
