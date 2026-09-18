@@ -135,9 +135,11 @@
   .action-card {
     display: block;
     text-align: center;
+    max-width: 580px;
+    margin: 0 auto;
     background: var(--card);
     border-radius: var(--radius);
-    padding: 40px 34px;
+    padding: 38px 34px;
     text-decoration: none;
     color: inherit;
     border: 1px solid transparent;
@@ -176,8 +178,7 @@
     color: var(--text-secondary);
     font-weight: 300;
     line-height: 1.6;
-    max-width: 46ch;
-    margin: 10px auto 0;
+    margin-top: 8px;
   }
 
   .secondary-action {
@@ -253,7 +254,7 @@
   <div class="actions fade-up" style="animation-delay:0.24s">
     <a class="action-card" href="/workspace/signup/">
       <h2>Request access <span class="arrow">→</span></h2>
-      <p>Leave your name and either an email or a phone number. It's early and rough, but I'll be in touch.</p>
+      <p>Early and rough, but useful and powerful.</p>
     </a>
     <p class="secondary-action">
       Already have a password? <a href="/workspace/download/">Download the dev build →</a>
