@@ -151,6 +151,20 @@
 
   .btn:active { transform: translateY(1px); }
 
+  /* A <button> doesn't inherit these the way the anchors do. */
+  #tellBtn {
+    font-family: inherit;
+    background: none;
+    cursor: pointer;
+  }
+
+  /* Once the joke lands, everything but the punchline goes. */
+  .card.answered .code,
+  .card.answered .sub,
+  .card.answered #tellBtn { display: none; }
+
+  .card.answered #headline { animation: fadeUp 0.45s ease forwards; }
+
   .footer {
     text-align: center;
     font-size: 13px;
@@ -166,7 +180,8 @@
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .card { animation: none; }
+    .card,
+    .card.answered #headline { animation: none; }
   }
 
   @media (max-width: 680px) {
@@ -194,12 +209,14 @@
 
   <main>
     <div class="card">
-      <div class="code">Error 404</div>
-      <h1>This page doesn't exist.</h1>
-      <p class="sub">Either the link was wrong, or something used to live here and doesn't any more. Nothing's broken on your end.</p>
+      <div aria-live="polite">
+        <div class="code" id="code">Error 404</div>
+        <h1 id="headline">This page doesn't exist.</h1>
+        <p class="sub" id="sub">Either the link was wrong, or something used to live here and doesn't any more. Nothing's broken on your end.</p>
+      </div>
       <div class="links">
-        <a href="/" class="btn btn-solid">Back home</a>
-        <a href="mailto:brian@brianhirsh.com" class="btn btn-ghost">Tell me about it</a>
+        <a href="/" class="btn btn-solid" id="homeBtn">Back home</a>
+        <button type="button" class="btn btn-ghost" id="tellBtn">Tell me about it</button>
       </div>
     </div>
   </main>
@@ -209,6 +226,23 @@
   </div>
 
 </div>
+
+<script>
+(function () {
+  'use strict';
+
+  var card = document.querySelector('.card');
+  var tell = document.getElementById('tellBtn');
+
+  tell.addEventListener('click', function () {
+    document.getElementById('headline').textContent = 'No. Go home.';
+    card.classList.add('answered');
+    // The button it was triggered from is now display:none, which would
+    // otherwise strand keyboard focus on nothing.
+    document.getElementById('homeBtn').focus();
+  });
+})();
+</script>
 
 </body>
 </html>
