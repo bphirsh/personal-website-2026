@@ -21,6 +21,10 @@
     --text-secondary: #6B6560;
     --text-light: #F4F1EC;
     --text-muted: #9B9590;
+    /* The brand accent, already used for the logo italic, the stack keys and
+       throughout the resume. */
+    --accent: #b8460f;
+    --accent-deep: #a33e0d;
     --radius: 28px;
     --radius-lg: 36px;
   }
@@ -67,7 +71,7 @@
 
   nav .logo .logo-italic {
     font-style: italic;
-    color: #b8460f;
+    color: var(--accent);
   }
 
   nav .nav-links {
@@ -567,9 +571,12 @@
     font-weight: 500;
   }
 
-  /* CTA card — Substack orange */
+  /* CTA card. Was Substack's brand #FF6719, which sat outside this palette of
+     cream, warm beige and sage — and gave white text only 2.91:1, under the
+     3:1 floor for large text. The site accent is 5.36:1 and already the orange
+     used everywhere else here. */
   .substack-card-cta {
-    background: #FF6719;
+    background: var(--accent);
     color: #FFFFFF;
     justify-content: space-between;
     align-items: flex-start;
@@ -579,7 +586,7 @@
 
   @media (hover: hover) {
     .substack-card-cta:hover {
-      background: #F25C0F;
+      background: var(--accent-deep);
     }
   }
 
@@ -812,7 +819,7 @@
     padding: 18px 20px;
   }
 
-  .stack-code .key   { color: #b8460f; }
+  .stack-code .key   { color: var(--accent); }
   .stack-code .str   { color: #5a7a4a; }
   .stack-code .punct { color: #9c9890; }
 
