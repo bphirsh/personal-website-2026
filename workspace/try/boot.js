@@ -4,6 +4,8 @@
  * Touch-only means no hover and a coarse pointer, with no fine pointer anywhere: an iPad with a trackpad, or a touch laptop, has a fine pointer and gets the page. try.css shows the covers by the same rule, so they show before this runs.
  */
 
+import { playBeat } from './cover-beat.js';
+
 export const TOUCH_ONLY = '(hover: none) and (pointer: coarse)';
 export const ANY_FINE = '(any-pointer: fine)';
 
@@ -12,10 +14,12 @@ export function isTouchOnly(match = (q) => matchMedia(q).matches) {
 }
 
 if (isTouchOnly()) {
-  // "Pfff, just show me the page" leads only to the second cover, which has no way through.
-  document.getElementById('coverInsist')?.addEventListener('click', () => {
-    document.getElementById('cover1').hidden = true;
-    document.getElementById('cover2').hidden = false;
+  // "Pfff, just show me the page" leads only to the second cover, which has no way through, by way of a short beat (cover-beat.js). A second tap during it does nothing.
+  const insist = document.getElementById('coverInsist');
+  insist?.addEventListener('click', async () => {
+    if (insist.disabled) return;
+    insist.disabled = true;
+    await playBeat(document.getElementById('cover1'), document.getElementById('cover2'));
   });
 } else {
   // The founder card's QR code library (a plain script), then the page.
