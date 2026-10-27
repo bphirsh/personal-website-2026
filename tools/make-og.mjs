@@ -25,7 +25,7 @@ export const CARDS = [
   { file: 'workspace.png', mark: 'workspace', text: 'A place for you + agents to collaborate', foot: 'brianhirsh.com/workspace' },
   { file: 'workspace-try.png', mark: 'workspace', text: 'See your own work in Workspace · Best on a computer', foot: 'brianhirsh.com/workspace/try' },
   { file: 'workspace-signup.png', mark: 'workspace', text: 'Request early access to Workspace', foot: 'brianhirsh.com/workspace/signup' },
-  { file: 'workspace-download.png', mark: 'workspace', text: 'Workspace dev build · For invited testers', foot: 'brianhirsh.com/workspace/download' },
+  { file: 'workspace-download.png', mark: 'workspace', text: 'Workspace beta · For invited testers', foot: 'brianhirsh.com/workspace/download' },
 ];
 
 const ICONS = [
