@@ -1,5 +1,5 @@
 /**
- * The beat between the two covers (Brian, 27 Oct 2026: "The instant switch doesn't have the timing right"). After "Pfff, just show me the page", about two seconds of comic timing: the link fades and the 🥺 holds, as if it heard you; it trembles and swells while the cover shakes; a flash, and the 👹 lands with a heavy bounce; "No!" stamps in; then the line fades in.
+ * The beat between the two covers (Brian, 27 Oct 2026: "The instant switch doesn't have the timing right"). After "Pfff, just show me the page", about two seconds of comic timing: the link fades and the 🥺 holds, as if it heard you; it trembles and swells while the cover shakes; a flash, and in the same frame the 👹 lands with a heavy bounce under it; "No!" stamps in; then the line fades in.
  *
  * Web Animations only, no library. Every step is an animation on the document timeline with its own delay, and cover 2 sits over cover 1 from the start (invisible until the flash), so the whole sequence can be paused and seeked by time. When it ends, cover 1 is hidden and the animations are dropped, leaving cover 2 exactly as it is without them. The "← Workspace" link is never moved: the shake is on the emoji and words only, and cover 2's link lands on the same spot as cover 1's. Under reduced motion it is a plain cross-fade.
  */
@@ -10,11 +10,12 @@ export const BEAT = {
   tremble: [350, 450],
   swell: [700, 300],
   shake: [700, 300],
+  // The flash and the switch to cover 2 start on the same frame (Brian, 27 Oct: "the flash and change to devil page to happen at the same time"): the 👹 lands under the flash, which fades off it.
   flash: [1000, 220],
-  swap: [1060, 1],
-  devil: [1060, 420],
-  stamp: [1380, 260],
-  line: [1740, 260],
+  swap: [1000, 1],
+  devil: [1000, 420],
+  stamp: [1320, 260],
+  line: [1680, 260],
 };
 export const FADE = { out: [0, 200], in: [150, 250] };
 
@@ -52,9 +53,10 @@ export function playBeat(cover1, cover2, reduced = matchMedia('(prefers-reduced-
 function beat(go, pleading, body1, link, cover2, devil, head, line) {
   const flash = document.createElement('div');
   flash.setAttribute('aria-hidden', 'true');
-  Object.assign(flash.style, { position: 'fixed', inset: '0', background: 'var(--fg)', pointerEvents: 'none', zIndex: '2' });
+  Object.assign(flash.style, { position: 'fixed', inset: '0', background: 'var(--fg)', pointerEvents: 'none', zIndex: '2', opacity: '0' });
   cover2.parentElement.appendChild(flash);
-  const fl = go(flash, [{ opacity: 0 }, { opacity: 0.35, offset: 0.3 }, { opacity: 0 }], BEAT.flash);
+  // It starts at full strength, so it fills forwards only: it is invisible until its frame.
+  const fl = flash.animate([{ opacity: 0.35 }, { opacity: 0 }], { delay: BEAT.flash[0], duration: BEAT.flash[1], easing: 'ease-out', fill: 'forwards' });
   fl.finished.catch(() => {}).then(() => flash.remove());
 
   const jitter = (n, px, deg) => Array.from({ length: n }, (_, i) => ({ transform: `translate(${i % 2 ? px : -px}px, ${i % 3 ? 0 : px / 2}px) rotate(${i % 2 ? deg : -deg}deg)` }));
@@ -65,7 +67,7 @@ function beat(go, pleading, body1, link, cover2, devil, head, line) {
     go(pleading, [{ scale: '1' }, { scale: '1.5' }], BEAT.swell, 'ease-in'),
     go(body1, [{ transform: 'none' }, ...jitter(6, 6, 0.6), { transform: 'none' }], BEAT.shake, 'linear'),
     fl,
-    go(cover2, [{ opacity: 0 }, { opacity: 1 }], BEAT.swap, 'step-end'),
+    go(cover2, [{ opacity: 0 }, { opacity: 1 }], BEAT.swap, 'step-start'),
     // The 👹 drops in heavy: too big, squashed on landing, settles.
     go(devil, [
       { transform: 'translateY(-60px) scale(0.3)', opacity: 0 },
