@@ -4,7 +4,7 @@
  * in the left bar, a row added to a database — built from the person's own
  * project and tools.
  *
- * M-006: the agent is outside the app. It is drawn only in its own panel, never in the window; the window just shows files changing, marked the way the app marks a change from outside. It is scripted. M-013 (Brian, 27 Oct) took away its "Replay" label and its closing line, and it starts only once most of it is on screen.
+ * M-006: the agent is outside the app. It is drawn only in its own panel, never in the window; the window just shows files changing, marked the way the app marks a change from outside. It is scripted. M-013 (Brian, 27 Oct) took away its "Replay" label and its closing line; it starts only once most of it is on screen, and since M-015 it loops on its own, with no button.
  *
  * It runs on a copy of the demo, so the window above it stays as they left it.
  * Words are from Marketing/Beta Signups/Page copy.md, "The replay".
@@ -17,11 +17,15 @@ const WORDS = {
   tick: (task) => `Ticks "${task}"`,
   page: (project) => `Writes "Notes on ${project}"`,
   row: (db) => `Adds a row to ${db}`,
-  again: 'Play again',
 };
 
 const STEP_MS = 1800;
 const FIRST_MS = 900;
+// The loop (M-015): how long the end holds, and how long the fade out (and back in) takes.
+const LOOP_HOLD_MS = 1800;
+const FADE_MS = 400;
+// Below this share on screen, the loop stops.
+const STOP_SHARE = 0.15;
 // How much of the replay must be on screen before it starts (Brian: "mostly onto that section").
 export const START_SHARE = 0.6;
 
@@ -51,17 +55,14 @@ export function mountReplay(mount, invite, fileName, fileText) {
   stage.append(agent, screen);
   section.appendChild(stage);
 
-  // When it ends, the stage grays out with Play again over it (M-014; Skip is gone).
-  const over = el('div', 'replay-over');
-  const again = el('button', 'btn btn-big', WORDS.again);
-  again.type = 'button';
-  over.appendChild(again);
-  stage.appendChild(over);
   mount.replaceChildren(section);
 
   const { properties: p } = invite;
   let timers = [];
   let demo;
+  let running = false; // a run, or the pause and fade between runs, is under way
+  let runs = 0;
+  const reduced = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   function script() {
     const task = demo.firstOpenTask();
@@ -74,55 +75,77 @@ export function mountReplay(mount, invite, fileName, fileText) {
     ].filter(Boolean);
   }
 
+  function later(fn, ms) { timers.push(setTimeout(fn, ms)); }
+
   function reset() {
     timers.forEach(clearTimeout);
     timers = [];
     demo = mountDemo(screen, invite, fileName, fileText, { above: false, label: 'Workspace, in the replay' });
     demo.show(demo.start);
     steps.replaceChildren();
-    section.classList.remove('ended');
-    section.classList.add('playing');
+    section.classList.remove('ended', 'fading');
   }
 
-  function finish() {
-    timers.forEach(clearTimeout);
-    timers = [];
-    section.classList.remove('playing');
-    section.classList.add('ended');
-  }
-
+  // One run: the three changes, one after another.
   function play() {
     reset();
-    // With reduced motion the steps come quicker and nothing in them moves (the CSS holds the tint still and stops the cursor).
-    const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
-    const stepMs = reduced ? 900 : STEP_MS;
-    const firstMs = reduced ? 300 : FIRST_MS;
-    section.dataset.started = String(Math.round(performance.now())); // when it began, for the scroll check
+    running = true;
+    section.classList.add('playing');
+    section.dataset.runs = String(++runs); // read by the loop check
     const list = script();
     list.forEach((step, i) => {
-      timers.push(setTimeout(() => {
+      later(() => {
         step.run();
         steps.appendChild(el('li', null, step.caption));
-        if (i === list.length - 1) timers.push(setTimeout(finish, stepMs / 2));
-      }, firstMs + i * stepMs));
+        if (i === list.length - 1) later(loop, LOOP_HOLD_MS);
+      }, FIRST_MS + i * STEP_MS);
     });
   }
 
-  // It starts once, when most of it is on screen; Play again runs it after that.
+  // It loops on its own (M-015): hold the end, fade out, fade back in at the start, and play again.
+  function loop() {
+    section.classList.add('fading');
+    later(() => { play(); }, FADE_MS);
+  }
+
+  function stop() {
+    timers.forEach(clearTimeout);
+    timers = [];
+    running = false;
+    section.classList.remove('playing', 'fading');
+  }
+
+  // With reduced motion it neither plays on its own nor loops: it shows what the agent changed, all at once and still.
+  function still() {
+    reset();
+    for (const step of script()) {
+      step.run();
+      steps.appendChild(el('li', null, step.caption));
+    }
+    section.classList.add('ended');
+  }
+
+  // It starts once most of it is on screen, and stops looping when it is scrolled away; back on screen, it starts again from the beginning.
   const steps20 = Array.from({ length: 21 }, (_, i) => i / 20);
   const seen = new IntersectionObserver((entries) => {
     for (const e of entries) {
       const share = visibleShare(e.boundingClientRect.height, e.intersectionRect.height, e.rootBounds?.height ?? innerHeight);
       section.dataset.share = share.toFixed(2); // read by the scroll check
-      if (share >= START_SHARE) { seen.disconnect(); play(); return; }
+      if (reduced()) continue;
+      if (share >= START_SHARE && !running) {
+        play();
+      } else if (share < STOP_SHARE && running) {
+        stop();
+      }
     }
   }, { threshold: steps20 });
-  again.addEventListener('click', () => { seen.disconnect(); play(); });
 
-  reset();
+  // With reduced motion nothing moves, so there is nothing to wait for: it shows the finished state at once.
+  if (reduced()) still();
+  else reset();
   seen.observe(section);
 
-  return { play, finish };
+  return { play, stop, still };
 }
 
 // The new page: their project and their tools.

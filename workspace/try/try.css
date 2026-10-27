@@ -158,7 +158,7 @@ code { font-family: var(--font-mono); font-size: 0.9em; background: var(--code-b
 
 /* ── the button at the end ── */
 .reply {
-  margin-top: var(--space-7);
+  margin-top: calc(var(--space-8) * 2.5);
   padding: var(--space-5);
   background: var(--surface);
   border: var(--border-width) solid var(--border);
@@ -222,7 +222,7 @@ code { font-family: var(--font-mono); font-size: 0.9em; background: var(--code-b
 
 /* ── the share card ── */
 .card {
-  margin-top: var(--space-6);
+  margin-top: calc(var(--space-8) * 1.5);
   padding: var(--space-5);
   background: var(--surface);
   border: var(--border-width) solid var(--border);
@@ -254,6 +254,7 @@ code { font-family: var(--font-mono); font-size: 0.9em; background: var(--code-b
 }
 .reply-form .btn-big { font-size: var(--text-h3); padding: var(--space-2) var(--space-6); }
 .reply-after { font-size: var(--text-h3); font-weight: var(--weight-medium); }
+.reply-tells { margin-top: var(--space-3); font-size: var(--text-sm); color: var(--fg-secondary); max-width: 40em; }
 
 /* ── the foot: four promises as icons, then one line from Brian ── */
 .foot .icon { width: var(--icon-size); height: var(--icon-size); flex: none; fill: none; stroke: currentColor; stroke-width: 1.75; stroke-linecap: round; stroke-linejoin: round; }
@@ -301,12 +302,13 @@ code { font-family: var(--font-mono); font-size: 0.9em; background: var(--code-b
 @keyframes loading-bounce { 0%, 100% { transform: translateY(0); opacity: 0.6; } 50% { transform: translateY(calc(var(--space-3) * -1)); opacity: 1; } }
 
 /* ── the story, the figures and the agent tools, after the workspace ── */
-.story { margin-top: calc(var(--space-8) * 2); text-align: center; }
+/* More room between sections (M-015: "white space is available"). */
+.story { margin-top: calc(var(--space-8) * 3); text-align: center; }
 .story[hidden], .figures[hidden], .agent-tools[hidden] { display: none; }
 .story-head { font-size: var(--text-h1); font-weight: var(--weight-semibold); line-height: var(--leading-tight); }
 .story-sub { font-size: var(--text-prose); line-height: var(--leading-prose); color: var(--fg-secondary); max-width: 36em; margin: var(--space-3) auto 0; }
 .section-title { font-size: var(--text-h2); font-weight: var(--weight-semibold); line-height: var(--leading-tight); margin-bottom: var(--space-4); }
-.figures, .agent-tools { margin-top: var(--space-8); }
+.figures, .agent-tools { margin-top: calc(var(--space-8) * 2.5); }
 .figure-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: var(--space-4); }
 .figure { padding: var(--space-5); background: var(--surface); border: var(--border-width) solid var(--border); border-radius: var(--radius-lg); }
 .figure-number { display: block; font-size: var(--text-title); font-weight: var(--weight-semibold); line-height: var(--leading-tight); color: var(--accent); }
@@ -322,5 +324,6 @@ code { font-family: var(--font-mono); font-size: 0.9em; background: var(--code-b
 /* With reduced motion nothing moves for longer than a fade (M-014). */
 @media (prefers-reduced-motion: reduce) {
   .loading-mark span { animation: none; opacity: 1; }
-  .replay-over { transition: none; }
 }
+
+.visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }

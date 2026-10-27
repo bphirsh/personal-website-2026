@@ -55,10 +55,12 @@ export function mountTaps(mount, invite) {
   };
   let mounted = null;
 
+  let handle = null;
   function update() {
-    if (!answers.platform || !answers.role || mounted === answers.platform) return;
+    if (!answers.platform || !answers.role) return;
+    if (mounted === answers.platform) { handle?.refresh(); return; }
     mounted = answers.platform;
-    mountButton(reply, { ...live, platform: answers.platform, get role() { return answers.role; }, get ai_tools() { return live.ai_tools; } }, { sample: true });
+    handle = mountButton(reply, { ...live, platform: answers.platform, get role() { return answers.role; }, get ai_tools() { return live.ai_tools; } }, { sample: true });
   }
 
   // One answer from a row of choices.

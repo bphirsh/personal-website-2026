@@ -11,15 +11,14 @@ const ENDPOINT = '/api/invite-reply';
 const EMAIL_RE = /^[^\s@]+@[^\s@.]+\.[^\s@]{2,}$/;
 
 const WORDS = {
-  sends: 'Sends Brian your email, code, computer, role and tools. Nothing else.',
-  sendsSample: 'Sends Brian your email and these three answers. Nothing else.',
-  sendsSampleCode: 'This sends Brian your invite code, your email and these three answers. Nothing else.',
-  notify: 'Notify',
+  reserve: 'Reserve my spot',
+  keepPosted: 'Keep me posted', // on an Intel Mac, where the build will not run
   placeholder: 'you@example.com',
   noEmail: 'Add your email first.',
   badEmail: "That doesn't look like an email address.",
   sending: 'Sending…',
   failed: "That didn't send. Try again.",
+  inLine: (name) => (name && name !== 'You' ? `You're in line, ${name}! Brian will email you.` : "You're in line! Brian will email you."),
   thanks: (name) => (name && name !== 'You' ? `Thanks, ${name}! Brian will email you.` : 'Thanks! Brian will email you.'),
   question: 'Which computer would you use Workspace on?',
   chipHelp: 'Not sure? Apple menu → About This Mac: "Chip: Apple M…" is Apple silicon.',
@@ -42,6 +41,28 @@ const VARIANTS = {
   'mac-intel': { line: 'The build needs a Mac with Apple silicon (M1 or later).', after: 'if that changes!' },
   other: { after: 'with news!' },
 };
+
+// The line under the sign-up, built from what the button sends and nothing else (Page copy, M-015).
+const COMPUTER_WORDS = { 'mac-apple-silicon': 'a Mac with Apple silicon', 'mac-intel': 'an Intel Mac', mac: 'a Mac', windows: 'Windows', linux: 'Linux', other: 'another computer' };
+const ROLE_WORDS = { coder: 'write code', 'knowledge-worker': 'work in documents and research', both: 'work across code and documents', other: 'work across code and documents' };
+
+/** "A", "A and B", "A, B and C", then "A, B, C and 2 more". */
+function toolWords(labels) {
+  if (labels.length <= 1) return labels.join('');
+  if (labels.length <= 3) return `${labels.slice(0, -1).join(', ')} and ${labels[labels.length - 1]}`;
+  return `${labels.slice(0, 3).join(', ')} and ${labels.length - 3} more`;
+}
+
+/** What the sign-up tells Brian, in words, from the same fields `replyBody` sends. */
+export function tellsLine({ invite, platform, role, ai_tools, knowledge_tools }) {
+  const tools = [...ai_tools, ...knowledge_tools].map((t) => t.label);
+  const computer = COMPUTER_WORDS[platform] ?? COMPUTER_WORDS.other;
+  const does = ROLE_WORDS[role] ?? ROLE_WORDS.other;
+  const along = `Along with your email${invite ? ' and invite code' : ''}`;
+  return tools.length
+    ? `${along}, this tells Brian you're on ${computer}, use ${toolWords(tools)}, and ${does}.`
+    : `${along}, this tells Brian you're on ${computer} and ${does}.`;
+}
 
 /**
  * The body the button sends: exactly these fields, `email` only when typed.
@@ -77,14 +98,13 @@ export function mountButton(mount, answers, options = {}) {
   // (The sample's taps have already asked: `options.sample`.)
   let platform = !options.sample && ['mac', 'other', 'unknown'].includes(answers.platform) ? null : answers.platform;
 
+  let tells = null;
   render();
 
   function render() {
     box.replaceChildren();
     if (!platform || !VARIANTS[platform]) return ask();
     const v = VARIANTS[platform];
-    const sends = options.sample ? (answers.invite ? WORDS.sendsSampleCode : WORDS.sendsSample) : WORDS.sends;
-    box.appendChild(el('p', 'reply-sends', sends));
     if (v.line) box.appendChild(el('p', 'reply-line', v.line));
 
     // One line, the email box always shown (M-013): "Email me at [box] when it's ready!" and Notify. A form, so Return sends it too.
@@ -98,12 +118,14 @@ export function mountButton(mount, answers, options = {}) {
     email.placeholder = WORDS.placeholder;
     const sentence = el('label', 'reply-sentence');
     sentence.append(el('span', null, 'Email me at'), email, el('span', null, v.after));
-    const button = el('button', 'btn btn-big', WORDS.notify);
+    const button = el('button', 'btn btn-big', platform === 'mac-intel' ? WORDS.keepPosted : WORDS.reserve);
     button.type = 'submit';
     form.append(sentence, button);
     const status = el('p', 'reply-status');
     status.setAttribute('role', 'status');
-    box.append(form, status);
+    // Under the sign-up: what it tells Brian, in words, from their own answers (M-015).
+    tells = el('p', 'reply-tells', tellsLine({ ...answers, platform }));
+    box.append(form, status, tells);
 
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
@@ -119,7 +141,7 @@ export function mountButton(mount, answers, options = {}) {
       let ok = false;
       try { ok = await send(body); } catch { ok = false; }
       if (ok) {
-        box.replaceChildren(el('p', 'reply-after', WORDS.thanks(answers.name)));
+        box.replaceChildren(el('p', 'reply-after', platform === 'mac-intel' ? WORDS.thanks(answers.name) : WORDS.inLine(answers.name)));
       } else {
         status.textContent = WORDS.failed;
         button.disabled = false;
@@ -138,6 +160,9 @@ export function mountButton(mount, answers, options = {}) {
     }
     box.append(choices, el('p', 'small', WORDS.chipHelp));
   }
+
+  // The taps change role and tools without rebuilding the sign-up; this redraws the line under it.
+  return { refresh: () => { if (tells?.isConnected) tells.textContent = tellsLine({ ...answers, platform }); } };
 }
 
 async function post(body) {

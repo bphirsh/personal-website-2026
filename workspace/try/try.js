@@ -39,7 +39,7 @@ const WORDS = {
 };
 
 // How long the loading moment lasts (M-014): long enough to anticipate, short enough not to wait. With reduced motion, one still line and a short pause.
-const LOADING_MS = 1800;
+const LOADING_MS = 3000; // Brian, fourth look: "like 3 seconds"
 const LOADING_REDUCED_MS = 500;
 
 // The sample person, Sam: made up, and loaded like any dropped file.
@@ -111,7 +111,7 @@ function reset() {
  */
 function anticipate() {
   reset();
-  intake.hidden = true;
+  removeIntro();
   loading.hidden = false;
   const lines = WORDS.loading;
   loadingLine.textContent = lines[0];
@@ -124,7 +124,13 @@ function anticipate() {
 }
 
 // The workspace fills almost the whole window, with nothing above or below it in view (M-014); the rest follows on scroll.
+// Once a file (or the example data) is shown, the intro leaves the page for good (M-015): the heading, its line and the drop zone. A drop on the window, or Load a different file, still opens another.
+function removeIntro() {
+  document.getElementById('intro')?.remove();
+}
+
 function revealWorkspace() {
+  removeIntro();
   // A section still waiting on its words (the speed figures) stays hidden.
   for (const s of storySections) s.hidden = s.hasAttribute('data-pending');
   const win = demo.querySelector('.win');

@@ -24,6 +24,9 @@
     <div id="styleSwitch"></div>
   </div>
 
+  <!-- The intro: removed from the page once a file or the example data is shown (M-015), so the page starts at the workspace. The file input lives outside it, so "Load a different file" still works. -->
+  <input type="file" id="pick" class="visually-hidden" accept=".md,.txt,text/markdown,text/plain" tabindex="-1">
+  <section class="intro" id="intro">
   <header class="head">
     <h1 class="title">Your Workspace, from your own file</h1>
     <p class="lede">Drop the file your agent wrote. See your work in Workspace.</p>
@@ -31,7 +34,6 @@
 
   <div id="intake">
     <label class="drop" id="drop" for="pick">
-      <input type="file" id="pick" accept=".md,.txt,text/markdown,text/plain">
       <span class="drop-main" id="dropMain">Drop your workspace file here</span>
       <span class="drop-sub">or <span class="drop-button">Choose file</span></span>
     </label>
@@ -45,6 +47,7 @@
     <p>On a phone? Here's example data. Load your own on a laptop.</p>
     <button type="button" class="btn btn-big" id="phoneSample">Show example data</button>
   </div>
+  </section>
 
   <!-- After their file is read: the drop zone leaves, and this stays, so the promise is still beside the way to choose another file. -->
   <div class="loaded" id="loaded" hidden>
@@ -71,12 +74,12 @@
 
   <div id="replay"></div>
 
-  <!-- Speed: stays off the page until Brian picks the numbers ("Pick the speed numbers for the try page"; Page copy: no figure goes on the page before it). Then fill the two numbers, remove data-pending, and it shows with the story. -->
-  <section class="figures" id="figures" data-pending hidden>
-    <h2 class="section-title">Seriously fast</h2>
+  <!-- Brian's own figures and label (M-015), word for word. -->
+  <section class="figures" id="figures" hidden>
+    <h2 class="section-title">Super-fucking-fast</h2>
     <div class="figure-row">
-      <div class="figure"><span class="figure-number"></span><span class="figure-label">faster than the Notion MCP</span></div>
-      <div class="figure"><span class="figure-number"></span><span class="figure-label">fewer tokens</span></div>
+      <div class="figure"><span class="figure-number">10×</span><span class="figure-label">faster than the Notion MCP</span></div>
+      <div class="figure"><span class="figure-number">35%</span><span class="figure-label">fewer tokens</span></div>
     </div>
   </section>
 

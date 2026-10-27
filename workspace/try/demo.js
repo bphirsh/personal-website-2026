@@ -37,6 +37,15 @@ const SAMPLE = {
   clients: { name: 'Clients', columns: ['Name', 'Stage', 'Next step'], rows: [['Riverside Bakery', 'Proposal', 'Send the estimate'], ['Lantern Studio', 'Signed', 'Kick-off call'], ['Hollow Pine Co-op', 'First call', 'Write up the notes']] },
 };
 
+// The made-up people below the visitor's own row in People (Page copy, M-015): first names only, none meant to be anyone, the same in every demo.
+const DEFAULT_PEOPLE = [
+  ['Mateo', 'Mac (Apple silicon)', 'Code', 'Claude Code, Cursor', 'Obsidian', 'Git repos, Desktop', 'A CLI that tidies photo libraries'],
+  ['Hana', 'Mac (Apple silicon)', 'Documents and research', 'Claude, Perplexity', 'Notion, Google Docs', 'Google Drive, Desktop', 'Research notes for a podcast series'],
+  ['Kofi', 'Windows', 'Both', 'ChatGPT, Copilot', 'OneNote, Word', 'OneDrive, Documents', 'A dashboard for a five-a-side league'],
+  ['Ines', 'Mac (Intel)', 'Documents and research', 'Claude', 'Bear, Apple Notes', 'iCloud', 'A guidebook to local hiking trails'],
+  ['Noor', 'Mac (Apple silicon)', 'Both', 'Claude Code, Gemini', 'Logseq', 'Git repos, iCloud', 'Stock tracking for a small café'],
+];
+
 // How People shows platform and role.
 const PLATFORM_NAMES = { 'mac-apple-silicon': 'Mac (Apple silicon)', 'mac-intel': 'Mac (Intel)', mac: 'Mac', windows: 'Windows', linux: 'Linux', other: 'Other', unknown: 'Not said' };
 const ROLE_NAMES = { coder: 'Code', 'knowledge-worker': 'Documents and research', both: 'Both', other: 'Other' };
@@ -59,7 +68,7 @@ export function buildVault(invite, fileName, fileText) {
     db: {
       name: 'People',
       columns: ['Name', 'Computer', 'Role', 'AI tools', 'Knowledge tools', 'Files live in', 'Project'],
-      rows: [[p.name, PLATFORM_NAMES[p.platform] ?? p.platform, ROLE_NAMES[p.role] ?? p.role, labels(p.ai_tools), labels(p.knowledge_tools), labels(p.files_live_in), p.project]],
+      rows: [[p.name, PLATFORM_NAMES[p.platform] ?? p.platform, ROLE_NAMES[p.role] ?? p.role, labels(p.ai_tools), labels(p.knowledge_tools), labels(p.files_live_in), p.project], ...DEFAULT_PEOPLE.map((r) => [...r])],
     },
   });
   const tools = node('db', 'Tools', {
