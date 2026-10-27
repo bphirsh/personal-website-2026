@@ -157,7 +157,9 @@ export function buildVault(invite, fileName, fileText) {
   }
   root.push(...theirDbs, ...dbs, people, tools, file);
 
-  return { root, start, file, owner: p.name, tasks: theirTasks, databases: theirDbs, tools };
+  // The file's first page: with Brian's prompt, the agent's letter to the visitor ("To Sam, from Claude").
+  const letter = pages.length ? theirPages[0] : null;
+  return { root, start, letter, file, owner: p.name, tasks: theirTasks, databases: theirDbs, tools };
 }
 
 /** The page and database "Just files on your computer" shows: the visitor's own first ones, else the same stand-ins the demo uses, with the folder the page sits in. */
@@ -183,7 +185,7 @@ function labels(list) {
  * change the window as files change, each change marked with the app's
  * fading tint for something changed from outside.
  *
- * `options.above` false leaves out the line above the window, `options.sample` says the file is the made-up sample's, and `options.label` names the window region for screen readers.
+ * `options.above` false leaves out the line above the window, `options.sample` says the file is the made-up sample's, `options.label` names the window region for screen readers, and `options.letter` opens on the file's first page, when it has one, with the starting folder as a tab beside it (Brian, 27 Oct 2026: the agent's letter "should be the first page that comes up").
  */
 export function mountDemo(mount, invite, fileName, fileText, options = {}) {
   const vault = buildVault(invite, fileName, fileText);
@@ -195,7 +197,8 @@ export function mountDemo(mount, invite, fileName, fileText, options = {}) {
     }
   })(vault.root, null);
 
-  const state = { tabs: [vault.start, vault.file], active: vault.start, changed: null };
+  const letter = options.letter ? vault.letter : null;
+  const state = { tabs: letter ? [vault.start, letter, vault.file] : [vault.start, vault.file], active: letter ?? vault.start, changed: null };
 
   const wrap = el('div', 'demo');
   // `options.full`: the window fills almost the whole screen, with no text above it (M-014).
