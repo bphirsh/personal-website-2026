@@ -221,6 +221,7 @@
 .db-view-tab.active .db-view-icon { color: var(--fg-secondary); }
 
 .db-view { margin-top: var(--space-2); }
+.db-empty { margin: var(--space-3) 0 var(--space-5) var(--db-margin); font-size: var(--text-sm); color: var(--fg-secondary); }
 .db-count { margin: var(--space-2) 0 var(--space-5) var(--db-margin); font-size: var(--text-xs); color: var(--fg-secondary); }
 
 /* the grid */

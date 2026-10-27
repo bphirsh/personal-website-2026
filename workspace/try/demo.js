@@ -337,10 +337,12 @@ export function mountDemo(mount, invite, fileName, fileText, options = {}) {
     }
     toolbar.appendChild(views);
     out.append(toolbar, body);
-    const count = el('p', 'db-count', `${n.db.rows.length} ${n.db.rows.length === 1 ? 'row' : 'rows'}`);
-    out.appendChild(count);
+    // An empty database says "No rows" (Page copy) in every view, in place of
+    // an empty grid or a lone empty column, and so needs no count.
+    if (n.db.rows.length) out.appendChild(el('p', 'db-count', `${n.db.rows.length} ${n.db.rows.length === 1 ? 'row' : 'rows'}`));
 
     function show() {
+      if (!n.db.rows.length) return body.replaceChildren(el('p', 'db-empty', 'No rows'));
       body.replaceChildren(n.view === 'board' ? board(n.db, fields, groupBy) : n.view === 'list' ? list(n.db, fields) : grid(n.db, fields));
     }
     show();
