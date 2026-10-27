@@ -234,3 +234,9 @@ code { font-family: var(--font-mono); font-size: 0.9em; background: var(--code-b
 .card-canvas { display: block; width: 100%; height: auto; border-radius: var(--radius-md); box-shadow: var(--shadow-float); }
 .card-tick { display: flex; gap: var(--space-2); align-items: center; margin-top: var(--space-4); font-size: var(--text-sm); cursor: pointer; }
 .card-tick input { accent-color: var(--accent); }
+
+/* ── after a file is read: a small way back, with the promise beside it ── */
+.loaded { display: flex; gap: var(--space-3); align-items: baseline; flex-wrap: wrap; font-size: var(--text-sm); }
+.loaded[hidden] { display: none; }
+.loaded .link { flex: 0 0 auto; }
+.loaded .privacy { margin-top: 0; flex: 1 1 320px; }

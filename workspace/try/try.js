@@ -53,6 +53,7 @@ const card = document.getElementById('card');
 const dropIdle = [...dropMain.childNodes].map((n) => n.cloneNode(true));
 const sampleLink = document.getElementById('sampleLink');
 const phone = document.getElementById('phone');
+const loaded = document.getElementById('loaded');
 
 function el(tag, cls, text) {
   const n = document.createElement(tag);
@@ -89,6 +90,7 @@ function reset() {
   replay.replaceChildren();
   reply.replaceChildren();
   card.replaceChildren();
+  loaded.hidden = true;
   intake.hidden = isPhone();
 }
 
@@ -158,6 +160,9 @@ function inviteCode(properties) {
 
 function showDemo(fileName, text, r) {
   reset();
+  // Their file is in: the page is about the demo now (Brian, 27 Oct).
+  intake.hidden = true;
+  loaded.hidden = false;
   const invite = inviteCode(r.invite.properties);
   for (const w of r.warnings) {
     // With a code from the link, a file without one is no longer a problem.
@@ -239,6 +244,7 @@ addEventListener('drop', (e) => {
 });
 
 sampleLink.hidden = false;
+document.getElementById('loadAnother').addEventListener('click', () => pick.click());
 sampleLink.querySelector('button').addEventListener('click', showSample);
 document.getElementById('phoneSample').addEventListener('click', showSample);
 if (isPhone()) { intake.hidden = true; phone.hidden = false; }

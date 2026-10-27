@@ -44,6 +44,13 @@
     <button type="button" class="btn btn-big" id="phoneSample">Show me the sample</button>
   </div>
 
+  <!-- After their file is read: the drop zone leaves, and this stays, so the
+       promise is still beside the way to choose another file. -->
+  <div class="loaded" id="loaded" hidden>
+    <button type="button" class="link" id="loadAnother">Load a different file</button>
+    <p class="privacy">Your file is read in this browser and never uploaded. Nothing in it reaches anyone unless you press the button at the end.</p>
+  </div>
+
   <section class="failed" id="failed" aria-live="polite" hidden></section>
   <div id="banners"></div>
   <div id="demo"></div>
