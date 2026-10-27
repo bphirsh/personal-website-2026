@@ -18,6 +18,7 @@ import { mountDemo } from './demo.js';
 import { mountReplay } from './replay.js';
 import { mountButton } from './button.js';
 import { mountTaps } from './taps.js';
+import { mountCard } from './card.js';
 
 const WORDS = {
   dragging: 'Let go to open it',
@@ -48,6 +49,7 @@ const banners = document.getElementById('banners');
 const demo = document.getElementById('demo');
 const replay = document.getElementById('replay');
 const reply = document.getElementById('reply');
+const card = document.getElementById('card');
 const dropIdle = [...dropMain.childNodes].map((n) => n.cloneNode(true));
 const sampleLink = document.getElementById('sampleLink');
 const phone = document.getElementById('phone');
@@ -86,6 +88,7 @@ function reset() {
   demo.replaceChildren();
   replay.replaceChildren();
   reply.replaceChildren();
+  card.replaceChildren();
   intake.hidden = isPhone();
 }
 
@@ -133,7 +136,7 @@ async function showSample() {
   }
   b.appendChild(row);
   banners.appendChild(b);
-  mountDemo(demo, r.invite, SAMPLE_NAME, text);
+  mountDemo(demo, r.invite, SAMPLE_NAME, text, { sample: true });
   mountReplay(replay, r.invite, SAMPLE_NAME, text);
   mountTaps(reply, codeFromHash(location.hash));
   b.scrollIntoView({ block: 'start', behavior: 'smooth' });
@@ -164,6 +167,8 @@ function showDemo(fileName, text, r) {
   mountDemo(demo, r.invite, fileName, text);
   mountReplay(replay, r.invite, fileName, text);
   mountButton(reply, { ...r.invite.properties, invite });
+  // The card is theirs, so only for their own file, never for the sample.
+  mountCard(card, { ...r.invite.properties, invite });
 }
 
 function banner(w) {

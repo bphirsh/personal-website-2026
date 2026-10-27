@@ -20,6 +20,7 @@ import { renderBody } from './markdown.js';
 
 const WORDS = {
   above: "This is Workspace with your file in it. Click around: it's a preview, so nothing you do here is saved.",
+  aboveSample: "This is Workspace with a made-up person's file in it. Click around: it's a preview, so nothing you do here is saved.",
   hintFile: 'Your file. Workspace shows it as a page, like any other.',
   hintTasks: 'Tasks you mentioned, as a checklist.',
   hintDatabase: 'Your table, as a database page.',
@@ -110,8 +111,8 @@ function labels(list) {
  * fading tint for something changed from outside.
  *
  * `options.above` false leaves out the line above the window, `options.hints`
- * false leaves out the hints, and `options.label` names the window region for
- * screen readers.
+ * false leaves out the hints, `options.sample` says the file is the made-up
+ * sample's, and `options.label` names the window region for screen readers.
  */
 export function mountDemo(mount, invite, fileName, fileText, options = {}) {
   const vault = buildVault(invite, fileName, fileText);
@@ -127,7 +128,7 @@ export function mountDemo(mount, invite, fileName, fileText, options = {}) {
   const state = { tabs: [vault.start, vault.file], active: vault.start, changed: null };
 
   const wrap = el('div', 'demo');
-  if (options.above !== false) wrap.appendChild(el('p', 'demo-above', WORDS.above));
+  if (options.above !== false) wrap.appendChild(el('p', 'demo-above', options.sample ? WORDS.aboveSample : WORDS.above));
   const win = el('div', 'win');
   win.setAttribute('role', 'region');
   win.setAttribute('aria-label', options.label ?? 'Workspace preview');

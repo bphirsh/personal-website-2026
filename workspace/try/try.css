@@ -220,3 +220,17 @@ code { font-family: var(--font-mono); font-size: 0.9em; background: var(--code-b
 .tap { margin-bottom: var(--space-5); }
 .tap-question { font-size: var(--text-base); font-weight: var(--weight-medium); margin-bottom: var(--space-2); }
 .taps .reply { margin-top: 0; padding: 0; border: none; background: none; }
+
+/* ── the share card ── */
+.card {
+  margin-top: var(--space-6);
+  padding: var(--space-5);
+  background: var(--surface);
+  border: var(--border-width) solid var(--border);
+  border-radius: var(--radius-lg);
+}
+.card-head { font-size: var(--text-h3); font-weight: var(--weight-semibold); line-height: var(--leading-tight); }
+.card-sub { font-size: var(--text-sm); color: var(--fg-secondary); margin: var(--space-1) 0 var(--space-4); }
+.card-canvas { display: block; width: 100%; height: auto; border-radius: var(--radius-md); box-shadow: var(--shadow-float); }
+.card-tick { display: flex; gap: var(--space-2); align-items: center; margin-top: var(--space-4); font-size: var(--text-sm); cursor: pointer; }
+.card-tick input { accent-color: var(--accent); }
