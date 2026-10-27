@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Try Workspace — Brian Hirsh</title>
-<meta name="description" content="Drop the file your agent wrote and see it in Workspace.">
+<title>Your Workspace — Brian Hirsh</title>
+<meta name="description" content="Drop the file your agent wrote and see what Workspace would look like with your work in it.">
 <meta name="robots" content="noindex">
 <link rel="icon" href="/favicon.ico" sizes="any">
 <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
@@ -13,6 +13,7 @@
      request to anyone but this site. -->
 <link rel="stylesheet" href="/workspace/try/tokens.css">
 <link rel="stylesheet" href="/workspace/try/try.css">
+<link rel="stylesheet" href="/workspace/try/demo.css">
 <script type="module" src="/workspace/try/try.js"></script>
 </head>
 <body>
@@ -21,20 +22,32 @@
   <a href="/workspace/" class="back">← Workspace</a>
 
   <header class="head">
-    <h1 class="title">See your file in Workspace</h1>
-    <p class="lede">Drop the file your agent wrote for you, and Workspace lays it out as your own folder.</p>
+    <h1 class="title">Your Workspace, from your own file</h1>
+    <p class="lede">Drop the file your agent just wrote, and see what Workspace would look like with your work in it.</p>
+    <p class="small">Works best on a laptop.</p>
   </header>
 
-  <label class="drop" id="drop" for="pick">
-    <input type="file" id="pick" accept=".md,.txt,text/markdown,text/plain">
-    <span class="drop-main">Drop your <code>workspace-…md</code> file here</span>
-    <span class="drop-sub">or <span class="drop-link">choose a file</span></span>
-  </label>
+  <div id="intake">
+    <label class="drop" id="drop" for="pick">
+      <input type="file" id="pick" accept=".md,.txt,text/markdown,text/plain">
+      <span class="drop-main" id="dropMain">Drop workspace-<em>your name</em>.md here</span>
+      <span class="drop-sub">or <span class="drop-button">Choose file</span></span>
+    </label>
 
-  <p class="privacy">Your file is read here, in your browser. Nothing is uploaded or stored, and this page has no analytics, cookies or tracking.</p>
+    <p class="privacy">Your file is read in this browser and never uploaded. Nothing in it reaches anyone unless you press the button at the end.</p>
+    <!-- The sample arrives with "The sample demo and phone layout". -->
+    <p class="sample-link" id="sampleLink" hidden><button type="button" class="link">No file yet? Just show me a sample</button></p>
+  </div>
 
-  <section class="result" id="result" aria-live="polite" hidden></section>
+  <section class="failed" id="failed" aria-live="polite" hidden></section>
+  <div id="banners"></div>
+  <div id="demo"></div>
 </main>
+
+<footer class="foot">
+  <p>This page has no analytics, cookies or tracking. Your file is read in this browser and never uploaded. Only the button sends anything, by email to Brian: your invite code, computer, role and tools.</p>
+  <p>Workspace is made by Brian Hirsh. <a href="/workspace/signup/">The public signup page</a></p>
+</footer>
 
 </body>
 </html>

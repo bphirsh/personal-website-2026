@@ -5,7 +5,7 @@
  * browser as HTML: no innerHTML, no insertAdjacentHTML, no DOMParser. Every
  * node is made with createElement and filled with textContent, so a `<script>`
  * in a file shows as the characters "<script>". Only the little markdown a
- * page needs is understood — headings, paragraphs, lists, quotes, code,
+ * page needs is understood — headings, paragraphs, lists, quotes, code, tables,
  * **bold**, *italic*, `code` and links — and links open only for http(s) and mailto.
  */
 
@@ -35,13 +35,30 @@ export function renderBody(body, doc = document) {
       continue;
     }
 
-    const h = line.match(/^(#{2,4})\s+(.*?)\s*#*\s*$/);
+    const h = line.match(/^(#{1,4})\s+(.*?)\s*#*\s*$/);
     if (h) {
-      // `#` is a section of the file, so the body's own headings start at ##.
       const node = el(doc, `h${h[1].length}`);
       inline(node, h[2], doc);
       frag.appendChild(node);
       i++;
+      continue;
+    }
+
+    if (/^\s*\|/.test(line)) {
+      const rows = [];
+      while (i < lines.length && /^\s*\|/.test(lines[i])) rows.push(cells(lines[i++]));
+      const table = el(doc, 'table');
+      rows.forEach((r, n) => {
+        if (n === 1 && r.every((c) => /^\s*:?-+:?\s*$/.test(c))) return; // the separator row
+        const tr = el(doc, 'tr');
+        for (const c of r) {
+          const td = el(doc, n === 0 ? 'th' : 'td');
+          inline(td, c.trim(), doc);
+          tr.appendChild(td);
+        }
+        table.appendChild(tr);
+      });
+      frag.appendChild(table);
       continue;
     }
 
@@ -82,7 +99,7 @@ export function renderBody(body, doc = document) {
     }
 
     const para = [];
-    while (i < lines.length && lines[i].trim() !== '' && !/^\s*(```|~~~|#{2,4}\s|>|[-*+]\s|\d+[.)]\s)/.test(lines[i])) para.push(lines[i++].trim());
+    while (i < lines.length && lines[i].trim() !== '' && !/^\s*(```|~~~|#{1,4}\s|>|\||[-*+]\s|\d+[.)]\s)/.test(lines[i])) para.push(lines[i++].trim());
     if (para.length === 0) para.push(lines[i++].trim());
     const p = el(doc, 'p');
     inline(p, para.join(' '), doc);
@@ -118,6 +135,11 @@ export function inline(parent, text, doc = document) {
     }
     rest = rest.slice(m.index + tok.length);
   }
+}
+
+// A table row's cells; `\|` is a pipe inside a cell.
+function cells(line) {
+  return line.trim().replace(/^\|/, '').replace(/\|\s*$/, '').split(/(?<!\\)\|/).map((c) => c.replace(/\\\|/g, '|'));
 }
 
 function el(doc, tag, text) {

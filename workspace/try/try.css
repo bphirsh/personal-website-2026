@@ -52,13 +52,23 @@ code { font-family: var(--font-mono); font-size: 0.9em; background: var(--code-b
   text-align: center;
   cursor: pointer;
 }
-.drop:hover { background: var(--hover); }
+.drop:hover { background: var(--surface); border-color: var(--fg-secondary); }
 .drop:focus-within { outline: 2px solid var(--focus-ring); outline-offset: 2px; }
 .drop.over { background: var(--accent-soft); border-color: var(--accent); border-style: solid; }
 .drop input { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
 .drop-main { font-size: var(--text-prose); font-weight: var(--weight-medium); }
 .drop-sub { font-size: var(--text-sm); color: var(--fg-secondary); }
-.drop-link { color: var(--accent); text-decoration: underline; text-underline-offset: 2px; }
+.drop-button {
+  display: inline-block;
+  margin-left: var(--space-1);
+  padding: var(--space-1) var(--space-3);
+  color: var(--fg);
+  background: var(--surface);
+  border: var(--border-width) solid var(--border);
+  border-radius: var(--radius-md);
+  font-weight: var(--weight-medium);
+}
+.drop:hover .drop-button { background: var(--hover); }
 
 .privacy {
   margin-top: var(--space-3);
@@ -66,20 +76,19 @@ code { font-family: var(--font-mono); font-size: 0.9em; background: var(--code-b
   color: var(--fg-secondary);
 }
 
-/* ── what the page read ── */
-.result {
-  margin-top: var(--space-6);
-  padding: var(--space-4) var(--space-5);
+/* ── a file that could not be read ── */
+.failed {
+  margin-top: var(--space-5);
+  padding: var(--space-5);
   background: var(--surface);
   border: var(--border-width) solid var(--border);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-lg);
 }
-.result h2 { font-size: var(--text-base); font-weight: var(--weight-semibold); margin-bottom: var(--space-2); }
-.result p { color: var(--fg-secondary); margin-bottom: var(--space-3); }
-.result p:last-child { margin-bottom: 0; }
-.result.error h2 { color: var(--danger); }
-.result ul { margin: 0 0 var(--space-3) var(--space-5); color: var(--fg-secondary); }
+.failed-head { font-size: var(--text-h3); font-weight: var(--weight-semibold); line-height: var(--leading-tight); margin-bottom: var(--space-2); }
+.failed > p { color: var(--fg-secondary); margin-bottom: var(--space-4); }
+.actions { display: flex; gap: var(--space-3); flex-wrap: wrap; margin-top: var(--space-4); }
 
+.paste-label { font-size: var(--text-sm); color: var(--fg-secondary); margin-bottom: var(--space-2); }
 .paste {
   font-family: var(--font-mono);
   font-size: var(--text-sm);
@@ -87,8 +96,34 @@ code { font-family: var(--font-mono); font-size: 0.9em; background: var(--code-b
   border-radius: var(--radius-sm);
   padding: var(--space-3);
   white-space: pre-wrap;
+  overflow-wrap: anywhere;
   margin-bottom: var(--space-3);
 }
+
+/* ── warnings, as banners across the top of the demo ── */
+.banner {
+  margin-top: var(--space-4);
+  padding: var(--space-3) var(--space-4);
+  background: var(--warning-bg);
+  border-radius: var(--radius-md);
+  font-size: var(--text-sm);
+}
+.banner-row { display: flex; gap: var(--space-3); align-items: baseline; flex-wrap: wrap; }
+.banner-text { flex: 1 1 260px; }
+.banner-more { margin-top: var(--space-3); }
+
+.small { font-size: var(--text-sm); color: var(--fg-secondary); margin-top: var(--space-2); }
+.link {
+  font: inherit;
+  color: var(--accent);
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.sample-link { margin-top: var(--space-2); font-size: var(--text-sm); }
 
 .btn {
   font: inherit;
@@ -108,5 +143,16 @@ code { font-family: var(--font-mono); font-size: 0.9em; background: var(--code-b
   .title { font-size: var(--text-h1); }
   .lede, .drop-main { font-size: var(--text-base); }
   .drop { padding: var(--space-6) var(--space-4); }
-  .result { padding: var(--space-4); }
+  .failed { padding: var(--space-4); }
 }
+
+.foot {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: var(--space-6) var(--space-4) var(--space-7);
+  border-top: var(--border-width) solid var(--border);
+  font-size: var(--text-sm);
+  color: var(--fg-secondary);
+}
+.foot p + p { margin-top: var(--space-2); }
+.foot a { color: var(--accent); }

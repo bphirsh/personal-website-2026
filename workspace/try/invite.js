@@ -15,9 +15,8 @@
  *
  * The page never breaks on a bad file. A gap gets a default, an unknown value
  * reads as "other", a problem the demo can live with is a warning, and the few
- * files it cannot read at all get one error. Both carry the format's code; the
- * words for each code (and what to paste back to the agent) belong to the
- * page's copy, and the ones here are placeholders until then.
+ * files it cannot read at all get one error. Both carry the format's code and
+ * the page copy's words for it.
  *
  * Deliberately dependency-free, like the rest of the site: the properties block
  * is read by a small YAML subset (key: value, [inline, lists], "- item" lists,
@@ -46,60 +45,81 @@ export const KNOWN = Object.freeze({
   files_live_in: ['desktop', 'documents', 'downloads', 'icloud', 'dropbox', 'google-drive', 'onedrive', 'obsidian-vault', 'git-repos'],
 });
 const LIST_KEYS = Object.keys(KNOWN);
+
+// How a known value is shown (Page copy.md, "Display names").
+export const DISPLAY = Object.freeze({
+  'claude': 'Claude', 'claude-code': 'Claude Code', 'chatgpt': 'ChatGPT', 'codex': 'Codex', 'gemini': 'Gemini',
+  'cursor': 'Cursor', 'copilot': 'Copilot', 'windsurf': 'Windsurf', 'perplexity': 'Perplexity', 'ollama': 'Ollama',
+  'obsidian': 'Obsidian', 'notion': 'Notion', 'apple-notes': 'Apple Notes', 'google-docs': 'Google Docs',
+  'evernote': 'Evernote', 'logseq': 'Logseq', 'bear': 'Bear', 'onenote': 'OneNote', 'word': 'Word', 'confluence': 'Confluence',
+  'desktop': 'Desktop', 'documents': 'Documents', 'downloads': 'Downloads', 'icloud': 'iCloud', 'dropbox': 'Dropbox',
+  'google-drive': 'Google Drive', 'onedrive': 'OneDrive', 'obsidian-vault': 'Obsidian vault', 'git-repos': 'Git repos',
+});
+
+// Anything else is shown as written, hyphens turned to spaces, first letter capitalised.
+function display(written) {
+  const s = String(written).replace(/-/g, ' ');
+  return s.charAt(0).toUpperCase() + s.slice(1);
+}
 const KEYS = ['format', 'invite', 'name', 'platform', 'role', ...LIST_KEYS, 'project'];
 const INVITE_RE = /^\d{2}-[a-z0-9]{4}$/;
 
 /**
- * Placeholder words for each code, until the page copy names them. `message`
- * is for the person; `pasteBack` is what they paste to their agent.
+ * The words for each code, from Marketing/Beta Signups/Page copy.md (27 Oct
+ * 2026): `message` is what the page says, `pasteBack` the box the person
+ * copies to their agent. A warning's `message` is its banner. Keep each one
+ * whole, as the copy asks.
  */
 export const PROBLEMS = Object.freeze({
   'empty-file': {
     kind: 'error',
-    message: 'That file is empty.',
-    pasteBack: 'The invite file you gave me is empty. Please write it again in the workspace-invite/1 format, starting with the --- properties block.',
+    message: 'The file is empty.',
+    pasteBack: 'The invite file you wrote for me is empty. Please write it again in the workspace-invite/1 format from my first message, with my answers, and save it again.',
   },
   'not-text': {
     kind: 'error',
-    message: "That doesn't look like a text file.",
-    pasteBack: 'The file I dropped is not plain text. Please give me the invite file as a plain markdown (.md) file in the workspace-invite/1 format.',
+    message: "This isn't a text file. Workspace invite files are plain text ending in .md.",
+    pasteBack: "The file I dropped on the page wasn't plain text. Please save my invite file again as plain text, named workspace-<my first name>.md, with nothing but the workspace-invite/1 file in it.",
   },
   'too-large': {
     kind: 'error',
-    message: 'That file is too big to be an invite file.',
-    pasteBack: 'The invite file is over 200 KB. Please write it again in the workspace-invite/1 format, keeping each page to a few short paragraphs.',
+    message: 'This file is too big to be an invite file (over 200 KB).',
+    pasteBack: 'My invite file is over 200 KB, which is too big. Please write it again in the workspace-invite/1 format, keeping each page to a few sentences and the table to a few rows.',
   },
   'no-properties': {
     kind: 'error',
-    message: "That file doesn't start with the invite's properties.",
-    pasteBack: 'The invite file has no properties block. Please put the --- block (format, invite, name, platform, role, ai_tools, knowledge_tools, files_live_in, project) at the very top, before the first # heading, and give me the file again.',
+    message: 'The file is missing the block of answers at the top, between two lines of ---.',
+    pasteBack: 'My invite file is missing its properties block. Please put these lines at the very top, before any heading, with my answers filled in, and save it again:\n---\nformat: workspace-invite/1\ninvite: <the code from my invite email>\nname: <my first name>\nplatform:\nrole:\nai_tools: []\nknowledge_tools: []\nfiles_live_in: []\nproject:\n---',
   },
   'unclosed-properties': {
     kind: 'error',
-    message: 'The properties at the top of the file never end.',
-    pasteBack: 'The invite file opens its properties block with a --- line but never closes it. Please add a line containing only --- after the last property, then give me the file again.',
+    message: 'The block of answers at the top starts with --- but never ends with a second ---.',
+    pasteBack: 'In my invite file, the properties block at the top starts with a --- line but has no closing --- line. Please add a line with just --- right after the last property (the line starting files_live_in: or project:), before the first # heading, and save it again.',
   },
   'unknown-version': {
     kind: 'error',
-    message: 'That invite file is in a format this page does not know.',
-    pasteBack: 'The invite file says format: {found}. This page reads workspace-invite/1. Please rewrite the file in that format, with the line format: workspace-invite/1',
+    message: "This file says it's format {found}, and this page reads workspace-invite/1.",
+    pasteBack: 'My invite file says format: {found}. Please change that line to exactly format: workspace-invite/1, check the rest of the file follows that format, and save it again.',
   },
   'bad-table': {
     kind: 'warning',
-    message: 'The database "{name}" was left out: its table could not be read.',
-    pasteBack: 'In the invite file, the "# Database: {name}" section needs one pipe table: a header row, then a separator row like | --- | --- |, then one line per row. Please fix it and give me the file again.',
+    message: 'Your "{name}" table couldn\'t be read, so it\'s left out. Everything else is here.',
+    pasteBack: 'In my invite file, the table under "# Database: {name}" can\'t be read. It needs a header row, then a separator row like | --- | --- | with one --- per column, then one row per line, each starting and ending with |. Please fix that table and save the file again.',
   },
   'bad-invite': {
     kind: 'warning',
-    message: 'Your invite code is missing. Copy it from your email into the file.',
-    pasteBack: 'The invite file needs my invite code from the email, in the form 07-k3f9, on the line invite: in the properties block. Please add it and give me the file again.',
+    message: "Your file has no invite code, so if you press the button at the end, Brian won't know it was you.",
+    // When the line is there but is not a code.
+    messageFound: 'Your invite code "{found}" doesn\'t look right; codes look like 07-k3f9. If you press the button at the end, Brian won\'t know it was you.',
+    pasteBack: 'Please set the invite line in my invite file to exactly the code from my invite email, which looks like 07-k3f9, and save it again.',
   },
 });
 
 function problem(code, vars = {}) {
   const p = PROBLEMS[code];
   const fill = (s) => s.replace(/\{(\w+)\}/g, (_, k) => String(vars[k] ?? ''));
-  return { code, ...vars, message: fill(p.message), pasteBack: fill(p.pasteBack) };
+  const message = vars.found !== undefined && p.messageFound ? p.messageFound : p.message;
+  return { code, ...vars, message: fill(message), pasteBack: fill(p.pasteBack) };
 }
 
 const fail = (code, vars) => ({ ok: false, error: problem(code, vars) });
@@ -165,7 +185,10 @@ function read(text) {
   const warnings = [];
   const { pages, tasks, databases } = parseSections(lines.slice(close + 1), warnings);
   const properties = normalise(raw, pages);
-  if (properties.invite === null) warnings.unshift(problem('bad-invite'));
+  if (properties.invite === null) {
+    const written = raw.invite !== undefined ? scalar(raw.invite).trim() : '';
+    warnings.unshift(problem('bad-invite', written ? { found: written.slice(0, 32) } : {}));
+  }
 
   return { ok: true, invite: { format: FORMAT, properties, pages, tasks, databases }, warnings };
 }
@@ -266,7 +289,7 @@ function normalise(raw, pages) {
     // counted as other.
     p[key] = items.map((x) => String(x).trim()).filter(Boolean).slice(0, MAX_LIST).map((x) => {
       const id = token(x);
-      return KNOWN[key].includes(id) ? { id, label: id, known: true } : { id: 'other', label: cut(x, 40), known: false };
+      return KNOWN[key].includes(id) ? { id, label: DISPLAY[id] ?? id, known: true } : { id: 'other', label: display(cut(x, 40)), known: false };
     });
   }
 
