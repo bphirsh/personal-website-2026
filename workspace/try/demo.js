@@ -27,12 +27,12 @@ const WORDS = {
 // Stand-ins for what a file left out, and for folders not built from it
 // (Page copy.md, "The sample's contents"). They show with the Sample chip.
 const SAMPLE = {
-  page: { title: 'Start here', body: "This folder is a page in Workspace: its README on top, then its tasks, then everything it holds.\n\nWhen your agent saves a file in here, it appears as a page or a database the moment it's written." },
-  research: { title: 'Interview notes', body: '## What we heard\n- Three of five people keep notes in more than one app.\n- Most search their Desktop before they search their notes.\n\n## Open questions\n- Which notes should an agent read first?\n- What would make people trust a draft it writes?' },
+  page: { title: 'Start here', body: 'A folder in Workspace is a page: its README, its tasks, then everything in it.\n\nWhen your agent saves a file here, it shows up at once.' },
+  research: { title: 'Interview notes', body: '## What we heard\n- Three of five people keep notes in more than one app.\n- Most search their Desktop before they search their notes.\n\n## Open question\n- Which notes should an agent read first?' },
   tasks: [
-    { text: "Collect last week's notes into one folder", done: true },
+    { text: "Gather last week's notes", done: true },
     { text: 'Ask the agent for a first draft', done: false },
-    { text: 'Read the draft and send it on', done: false },
+    { text: 'Review and send the draft', done: false },
   ],
   clients: { name: 'Clients', columns: ['Name', 'Stage', 'Next step'], rows: [['Riverside Bakery', 'Proposal', 'Send the estimate'], ['Lantern Studio', 'Signed', 'Kick-off call'], ['Hollow Pine Co-op', 'First call', 'Write up the notes']] },
 };
