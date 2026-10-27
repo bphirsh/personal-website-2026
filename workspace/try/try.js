@@ -147,7 +147,8 @@ function showError(error) {
   failed.append(el('h2', 'failed-head', WORDS.errorHeading), el('p', null, error.message), pasteBox(error.pasteBack));
   const again = el('button', 'btn', WORDS.tryAnother);
   again.type = 'button';
-  again.addEventListener('click', () => { reset(); pick.click(); });
+  // Only opens the picker: the page is cleared once a file is chosen (take), so cancelling leaves this panel where it was.
+  again.addEventListener('click', () => pick.click());
   const sample = el('button', 'btn btn-quiet', WORDS.sampleInstead);
   sample.type = 'button';
   sample.addEventListener('click', showSample);
@@ -179,7 +180,8 @@ async function showSample() {
   if (!isPhone()) {
     const load = el('button', 'link', WORDS.loadMine);
     load.type = 'button';
-    load.addEventListener('click', () => { reset(); pick.click(); });
+    // As Load a different file: cancelling the picker leaves the example data where it was.
+    load.addEventListener('click', () => pick.click());
     row.appendChild(load);
   }
   b.appendChild(row);
