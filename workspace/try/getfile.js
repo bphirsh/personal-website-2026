@@ -3,14 +3,16 @@
  *
  * The prompt is shipped with the page (prompt-data.js, from Prompt.md), and filled here by Prompt.md's own rule. With a code from the link's `#`, `{code}` is replaced in all three places. Without one, the template's invite line and the rule that copies it are deleted, and the link loses its `#`. The copied text then never holds a `{`. Nothing is sent anywhere.
  *
+ * Since the one-screen landing (Brian, 27 Oct 2026) the button is a card showing the prompt's first lines (`peek`), so it reads as copying a prompt.
+ *
  * Words are from Marketing/Beta Signups/Page copy.md, "The drop zone".
  */
 
 import { PAGE_PROMPT } from './prompt-data.js';
 
 const WORDS = {
-  copied: 'Copied! Paste it into Claude, ChatGPT or any agent, then drop the file it makes here.',
-  failed: "Couldn't copy. Select the prompt below and copy it yourself.",
+  copied: 'Copied! Paste it into Claude, ChatGPT or any agent, then drop the file it makes above.',
+  failed: "Couldn't copy. Select the prompt and copy it yourself.",
 };
 
 /** The prompt to copy, for a code (`07-k3f9`) or none. */
@@ -21,6 +23,11 @@ export function fillPrompt(code, prompt = PAGE_PROMPT) {
     .filter((line) => line.trim() !== 'invite: {code}' && !line.includes('Copy the invite line exactly as written: invite: {code}'))
     .join('\n')
     .replaceAll('https://www.brianhirsh.com/workspace/try#{code}', 'https://www.brianhirsh.com/workspace/try');
+}
+
+/** The first lines of the prompt, for the card to show. */
+export function peek(code, lines = 4) {
+  return fillPrompt(code).split('\n').filter((l) => l.trim()).slice(0, lines).join('\n');
 }
 
 /**

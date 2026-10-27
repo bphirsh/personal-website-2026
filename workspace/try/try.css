@@ -58,18 +58,9 @@ code { font-family: var(--font-mono); font-size: 0.9em; background: var(--code-b
 .drop.over { background: var(--accent-soft); border-color: var(--accent); border-style: solid; }
 .drop input { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
 .drop-main { font-size: var(--text-prose); font-weight: var(--weight-medium); }
-.drop-sub { font-size: var(--text-sm); color: var(--fg-secondary); }
-.drop-button {
-  display: inline-block;
-  margin-left: var(--space-1);
-  padding: var(--space-1) var(--space-3);
-  color: var(--fg);
-  background: var(--surface);
-  border: var(--border-width) solid var(--border);
-  border-radius: var(--radius-md);
-  font-weight: var(--weight-medium);
-}
-.drop:hover .drop-button { background: var(--hover); }
+.drop-main { max-width: 22em; }
+.drop-icon { width: var(--space-7); height: var(--space-7); fill: none; stroke: var(--fg-secondary); stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+.drop:hover .drop-icon, .drop.over .drop-icon { stroke: var(--accent); }
 
 .privacy {
   margin-top: var(--space-3);
@@ -124,8 +115,27 @@ code { font-family: var(--font-mono); font-size: 0.9em; background: var(--code-b
   text-decoration: underline;
   text-underline-offset: 2px;
 }
-.get-file { display: flex; align-items: center; gap: var(--space-4); flex-wrap: wrap; margin-top: var(--space-4); }
-.get-file[hidden] { display: none; }
+/* ── no file yet: the prompt card, secondary, below the zone. It reads as a prompt being copied, not as a button: a few lines in monospace, fading out, with a copy mark. ── */
+.no-file { margin-top: var(--space-5); }
+.no-file[hidden] { display: none; }
+.no-file-lead { font-size: var(--text-sm); font-weight: var(--weight-medium); color: var(--fg); margin-bottom: var(--space-2); }
+.no-file-row { display: flex; align-items: center; gap: var(--space-5); }
+.prompt-card {
+  position: relative; flex: 1; min-width: 0; display: flex; flex-direction: column; gap: var(--space-2);
+  padding: var(--space-3) var(--space-7) var(--space-3) var(--space-4);
+  font: inherit; text-align: left; color: var(--fg-secondary); cursor: copy;
+  background: var(--code-bg); border: var(--border-width) solid var(--border); border-radius: var(--radius-md);
+}
+.prompt-card:hover { border-color: var(--fg-faint); color: var(--fg); }
+.prompt-card:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 2px; }
+.prompt-card-label { font-size: var(--text-sm); }
+.prompt-card-peek {
+  display: block; max-height: calc(var(--text-xs) * var(--leading-ui) * 3); overflow: hidden;
+  font-family: var(--font-mono); font-size: var(--text-xs); line-height: var(--leading-ui); color: var(--fg-secondary); white-space: pre-wrap;
+  -webkit-mask-image: linear-gradient(to bottom, #000 30%, transparent); mask-image: linear-gradient(to bottom, #000 30%, transparent);
+}
+.prompt-card-copy { position: absolute; top: var(--space-3); right: var(--space-3); width: var(--icon-size); height: var(--icon-size); fill: none; stroke: currentColor; stroke-width: 1.75; stroke-linecap: round; stroke-linejoin: round; }
+.no-file-row .skip-demo { flex: none; }
 .skip-demo { font-size: var(--text-sm); color: var(--fg-secondary); text-decoration-color: var(--fg-faint); }
 .skip-demo:hover { color: var(--fg); }
 .get-file-status { margin-top: var(--space-2); font-size: var(--text-sm); color: var(--fg); min-height: 1em; }
@@ -266,7 +276,6 @@ code { font-family: var(--font-mono); font-size: 0.9em; background: var(--code-b
 .promises .icon { color: var(--accent); }
 .promises .promises-lead { color: var(--fg-secondary); font-weight: var(--weight-normal); }
 .foot-note { color: var(--fg); margin-bottom: var(--space-2); }
-.foot-made a { color: var(--accent); }
 
 @media (max-width: 600px) {
   .reply { padding: var(--space-4); }
@@ -461,3 +470,13 @@ code { font-family: var(--font-mono); font-size: 0.9em; background: var(--code-b
 .cover-head { font-size: var(--text-h1); font-weight: var(--weight-semibold); line-height: var(--leading-tight); max-width: 14em; }
 .cover-text { font-size: var(--text-prose); line-height: var(--leading-prose); color: var(--fg-secondary); max-width: 22em; }
 .cover-link { align-self: center; font-size: var(--text-base); color: var(--fg-secondary); }
+
+/* ── the landing: before a file or the example data is shown, the intro, the drop zone, the prompt card and the foot fit one screen (Brian, 27 Oct 2026). The zone takes the room that is left. try.js removes "landing" with the intro. ── */
+body.landing { min-height: 100vh; min-height: 100dvh; display: flex; flex-direction: column; }
+body.landing .try { flex: 1; width: 100%; display: flex; flex-direction: column; padding-top: var(--space-6); padding-bottom: var(--space-5); }
+body.landing .topbar { margin-bottom: var(--space-5); }
+body.landing .intro, body.landing #intake { flex: 1; display: flex; flex-direction: column; }
+body.landing #intake[hidden] { display: none; }
+body.landing .drop { flex: 1; min-height: 200px; justify-content: center; }
+body.landing .foot { width: 100%; padding-top: var(--space-4); padding-bottom: var(--space-5); }
+.foot-made { margin-top: var(--space-4); text-align: center; font-size: var(--text-xs); color: var(--fg-faint); }
