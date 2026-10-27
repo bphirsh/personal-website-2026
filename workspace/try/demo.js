@@ -3,8 +3,12 @@
  * invite file.
  *
  * Named as v0/Terms.md names the app's parts: a left bar holding the tree, a
- * pane with a tab bar, and three kinds of page (folder page, markdown page,
- * database page). It is a preview: ticking a task or selecting a cell works,
+ * pane with a tab bar, and its kinds of page: folder pages, markdown pages,
+ * database pages and code pages. Folder pages come in the app's three kinds
+ * (Brian's screenshots, 27 Oct 2026): a basic one (Folders as tiles, then
+ * Documents as a table), a project one (the same, with the folder's tasks in
+ * a column on the right) and a repository one (with its branch, languages
+ * and branches on the right). It is a preview: ticking a task or selecting a cell works,
  * and nothing is saved anywhere, which the line above the window says.
  *
  * The starting folder follows the role (Page copy.md, "The demo"): a coder
@@ -37,6 +41,55 @@ const SAMPLE = {
   ],
   clients: { name: 'Clients', columns: ['Name', 'Stage', 'Next step'], rows: [['Riverside Bakery', 'Proposal', 'Send the estimate'], ['Lantern Studio', 'Signed', 'Kick-off call'], ['Hollow Pine Co-op', 'First call', 'Write up the notes']] },
 };
+
+// The one code folder every demo has (Brian, 27 Oct 2026: "include one codebase folder page"), made up and short, with the Sample chip: a repository folder page, and code pages for its files. Words checked with MC: Invite.
+const REPO = {
+  name: 'porch-weather',
+  modified: 'Yesterday',
+  repo: {
+    branch: 'main',
+    languages: [['TypeScript', 71], ['CSS', 18], ['HTML', 8], ['Markdown', 3]],
+    branches: [
+      { name: 'main', sha: '3f9c2e1', when: 'Yesterday', current: true },
+      { name: 'add-hourly-view', sha: '8b41d07', when: 'Yesterday' },
+      { name: 'fix-rain-units', sha: 'c5e9a12', when: '3 days ago' },
+    ],
+  },
+  folders: {
+    src: [
+      ['main.ts', "import { forecast } from './forecast';\n\nconst place = 'Lisbon';\nforecast(place).then((days) => {\n  document.querySelector('#today')!.textContent = days[0].summary;\n});\n", '2 days ago'],
+      ['forecast.ts', "export type Day = { summary: string; high: number; low: number };\n\nexport async function forecast(place: string): Promise<Day[]> {\n  const res = await fetch(`/api/forecast?place=${encodeURIComponent(place)}`);\n  return res.json();\n}\n", 'Yesterday'],
+      ['styles.css', "body {\n  font-family: system-ui, sans-serif;\n  margin: 2rem;\n}\n\n#today {\n  font-size: 2rem;\n}\n", '4 days ago'],
+    ],
+    tests: [
+      ['forecast.test.ts', "import { test, expect } from 'vitest';\nimport { forecast } from '../src/forecast';\n\ntest('returns days', async () => {\n  expect((await forecast('Lisbon')).length).toBeGreaterThan(0);\n});\n", 'Yesterday'],
+    ],
+    docs: [
+      ['setup.md', '# Setup\n\n1. `npm install`\n2. `npm run dev`\n3. Open the address it prints.\n', 'Last week'],
+    ],
+    scripts: [
+      ['release.sh', '#!/bin/sh\nset -e\nnpm test\nnpm run build\n', 'Last week'],
+    ],
+  },
+  files: [
+    ['README.md', '# porch-weather\n\nA tiny weather app for one place you care about.\n\n## Run it\n\n```\nnpm install\nnpm run dev\n```\n', 'Yesterday'],
+    ['index.html', '<!doctype html>\n<title>porch-weather</title>\n<link rel="stylesheet" href="/src/styles.css">\n<p id="today">Loading…</p>\n<script type="module" src="/src/main.ts"></script>\n', '4 days ago'],
+    ['package.json', '{\n  "name": "porch-weather",\n  "private": true,\n  "scripts": {\n    "dev": "vite",\n    "build": "vite build",\n    "test": "vitest run"\n  }\n}\n', 'Yesterday'],
+    ['tsconfig.json', '{\n  "compilerOptions": {\n    "target": "ES2022",\n    "module": "ESNext",\n    "strict": true\n  }\n}\n', 'Last week'],
+    ['vite.config.ts', "import { defineConfig } from 'vite';\n\nexport default defineConfig({ server: { port: 5173 } });\n", 'Last week'],
+  ],
+};
+
+// A file's kind as the folder page's Documents table names it.
+const KINDS = { md: 'Markdown', ts: 'TS', css: 'CSS', html: 'HTML', json: 'JSON', sh: 'Shell', txt: 'Text' };
+
+function repoFolder() {
+  const file = ([name, text, modified]) => /\.md$/.test(name)
+    ? node('md', name, { title: name.replace(/\.md$/, ''), body: text, modified, sample: true })
+    : node('code', name, { title: name, text, modified, sample: true });
+  const folders = Object.entries(REPO.folders).map(([name, files]) => node('folder', name, { children: files.map(file), modified: files[0][2] }));
+  return node('folder', REPO.name, { children: [...folders, ...REPO.files.map(file)], repo: REPO.repo, modified: REPO.modified, sample: true });
+}
 
 // The made-up people below the visitor's own row in People (Page copy, M-015): first names only, none meant to be anyone, the same in every demo.
 const DEFAULT_PEOPLE = [
@@ -86,9 +139,11 @@ export function buildVault(invite, fileName, fileText) {
   const file = node('file', fileName, { title: fileName.replace(/\.(md|txt)$/i, ''), text: fileText });
   let start;
 
+  // Projects holds the code folder in every demo, so a demo has all three kinds of folder page.
+  const repo = repoFolder();
   if (coder) {
     const project = node('folder', p.project, { children: [...theirPages, theirTasks], open: true });
-    root.push(node('folder', 'Projects', { children: [project], open: true }));
+    root.push(node('folder', 'Projects', { children: [project, repo], open: true }));
     start = project;
   }
   if (knowledge) {
@@ -98,6 +153,7 @@ export function buildVault(invite, fileName, fileText) {
     start ??= research;
     // Clients: theirs when the file is a knowledge worker's, else the page's own.
     if (coder || !theirDbs.length) dbs.push(node('db', 'Clients', { db: copyDb(SAMPLE.clients), sample: true }));
+    if (!coder) root.push(node('folder', 'Projects', { children: [repo] }));
   }
   root.push(...theirDbs, ...dbs, people, tools, file);
 
@@ -203,6 +259,9 @@ export function mountDemo(mount, invite, fileName, fileText, options = {}) {
           li.setAttribute('aria-expanded', String(!!n.open));
         } else if (n.kind === 'db') {
           lead.appendChild(dbMark());
+        } else {
+          // A page or a code file shows its kind's icon, as the app's left bar does; a folder keeps its chevron.
+          lead.appendChild(icon(ICONS[KIND_ICON[n.kind]], 'tree-icon'));
         }
         row.append(lead, el('span', 'tree-name', n.name));
         if (n.sample) row.appendChild(el('span', 'chip', WORDS.sample));
@@ -218,7 +277,7 @@ export function mountDemo(mount, invite, fileName, fileText, options = {}) {
       }
     };
     walk(vault.root, 0, list);
-    const head = el('div', 'leftbar-head', `${vault.owner === 'You' ? 'Your' : `${vault.owner}'s`} vault`);
+    const head = el('div', 'leftbar-head', vaultName());
     left.replaceChildren(head, list);
   }
 
@@ -248,7 +307,7 @@ export function mountDemo(mount, invite, fileName, fileText, options = {}) {
     const n = state.active;
     if (!n) return;
     page.dataset.kind = n.kind;
-    page.appendChild(breadcrumbs(n));
+    page.appendChild(pageHeader(n));
     // A database page carries its own, smaller title in its header, as the app's does.
     if (n.kind !== 'db') page.appendChild(el('h1', 'page-title', tabTitle(n)));
     if (n.kind === 'folder') folderPage(n);
@@ -256,49 +315,153 @@ export function mountDemo(mount, invite, fileName, fileText, options = {}) {
     else if (n.kind === 'tasks') page.appendChild(checklist(n));
     else if (n.kind === 'db') page.appendChild(databasePage(n));
     else if (n.kind === 'file') filePage(n);
+    else if (n.kind === 'code') page.appendChild(codePage(n));
     page.scrollTop = 0;
   }
 
-  function breadcrumbs(n) {
+  // The header row, as the app's: breadcrumbs from the vault down to this page, then when it was edited.
+  function pageHeader(n) {
     const trail = [];
     for (let p = parents.get(n.id); p; p = parents.get(p.id)) trail.unshift(p);
     const bar = el('div', 'crumbs');
+    bar.append(el('span', 'crumb crumb-root', vaultName()), el('span', 'crumb-sep', '›'));
     for (const p of trail) {
       const b = el('button', 'crumb', p.name);
       b.type = 'button';
       b.addEventListener('click', () => open(p));
-      bar.append(b, el('span', 'crumb-sep', '/'));
+      bar.append(b, el('span', 'crumb-sep', '›'));
     }
-    return bar;
+    bar.appendChild(el('span', 'crumb crumb-here', tabTitle(n)));
+    const head = el('div', 'page-header');
+    head.append(bar, el('span', 'page-edited', `Edited ${n.modified ? n.modified.toLowerCase() : 'just now'}`));
+    return head;
   }
 
+  function vaultName() {
+    return `${vault.owner === 'You' ? 'Your' : `${vault.owner}'s`} vault`;
+  }
+
+  // A folder page in one of the app's three kinds: basic, project (it holds a tasks.md) and repository (it is a code folder). Folders first, as tiles; then Documents, as a table; the project's tasks or the repository's facts in a column on the right.
   function folderPage(n) {
-    const sec = el('section', 'section');
-    sec.appendChild(el('h2', 'section-head', 'Contents'));
-    const ul = el('ul', 'contents');
-    for (const c of n.children) {
-      const li = el('li');
-      const b = el('button', 'contents-row');
-      b.type = 'button';
-      if (c.kind === 'db') b.appendChild(dbMark());
-      b.appendChild(el('span', null, c.kind === 'folder' ? `${c.name}/` : c.name));
-      if (c.sample) b.appendChild(el('span', 'chip', WORDS.sample));
-      b.addEventListener('click', () => open(c));
-      li.appendChild(b);
-      ul.appendChild(li);
-    }
-    sec.appendChild(ul);
     const tasks = n.children.find((c) => c.kind === 'tasks');
-    if (tasks) {
-      const t = el('section', 'section');
-      t.appendChild(el('h2', 'section-head', 'tasks'));
-      t.appendChild(checklist(tasks));
-      page.appendChild(t);
+    const aside = n.repo ? repoColumn(n.repo) : tasks ? tasksColumn(tasks) : null;
+    const main = el('div', 'folder-main');
+    const folders = n.children.filter((c) => c.kind === 'folder');
+    const docs = n.children.filter((c) => c.kind !== 'folder');
+    if (folders.length) {
+      const sec = el('section', 'section');
+      sec.appendChild(el('h2', 'section-head', 'Folders'));
+      const tiles = el('div', 'folder-tiles');
+      for (const c of folders) {
+        const b = el('button', 'folder-tile');
+        b.type = 'button';
+        b.append(icon(ICONS.folder, 'folder-tile-icon'), el('span', 'folder-tile-name', c.name));
+        if (c.sample && !n.sample) b.appendChild(el('span', 'chip', WORDS.sample));
+        b.addEventListener('click', () => open(c));
+        tiles.appendChild(b);
+      }
+      sec.appendChild(tiles);
+      main.appendChild(sec);
     }
-    page.appendChild(sec);
+    if (docs.length) {
+      const sec = el('section', 'section');
+      sec.appendChild(el('h2', 'section-head', 'Documents'));
+      const table = el('div', 'doc-table');
+      table.setAttribute('role', 'table');
+      const head = el('div', 'doc-row doc-head');
+      head.setAttribute('role', 'row');
+      for (const h of ['Name', 'Kind', 'Modified', 'Size']) head.appendChild(el('span', `doc-cell doc-${h.toLowerCase()}`, h));
+      table.appendChild(head);
+      for (const c of docs) {
+        const row = el('button', 'doc-row');
+        row.type = 'button';
+        row.setAttribute('role', 'row');
+        const name = el('span', 'doc-cell doc-name');
+        name.appendChild(c.kind === 'db' ? dbMark() : icon(ICONS[KIND_ICON[c.kind]], 'doc-icon'));
+        name.appendChild(el('span', 'doc-name-text', c.name.replace(/\.md$/i, '')));
+        if (c.sample && !n.sample) name.appendChild(el('span', 'chip', WORDS.sample));
+        row.append(name, el('span', 'doc-cell doc-kind', kindOf(c)), el('span', 'doc-cell doc-modified', c.modified ?? 'Today'), el('span', 'doc-cell doc-size', sizeOf(c)));
+        row.addEventListener('click', () => open(c));
+        table.appendChild(row);
+      }
+      sec.appendChild(table);
+      main.appendChild(sec);
+    }
+    const body = el('div', `folder-body${aside ? ' split' : ''}`);
+    body.appendChild(main);
+    if (aside) body.appendChild(aside);
+    page.appendChild(body);
   }
 
-  function checklist(n) {
+  // The project folder's column: its tasks, how many are done, and the two controls the app has there.
+  function tasksColumn(tasks) {
+    const col = el('aside', 'folder-aside');
+    const bar = el('div', 'folder-tasks-bar');
+    const showDone = el('button', 'folder-tasks-btn', 'Show completed');
+    showDone.type = 'button';
+    showDone.setAttribute('aria-pressed', String(!!tasks.showDone));
+    showDone.addEventListener('click', () => { tasks.showDone = !tasks.showDone; renderPage(); });
+    const openIt = el('button', 'folder-tasks-btn', 'Open');
+    openIt.type = 'button';
+    openIt.addEventListener('click', () => open(tasks));
+    const controls = el('span', 'folder-tasks-controls');
+    controls.append(showDone, openIt);
+    bar.append(el('h2', 'folder-tasks-label', 'Tasks'), controls);
+    const done = tasks.tasks.filter((t) => t.done).length;
+    col.append(bar, el('p', 'folder-tasks-count', `${done} of ${tasks.tasks.length} done`));
+    const shown = { ...tasks, tasks: tasks.tasks.filter((t) => tasks.showDone || !t.done) };
+    col.appendChild(checklist(shown, () => renderPage()));
+    return col;
+  }
+
+  // The repository's column, as the app's RepositoryFolder: the branch, a language bar in the chart colours with its legend, then Branches.
+  function repoColumn(r) {
+    const col = el('aside', 'folder-aside repo');
+    const head = el('div', 'repo-head');
+    head.append(icon(ICONS.code, 'repo-icon'), el('strong', null, r.branch));
+    const bar = el('div', 'repo-bar');
+    bar.setAttribute('role', 'img');
+    bar.setAttribute('aria-label', `Languages: ${r.languages.map(([name, share]) => `${name} ${share}%`).join(' · ')}`);
+    const legend = el('ul', 'repo-legend');
+    r.languages.forEach(([name, share], i) => {
+      const part = el('span', 'repo-bar-part');
+      part.style.flexGrow = share;
+      part.style.background = `var(--chart-${i + 1})`;
+      part.title = `${name} · ${share}%`;
+      bar.appendChild(part);
+      const li = el('li');
+      const sw = el('span', 'repo-swatch');
+      sw.style.background = `var(--chart-${i + 1})`;
+      li.append(sw, el('span', null, name), el('span', 'repo-dim', `${share}%`));
+      legend.appendChild(li);
+    });
+    const branches = el('ul', 'repo-branches');
+    for (const b of r.branches) {
+      const li = el('li');
+      const top = el('div', 'repo-branch-top');
+      top.appendChild(el('span', `repo-branch-name${b.current ? ' on' : ''}`, b.name));
+      if (b.current) top.appendChild(el('span', 'repo-tag', 'current'));
+      const meta = el('div', 'repo-branch-meta repo-dim');
+      meta.append(el('span', 'repo-sha', b.sha), el('span', null, b.when), el('span', null, 'local only'));
+      li.append(top, meta);
+      branches.appendChild(li);
+    }
+    col.append(head, bar, legend, el('h3', 'repo-heading', 'Branches'), branches);
+    return col;
+  }
+
+  // A code file, as a code page: its text in monospace with line numbers.
+  function codePage(n) {
+    const pre = el('pre', 'code-page');
+    n.text.replace(/\n$/, '').split('\n').forEach((line, i) => {
+      const row = el('span', 'code-line');
+      row.append(el('span', 'code-num', String(i + 1)), el('span', 'code-text', line));
+      pre.appendChild(row);
+    });
+    return pre;
+  }
+
+  function checklist(n, after) {
     const ul = el('ul', 'checklist');
     n.tasks.forEach((t) => {
       const li = el('li');
@@ -307,7 +470,7 @@ export function mountDemo(mount, invite, fileName, fileText, options = {}) {
       const box = el('input');
       box.type = 'checkbox';
       box.checked = t.done;
-      box.addEventListener('change', () => { t.done = box.checked; label.classList.toggle('done', t.done); });
+      box.addEventListener('change', () => { t.done = box.checked; label.classList.toggle('done', t.done); after?.(); });
       label.append(box, el('span', null, t.text));
       li.appendChild(label);
       ul.appendChild(li);
@@ -542,7 +705,12 @@ const ICONS = {
   select: 'M6 9l6 6 6-6',
   date: 'M5 6h14v14H5zM5 10h14M9 4v4M15 4v4',
   page: 'M7 3h7l5 5v13H7zM14 3v5h5',
+  folder: 'M3 7a1 1 0 011-1h5l2 2h9a1 1 0 011 1v9a1 1 0 01-1 1H4a1 1 0 01-1-1z',
+  code: 'M9 8l-4 4 4 4M15 8l4 4-4 4',
 };
+
+// Which icon each kind of node shows, in the left bar and in a folder's Documents.
+const KIND_ICON = { folder: 'folder', md: 'page', tasks: 'page', file: 'page', code: 'code' };
 
 function icon(path, cls) {
   const ns = 'http://www.w3.org/2000/svg';
@@ -581,6 +749,21 @@ export function fieldTypes(db) {
 export function boardField(db, fields) {
   const status = db.columns.findIndex((c, i) => fields[i] === 'select' && /^status$/i.test(c));
   return status !== -1 ? status : fields.indexOf('select');
+}
+
+function kindOf(n) {
+  if (n.kind === 'db') return 'Database';
+  if (n.kind === 'md' || n.kind === 'tasks') return 'Markdown';
+  const ext = n.name.split('.').pop().toLowerCase();
+  return KINDS[ext] ?? ext.toUpperCase();
+}
+
+// A document's size as the app shows it, from its text: bytes, then KB.
+function sizeOf(n) {
+  if (n.kind === 'db') return '—';
+  const text = n.kind === 'tasks' ? n.tasks.map((t) => `- [${t.done ? 'x' : ' '}] ${t.text}`).join('\n') : n.text ?? n.body ?? '';
+  const bytes = new TextEncoder().encode(text).length;
+  return bytes < 1024 ? `${bytes} B` : `${(bytes / 1024).toFixed(1)} KB`;
 }
 
 function tabTitle(n) {
