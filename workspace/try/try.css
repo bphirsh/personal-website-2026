@@ -418,6 +418,8 @@ code { font-family: var(--font-mono); font-size: 0.9em; background: var(--code-b
 .stage-name { font-size: var(--text-base); font-weight: var(--weight-semibold); line-height: var(--leading-ui); padding-top: var(--space-2); text-align: right; color: var(--fg-secondary); }
 .stage.now .stage-name { color: var(--accent); }
 .stage.next .stage-name { color: var(--fg-faint); }
+.stage.soon .stage-name { color: var(--fg-faint); opacity: 0.7; }
+.stage.soon .stage-items li { color: var(--fg-faint); }
 /* The path: one line down the items' left edge, unbroken from stage to stage. */
 .stage-items { list-style: none; position: relative; padding: var(--space-2) 0 var(--space-5) var(--space-6); border-left: 2px solid var(--border); }
 .stage:last-child .stage-items { padding-bottom: var(--space-2); }
@@ -432,6 +434,8 @@ code { font-family: var(--font-mono); font-size: 0.9em; background: var(--code-b
 .stage.done li::before { background: var(--fg-secondary); }
 .stage.now li::before { background: var(--accent); box-shadow: 0 0 0 4px var(--accent-soft); }
 .stage.next li::before { background: var(--bg); border: 2px solid var(--fg-faint); }
+/* Soon: hollow like Next, and lighter (M-019). */
+.stage.soon li::before { background: var(--bg); border: 2px solid var(--border); }
 @media (max-width: 600px) {
   .stage { grid-template-columns: 1fr; }
   /* On a phone each name sits above its items, on the same unbroken path (padding, not margin, so the line has no gap). */
