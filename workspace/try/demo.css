@@ -62,6 +62,7 @@
 .tree-row:hover { background: var(--hover-sunken); }
 .tree-row.active { background: var(--accent-soft); }
 .tree-lead { flex: 0 0 var(--icon-size); display: flex; justify-content: center; color: var(--fg-secondary); font-size: var(--text-xs); }
+.tree-icon { color: var(--fg-secondary); }
 .tree-name { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
 .dbmark {
@@ -125,7 +126,13 @@
   padding: var(--space-5) var(--space-7) var(--space-7);
   container-type: inline-size;
 }
-.crumbs { display: flex; flex-wrap: wrap; gap: var(--space-1); font-size: var(--text-sm); color: var(--fg-secondary); min-height: var(--space-5); }
+/* The header row: breadcrumbs from the vault down, then "Edited …" on the right, as the app's. */
+.page-header { display: flex; align-items: baseline; justify-content: space-between; gap: var(--space-4); }
+.page-edited { flex: none; font-size: var(--text-sm); color: var(--fg-secondary); }
+.crumbs { display: flex; flex-wrap: wrap; gap: var(--space-1); font-size: var(--text-sm); color: var(--fg-secondary); min-height: var(--space-5); min-width: 0; }
+.crumb-root { cursor: default; }
+.crumb-root:hover { color: inherit; }
+.crumb-here { color: var(--fg); cursor: default; }
 .crumb { font: inherit; color: inherit; background: none; border: none; cursor: pointer; }
 .crumb:hover { color: var(--fg); }
 .crumb-sep { color: var(--fg-faint); }
@@ -167,27 +174,76 @@
 /* ── folder page ── */
 .section { margin-bottom: var(--space-6); }
 .section-head { font-size: var(--text-sm); font-weight: var(--weight-medium); color: var(--fg-secondary); margin-bottom: var(--space-2); }
-.contents { list-style: none; border-top: var(--border-width) solid var(--border); }
-.contents li { border-bottom: var(--border-width) solid var(--border); }
-.contents-row {
-  display: flex;
-  align-items: center;
-  width: 100%;
-  min-height: var(--row-sidebar);
-  font: inherit;
-  font-size: var(--text-base);
-  color: var(--fg);
-  background: none;
-  border: none;
-  text-align: left;
-  cursor: pointer;
-  padding: 0 var(--space-2);
+/* Folders as a grid of bordered tiles, then Documents as a table (Name, Kind, Modified, Size), as the app's FolderPage; the project's tasks or the repository's facts in a column on the right once the pane is wide enough. */
+.folder-tiles { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--space-2); }
+.folder-tile {
+  display: flex; align-items: center; gap: var(--space-2); min-width: 0; min-height: calc(var(--row-sidebar) + var(--space-3));
+  padding: 0 var(--space-3); font: inherit; font-size: var(--text-base); color: var(--fg); text-align: left; cursor: pointer;
+  background: var(--surface-sunken); border: var(--border-width) solid var(--border); border-radius: var(--radius-md);
 }
-.contents-row:hover { background: var(--hover); }
+.folder-tile:hover { background: var(--hover-sunken); }
+.folder-tile-icon { color: var(--fg-secondary); }
+.folder-tile-name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.doc-table { display: flex; flex-direction: column; }
+.doc-row {
+  display: grid; grid-template-columns: minmax(0, 1fr) 6em 7em 4.5em; gap: var(--space-3); align-items: center;
+  min-height: var(--row-sidebar); padding: 0 var(--space-2); font: inherit; font-size: var(--text-base); color: var(--fg);
+  text-align: left; background: none; border: none; border-radius: var(--radius-sm); cursor: pointer;
+}
+.doc-row:hover { background: var(--hover); }
+.doc-head { cursor: default; font-size: var(--text-sm); color: var(--fg-secondary); border-bottom: var(--border-width) solid var(--border); border-radius: 0; margin-bottom: var(--space-1); }
+.doc-head:hover { background: none; }
+.doc-name { display: flex; align-items: center; gap: var(--space-2); min-width: 0; }
+.doc-name .dbmark { margin-right: 0; }
+.doc-icon { color: var(--fg-secondary); }
+.doc-name-text { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.doc-kind, .doc-modified, .doc-size { font-size: var(--text-sm); color: var(--fg-secondary); white-space: nowrap; }
+.doc-size { text-align: right; }
+.folder-main { min-width: 0; }
+.folder-aside { min-width: 0; margin-top: var(--space-5); font-size: var(--text-sm); }
+@container (min-width: 760px) {
+  .folder-body.split { display: grid; grid-template-columns: minmax(0, 1fr) calc(var(--space-8) * 4); gap: var(--space-6); }
+  .folder-body.split .folder-aside { margin-top: 0; }
+}
+@container (max-width: 520px) {
+  .folder-tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .doc-row { grid-template-columns: minmax(0, 1fr) 5em; }
+  .doc-modified, .doc-size { display: none; }
+}
+.folder-tasks-bar { display: flex; align-items: baseline; gap: var(--space-2); }
+.folder-tasks-label { flex: 1; font-size: var(--text-sm); font-weight: var(--weight-medium); color: var(--fg); }
+.folder-tasks-controls { display: flex; gap: var(--space-1); }
+.folder-tasks-btn { font: inherit; font-size: var(--text-sm); color: var(--fg-secondary); background: none; border: none; border-radius: var(--radius-sm); padding: 0 var(--space-1); cursor: pointer; }
+.folder-tasks-btn:hover, .folder-tasks-btn[aria-pressed="true"] { color: var(--fg); }
+.folder-tasks-count { color: var(--fg-secondary); margin: var(--space-1) 0 var(--space-3); }
+.folder-aside .prose { font-size: var(--text-base); }
+.repo-head { display: flex; align-items: center; gap: var(--space-2); margin-bottom: var(--space-3); }
+.repo-icon { color: var(--fg-secondary); }
+.repo-dim { color: var(--fg-secondary); }
+.repo-bar { display: flex; gap: calc(var(--border-width) * 2); height: var(--space-2); overflow: hidden; border-radius: var(--radius-sm); background: var(--surface-sunken); }
+.repo-bar-part { border-radius: var(--radius-sm); }
+.repo-legend { display: flex; flex-wrap: wrap; gap: var(--space-1) var(--space-3); margin-top: var(--space-2); list-style: none; }
+.repo-legend li { display: flex; align-items: center; gap: var(--space-1); }
+.repo-swatch { width: var(--space-2); height: var(--space-2); border-radius: var(--radius-sm); }
+.repo-heading { margin: var(--space-4) 0 var(--space-2); color: var(--fg-secondary); font-size: var(--text-sm); font-weight: var(--weight-medium); }
+.repo-branches { list-style: none; }
+.repo-branches li + li { margin-top: var(--space-2); }
+.repo-branch-top { display: flex; align-items: center; gap: var(--space-2); }
+.repo-branch-name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.repo-branch-name.on { font-weight: var(--weight-medium); }
+.repo-tag { flex: none; padding: 0 var(--space-1); font-size: var(--text-xs); color: var(--fg); background: var(--accent-soft); border-radius: var(--radius-sm); }
+.repo-branch-meta { display: flex; gap: var(--space-2); font-size: var(--text-xs); }
+.repo-sha { font-family: var(--font-mono); }
+
+/* ── code page: the file's text in monospace, with line numbers ── */
+.code-page { font-family: var(--font-mono); font-size: var(--text-sm); line-height: var(--leading-ui); background: var(--code-bg); border-radius: var(--radius-md); padding: var(--space-3) 0; overflow-x: auto; }
+.code-line { display: flex; }
+.code-num { flex: none; width: 3em; padding-right: var(--space-3); text-align: right; color: var(--fg-faint); user-select: none; }
+.code-text { white-space: pre; padding-right: var(--space-3); }
 
 /* ── database page, as the app's (v0 ui/db) ── */
 .page[data-kind="db"] { padding-left: 0; padding-right: 0; }
-.page[data-kind="db"] .crumbs { padding-left: var(--db-margin); }
+.page[data-kind="db"] .page-header { padding: 0 var(--space-4) 0 var(--db-margin); }
 .db-page {
   --db-margin: var(--space-7);
   --db-row-line: calc(var(--text-md) * var(--leading-ui));
