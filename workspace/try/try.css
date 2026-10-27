@@ -209,9 +209,6 @@ code { font-family: var(--font-mono); font-size: 0.9em; background: var(--code-b
 .banner-sample { background: var(--accent-soft); }
 
 /* ── on a phone ── */
-.phone { padding: var(--space-5); background: var(--surface); border: var(--border-width) solid var(--border); border-radius: var(--radius-lg); }
-.phone[hidden] { display: none; }
-.phone p { font-size: var(--text-prose); line-height: var(--leading-prose); margin-bottom: var(--space-4); }
 
 /* ── the sample's three taps ── */
 .taps {
@@ -444,3 +441,23 @@ code { font-family: var(--font-mono); font-size: 0.9em; background: var(--code-b
   .stage.done .stage-name { border-left-color: var(--fg-secondary); }
   .stage:first-child .stage-name { padding-top: 0; }
 }
+
+/* ── touch-only devices (a phone or an iPad): two covers in place of the page (Brian, 27 Oct 2026) ── */
+.covers { display: none; }
+@media (hover: none) and (pointer: coarse) {
+  .covers { display: block; }
+  .try, .foot { display: none; }
+}
+/* A fine pointer anywhere (an iPad with a trackpad, a touch laptop) gets the page after all. */
+@media (any-pointer: fine) {
+  .covers { display: none; }
+  .try, .foot { display: block; }
+}
+.cover { min-height: 100vh; min-height: 100dvh; display: flex; flex-direction: column; padding: var(--space-5) var(--space-5) var(--space-7); text-align: center; background: var(--bg); }
+.cover[hidden] { display: none; }
+.cover .back { align-self: flex-start; margin-bottom: 0; }
+.cover-body { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: var(--space-4); }
+.cover-emoji { font-size: 96px; line-height: 1; }
+.cover-head { font-size: var(--text-h1); font-weight: var(--weight-semibold); line-height: var(--leading-tight); max-width: 14em; }
+.cover-text { font-size: var(--text-prose); line-height: var(--leading-prose); color: var(--fg-secondary); max-width: 22em; }
+.cover-link { align-self: center; font-size: var(--text-base); color: var(--fg-secondary); }
