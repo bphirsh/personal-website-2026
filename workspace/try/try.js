@@ -22,7 +22,7 @@ import { mountTaps } from './taps.js';
 import { mountCard } from './card.js';
 import { mountStyleSwitcher } from './style.js';
 import { SAMPLE_TEXT } from './sample-data.js';
-import { wireGetFile } from './getfile.js';
+import { wireGetFile, peek } from './getfile.js';
 
 const WORDS = {
   dragging: 'Let go',
@@ -132,6 +132,7 @@ function anticipate() {
 // Once a file (or the example data) is shown, the intro leaves the page for good (M-015): the heading, its line and the drop zone. A drop on the window, or Load a different file, still opens another.
 function removeIntro() {
   document.getElementById('intro')?.remove();
+  document.body.classList.remove('landing');
 }
 
 // The speed bars grow once, the first time most of them are on screen; with reduced motion they are drawn at full length, still (M-016).
@@ -314,3 +315,4 @@ sampleLink.hidden = false;
 document.getElementById('loadAnother').addEventListener('click', () => pick.click());
 document.getElementById('skipDemo').addEventListener('click', showSample);
 wireGetFile(document.getElementById('getFile'), document.getElementById('getFileStatus'), () => codeFromHash(location.hash));
+document.getElementById('promptPeek').textContent = peek(codeFromHash(location.hash));

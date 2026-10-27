@@ -38,7 +38,8 @@
 <!-- boot.js decides: on a touch-only device it shows the covers below and loads nothing else; otherwise it loads the page's scripts (try.js, and vendor/qrcode.js for the founder card). -->
 <script type="module" src="/workspace/try/boot.js"></script>
 </head>
-<body>
+<!-- "landing" until a file or the example data is shown: the intro, the drop zone and the foot fit one screen (try.css). -->
+<body class="landing">
 
 <!-- On a touch-only device (a phone or an iPad; Brian, 27 Oct 2026), the page is replaced by these two covers, and none of its scripts run. Shown by CSS on the same rule, so they show before any script; boot.js swaps the first for the second. -->
 <div class="covers" id="covers">
@@ -75,18 +76,26 @@
   </header>
 
   <div id="intake">
+    <!-- The main action (Brian, 27 Oct 2026: the landing fits one screen): the whole zone is the click target. -->
     <label class="drop" id="drop" for="pick">
-      <span class="drop-main" id="dropMain">Drop your workspace file here</span>
-      <span class="drop-sub">or <span class="drop-button">Choose file</span></span>
+      <svg class="drop-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15V4M7 9l5-5 5 5M4 15v4a1 1 0 001 1h14a1 1 0 001-1v-4"/></svg>
+      <span class="drop-main" id="dropMain">Drop your workspace file here, or click to choose it</span>
     </label>
 
     <p class="privacy">Nothing leaves your computer. This all runs in your browser.</p>
-    <!-- Get my file copies the prompt; Skip goes straight to the demo with the example data (M-017). -->
-    <div class="get-file" id="sampleLink" hidden>
-      <button type="button" class="btn" id="getFile">Get my file</button>
-      <button type="button" class="link skip-demo" id="skipDemo">Skip, use demo data</button>
+    <!-- Secondary: the card copies the prompt (it reads as a prompt, not a button); Skip goes straight to the demo with the example data (M-017). -->
+    <div class="no-file" id="sampleLink" hidden>
+      <p class="no-file-lead">No file yet?</p>
+      <div class="no-file-row">
+        <button type="button" class="prompt-card" id="getFile">
+          <span class="prompt-card-label">Click to copy a prompt for your AI. It asks a few questions and writes your file.</span>
+          <span class="prompt-card-peek" id="promptPeek" aria-hidden="true"></span>
+          <svg class="prompt-card-copy" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 9h10v11H9zM5 15H4V4h11v1"/></svg>
+        </button>
+        <button type="button" class="link skip-demo" id="skipDemo">Skip, use demo data</button>
+      </div>
+      <p class="get-file-status" id="getFileStatus" role="status" aria-live="polite"></p>
     </div>
-    <p class="get-file-status" id="getFileStatus" role="status" aria-live="polite"></p>
   </div>
 
   </section>
@@ -189,8 +198,8 @@
     <li><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3a9 9 0 109 9 3 3 0 01-3-3 3 3 0 01-3-3 3 3 0 01-3-3zM9 10h.01M14 15h.01M9 16h.01M4 4l16 16"/></svg>No cookies</li>
     <li><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7zM12 15a3 3 0 100-6 3 3 0 000 6zM4 4l16 16"/></svg>No tracking</li>
   </ul>
-  <p class="foot-note">No catch. I just wanted to make this fun. — Brian</p>
-  <p class="foot-made">Made by Brian Hirsh · <a href="/workspace/signup/">Public signup page</a></p>
+  <p class="foot-note">I just wanted to make this fun. — Brian</p>
+  <p class="foot-made">Brian · NYC · 2026</p>
 </footer>
 
 </body>
