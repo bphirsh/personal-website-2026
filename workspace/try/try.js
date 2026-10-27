@@ -222,7 +222,7 @@ function showDemo(fileName, text, r) {
     if (w.code === 'bad-invite' && invite) continue;
     banners.appendChild(banner(w));
   }
-  mountDemo(demo, r.invite, fileName, text, { full: true });
+  mountDemo(demo, r.invite, fileName, text, { full: true, letter: true });
   mountReplay(replay, r.invite, fileName, text);
   mountFiles(filesMount, filesSample(r.invite).db);
   mountButton(reply, { ...r.invite.properties, invite });
