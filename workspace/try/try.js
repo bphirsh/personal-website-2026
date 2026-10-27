@@ -21,6 +21,7 @@ import { mountButton } from './button.js';
 import { mountTaps } from './taps.js';
 import { mountCard } from './card.js';
 import { mountStyleSwitcher } from './style.js';
+import { SAMPLE_TEXT } from './sample-data.js';
 
 const WORDS = {
   dragging: 'Let go',
@@ -43,8 +44,7 @@ const WORDS = {
 const LOADING_MS = 3000; // Brian, fourth look: "like 3 seconds"
 const LOADING_REDUCED_MS = 500;
 
-// The sample person, Sam: made up, and loaded like any dropped file.
-const SAMPLE_URL = '/workspace/try/sample.md';
+// The sample person, Sam: made up, and read like any dropped file. Shipped with the page (sample-data.js), never fetched: a fetch on a protected preview got Vercel's sign-in redirect, and the example said the file couldn't be opened (27 Oct 2026).
 const SAMPLE_NAME = 'workspace-sam.md';
 
 const intake = document.getElementById('intake');
@@ -178,12 +178,8 @@ function showError(error) {
  * file. No bad-invite banner (Sam has no code on purpose); the send carries
  * the link's code, else none.
  */
-async function showSample() {
-  let text;
-  try {
-    const res = await fetch(SAMPLE_URL, { credentials: 'omit' });
-    text = res.ok ? await res.text() : null;
-  } catch { text = null; }
+function showSample() {
+  const text = SAMPLE_TEXT;
   const r = readInvite(text);
   if (!r.ok) return showError(r.error);
   reset();

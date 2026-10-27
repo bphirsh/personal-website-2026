@@ -20,7 +20,9 @@
 
 import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { basename, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { readInvite, PROBLEMS } from '../workspace/try/invite.js';
+import { SAMPLE_TEXT } from '../workspace/try/sample-data.js';
 
 const args = process.argv.slice(2);
 const json = args.includes('--json');
@@ -83,8 +85,31 @@ for (const file of files) {
   }
 }
 
-if (!json) console.log(`\n${files.length} files: ${passed} pass, ${failed} fail, ${files.length - passed - failed} with no expectation`);
-process.exit(bad || failed ? 1 : 0);
+let exampleFailed = false;
+// The example data ships with the page (27 Oct 2026: fetched on a protected preview, it said the file couldn't be opened). Checked on every run:
+// the page reads it from sample-data.js and fetches nothing for it; the shipped text is the fixture's, when the fixture is among the files checked; and it reads as the fixture says.
+if (!json) {
+  console.log('── the example data, shipped with the page (workspace/try/sample-data.js)');
+  const problems = [];
+  const tryJs = readFileSync(fileURLToPath(new URL('../workspace/try/try.js', import.meta.url)), 'utf8');
+  if (!/from '\.\/sample-data\.js'/.test(tryJs)) problems.push('try.js does not import sample-data.js');
+  if (/fetch\(/.test(tryJs)) problems.push('try.js fetches something; the example must load with no request');
+  const fixture = files.find((f) => basename(f) === 'sample.md');
+  if (fixture && readFileSync(fixture, 'utf8') !== SAMPLE_TEXT) problems.push('sample-data.js differs from fixtures/sample.md: run node tools/carry-sample.mjs');
+  const r = readInvite(SAMPLE_TEXT);
+  if (!r.ok) problems.push(`it does not read: ${r.error.code}`);
+  else {
+    const codes = r.warnings.map((w) => w.code).join();
+    if (codes !== 'bad-invite') problems.push(`expected only bad-invite, got ${codes || 'no warnings'}`);
+    if (r.invite.properties.name !== 'Sam' || r.invite.properties.layout !== 'both') problems.push('it is not Sam, laid out as both');
+  }
+  if (!fixture) console.log('  (fixtures/sample.md not among the files: shipped text not compared)');
+  console.log(problems.length ? problems.map((p) => `  FAIL: ${p}`).join('\n') : '  PASS: imported, not fetched, the fixture\'s text, and reads as Sam with bad-invite only');
+  exampleFailed = problems.length > 0;
+}
+
+if (!json) console.log(`\n${files.length} files: ${passed} pass, ${failed} fail, ${files.length - passed - failed} with no expectation; the example data: ${exampleFailed ? 'FAIL' : 'pass'}`);
+process.exit(bad || failed || exampleFailed ? 1 : 0);
 
 // The problem codes a test file's opening comment names.
 function expectation(text) {
