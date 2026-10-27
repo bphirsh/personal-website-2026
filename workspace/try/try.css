@@ -267,6 +267,7 @@ code { font-family: var(--font-mono); font-size: 0.9em; background: var(--code-b
 .promises { list-style: none; display: flex; flex-wrap: wrap; gap: var(--space-3) var(--space-6); margin-bottom: var(--space-4); }
 .promises li { display: flex; align-items: center; gap: var(--space-2); color: var(--fg); font-weight: var(--weight-medium); }
 .promises .icon { color: var(--accent); }
+.promises .promises-lead { color: var(--fg-secondary); font-weight: var(--weight-normal); }
 .foot-note { color: var(--fg); margin-bottom: var(--space-2); }
 .foot-made a { color: var(--accent); }
 
