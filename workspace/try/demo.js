@@ -26,17 +26,22 @@ const WORDS = {
   sample: 'Sample',
 };
 
-// Stand-ins for what a file left out. These are the page's own words, not the person's.
+// Stand-ins for what a file left out, and for folders not built from it
+// (Page copy.md, "The sample's contents"). They show with the Sample chip.
 const SAMPLE = {
-  page: { title: 'Welcome', body: 'A folder in Workspace is a page: its README on top, its tasks, then what it holds.\n\nYour agent writes files here, and you see them as pages and databases.' },
-  research: { title: 'Reading notes', body: '## Open questions\n- What do readers want from the second chapter?\n- Which sources still need a citation?' },
+  page: { title: 'Start here', body: "This folder is a page in Workspace: its README on top, then its tasks, then everything it holds.\n\nWhen your agent saves a file in here, it appears as a page or a database the moment it's written." },
+  research: { title: 'Interview notes', body: '## What we heard\n- Three of five people keep notes in more than one app.\n- Most search their Desktop before they search their notes.\n\n## Open questions\n- Which notes should an agent read first?\n- What would make people trust a draft it writes?' },
   tasks: [
-    { text: 'Read through the notes from last week', done: true },
-    { text: 'Draft the outline', done: false },
-    { text: 'Send the draft for comments', done: false },
+    { text: "Collect last week's notes into one folder", done: true },
+    { text: 'Ask the agent for a first draft', done: false },
+    { text: 'Read the draft and send it on', done: false },
   ],
-  clients: { name: 'Clients', columns: ['Name', 'Stage', 'Next step'], rows: [['Northwind Books', 'Proposal', 'Send the deck'], ['Harbour Café', 'Signed', 'Kick-off call']] },
+  clients: { name: 'Clients', columns: ['Name', 'Stage', 'Next step'], rows: [['Riverside Bakery', 'Proposal', 'Send the estimate'], ['Lantern Studio', 'Signed', 'Kick-off call'], ['Hollow Pine Co-op', 'First call', 'Write up the notes']] },
 };
+
+// How People shows platform and role.
+const PLATFORM_NAMES = { 'mac-apple-silicon': 'Mac (Apple silicon)', 'mac-intel': 'Mac (Intel)', mac: 'Mac', windows: 'Windows', linux: 'Linux', other: 'Other', unknown: 'Not said' };
+const ROLE_NAMES = { coder: 'Code', 'knowledge-worker': 'Documents and research', both: 'Both', other: 'Other' };
 
 let uid = 0;
 const node = (kind, name, extra = {}) => ({ id: `n${uid++}`, kind, name, ...extra });
@@ -50,13 +55,13 @@ export function buildVault(invite, fileName, fileText) {
 
   const theirPages = pages.length ? pages.map((pg) => node('md', `${pg.title}.md`, { title: pg.title, body: pg.body })) : [node('md', `${SAMPLE.page.title}.md`, { ...SAMPLE.page, sample: true })];
   const theirTasks = node('tasks', 'tasks.md', { title: 'tasks', tasks: (tasks.length ? tasks : SAMPLE.tasks).map((t) => ({ ...t })), sample: !tasks.length, hint: tasks.length ? WORDS.hintTasks : null });
-  const theirDbs = databases.map((d) => node('db', d.name, { db: d }));
+  const theirDbs = databases.map((d) => node('db', d.name, { db: copyDb(d) }));
 
   const people = node('db', 'People', {
     db: {
       name: 'People',
       columns: ['Name', 'Computer', 'Role', 'AI tools', 'Knowledge tools', 'Files live in', 'Project'],
-      rows: [[p.name, p.platform, p.role, labels(p.ai_tools), labels(p.knowledge_tools), labels(p.files_live_in), p.project]],
+      rows: [[p.name, PLATFORM_NAMES[p.platform] ?? p.platform, ROLE_NAMES[p.role] ?? p.role, labels(p.ai_tools), labels(p.knowledge_tools), labels(p.files_live_in), p.project]],
     },
   });
   const tools = node('db', 'Tools', {
@@ -79,7 +84,7 @@ export function buildVault(invite, fileName, fileText) {
   if (knowledge) {
     const researchItems = coder ? [node('md', `${SAMPLE.research.title}.md`, { ...SAMPLE.research, sample: true })] : [...theirPages, theirTasks];
     const research = node('folder', 'Research', { children: researchItems, open: true });
-    const clientDbs = coder || !theirDbs.length ? [node('db', 'Clients', { db: SAMPLE.clients, sample: true })] : theirDbs;
+    const clientDbs = coder || !theirDbs.length ? [node('db', 'Clients', { db: copyDb(SAMPLE.clients), sample: true })] : theirDbs;
     root.push(research, node('folder', 'Clients', { children: clientDbs, open: !coder }));
     start ??= research;
   }
@@ -88,29 +93,44 @@ export function buildVault(invite, fileName, fileText) {
   // The hint for "your table" goes on their first database, else on People.
   (theirDbs[0] ?? people).hint = WORDS.hintDatabase;
 
-  return { root, start, file, owner: p.name };
+  return { root, start, file, owner: p.name, tasks: theirTasks, databases: theirDbs, tools };
+}
+
+function copyDb(d) {
+  return { ...d, columns: [...d.columns], rows: d.rows.map((r) => [...r]) };
 }
 
 function labels(list) {
   return list.map((t) => t.label).join(', ');
 }
 
-/** Build the demo window into `mount`. */
-export function mountDemo(mount, invite, fileName, fileText) {
-  uid = 0;
+/**
+ * Build the demo window into `mount`. Returns a controller the replay uses to
+ * change the window as files change, each change marked with the app's
+ * fading tint for something changed from outside.
+ *
+ * `options.above` false leaves out the line above the window, `options.hints`
+ * false leaves out the hints, and `options.label` names the window region for
+ * screen readers.
+ */
+export function mountDemo(mount, invite, fileName, fileText, options = {}) {
   const vault = buildVault(invite, fileName, fileText);
   const parents = new Map();
   (function index(list, parent) {
-    for (const n of list) { parents.set(n.id, parent); if (n.children) index(n.children, n); }
+    for (const n of list) {
+      parents.set(n.id, parent);
+      if (options.hints === false) n.hint = null;
+      if (n.children) index(n.children, n);
+    }
   })(vault.root, null);
 
-  const state = { tabs: [vault.start, vault.file], active: vault.start };
+  const state = { tabs: [vault.start, vault.file], active: vault.start, changed: null };
 
   const wrap = el('div', 'demo');
-  wrap.appendChild(el('p', 'demo-above', WORDS.above));
+  if (options.above !== false) wrap.appendChild(el('p', 'demo-above', WORDS.above));
   const win = el('div', 'win');
   win.setAttribute('role', 'region');
-  win.setAttribute('aria-label', 'Workspace preview');
+  win.setAttribute('aria-label', options.label ?? 'Workspace preview');
   const titlebar = el('div', 'win-titlebar');
   titlebar.append(el('span', 'win-dot'), el('span', 'win-dot'), el('span', 'win-dot'));
   const body = el('div', 'win-body');
@@ -158,6 +178,7 @@ export function mountDemo(mount, invite, fileName, fileText) {
         row.type = 'button';
         row.style.setProperty('--depth', depth);
         if (n === state.active) row.classList.add('active');
+        if (state.changed === n) row.classList.add('changed');
         const lead = el('span', 'tree-lead');
         if (n.kind === 'folder') {
           lead.textContent = n.open ? '▾' : '▸';
@@ -267,6 +288,7 @@ export function mountDemo(mount, invite, fileName, fileText) {
     n.tasks.forEach((t) => {
       const li = el('li');
       const label = el('label', t.done ? 'done' : null);
+      if (state.changed === t) li.classList.add('changed');
       const box = el('input');
       box.type = 'checkbox';
       box.checked = t.done;
@@ -292,6 +314,7 @@ export function mountDemo(mount, invite, fileName, fileText) {
     const cells = [];
     n.db.rows.forEach((r, ri) => {
       const tr = el('tr');
+      if (state.changed === r) tr.classList.add('changed');
       cells[ri] = [];
       r.forEach((c, ci) => {
         const td = el('td', ci === 0 ? 'rowname' : null, c);
@@ -342,7 +365,38 @@ export function mountDemo(mount, invite, fileName, fileText) {
   }
 
   render();
-  return wrap;
+
+  return {
+    element: wrap,
+    /** The first open task, or null when every task is ticked. */
+    firstOpenTask: () => vault.tasks.tasks.find((t) => !t.done) ?? null,
+    /** Tick a task and show tasks.md. */
+    tick(task) {
+      task.done = true;
+      state.changed = task;
+      open(vault.tasks);
+    },
+    /** Add a markdown page to the starting folder and show it. */
+    addPage(title, body) {
+      const n = node('md', `${title}.md`, { title, body });
+      vault.start.children.push(n);
+      parents.set(n.id, vault.start);
+      state.changed = n;
+      open(n);
+    },
+    /** The database a new row goes in: their first, else Tools. */
+    rowTarget: () => vault.databases[0] ?? vault.tools,
+    /** Add a row to a database and show it. */
+    addRow(dbNode, cells) {
+      const row = dbNode.db.columns.map((_, i) => cells[i] ?? '');
+      dbNode.db.rows.push(row);
+      state.changed = row;
+      open(dbNode);
+    },
+    /** Show a node without marking anything. */
+    show(n) { state.changed = null; open(n); },
+    start: vault.start,
+  };
 }
 
 function tabTitle(n) {

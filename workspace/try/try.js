@@ -15,6 +15,7 @@
 
 import { readInvite, refuseBySize } from './invite.js';
 import { mountDemo } from './demo.js';
+import { mountReplay } from './replay.js';
 
 const WORDS = {
   dragging: 'Let go to open it',
@@ -37,6 +38,7 @@ const pick = document.getElementById('pick');
 const failed = document.getElementById('failed');
 const banners = document.getElementById('banners');
 const demo = document.getElementById('demo');
+const replay = document.getElementById('replay');
 const dropIdle = [...dropMain.childNodes].map((n) => n.cloneNode(true));
 
 function el(tag, cls, text) {
@@ -71,6 +73,7 @@ function reset() {
   failed.replaceChildren();
   banners.replaceChildren();
   demo.replaceChildren();
+  replay.replaceChildren();
   intake.hidden = false;
 }
 
@@ -91,6 +94,7 @@ function showDemo(fileName, text, r) {
   reset();
   for (const w of r.warnings) banners.appendChild(banner(w));
   mountDemo(demo, r.invite, fileName, text);
+  mountReplay(replay, r.invite, fileName, text);
 }
 
 function banner(w) {
