@@ -156,3 +156,46 @@ code { font-family: var(--font-mono); font-size: 0.9em; background: var(--code-b
 }
 .foot p + p { margin-top: var(--space-2); }
 .foot a { color: var(--accent); }
+
+/* ── the button at the end ── */
+.reply {
+  margin-top: var(--space-7);
+  padding: var(--space-5);
+  background: var(--surface);
+  border: var(--border-width) solid var(--border);
+  border-radius: var(--radius-lg);
+}
+.reply-line { font-size: var(--text-base); margin-bottom: var(--space-3); }
+.reply-sends { font-size: var(--text-sm); color: var(--fg-secondary); margin-bottom: var(--space-4); }
+.reply-question { font-size: var(--text-h3); font-weight: var(--weight-semibold); line-height: var(--leading-tight); margin-bottom: var(--space-3); }
+.reply-field { margin-bottom: var(--space-4); }
+.reply-field[hidden] { display: none; }
+.reply > .link { display: block; margin-top: var(--space-3); font-size: var(--text-sm); }
+.reply-email-label { display: block; font-size: var(--text-sm); font-weight: var(--weight-medium); margin-bottom: var(--space-1); }
+.reply-email {
+  width: 100%;
+  max-width: 360px;
+  font: inherit;
+  color: var(--fg);
+  background: var(--bg);
+  border: var(--border-width) solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: var(--space-2) var(--space-3);
+}
+.reply-status { font-size: var(--text-sm); color: var(--fg-secondary); margin-top: var(--space-3); min-height: 1em; }
+.reply-after { font-size: var(--text-prose); line-height: var(--leading-prose); }
+.btn-big { font-size: var(--text-base); padding: var(--space-3) var(--space-5); }
+.choices { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+.choice {
+  font: inherit;
+  font-size: var(--text-sm);
+  color: var(--fg);
+  background: var(--bg);
+  border: var(--border-width) solid var(--border);
+  border-radius: var(--radius-md);
+  padding: var(--space-2) var(--space-3);
+  cursor: pointer;
+}
+.choice:hover { background: var(--hover); }
+.choice[aria-pressed="true"] { background: var(--accent-soft); border-color: var(--accent); }
+.btn-big + .reply-field { margin-top: var(--space-4); }

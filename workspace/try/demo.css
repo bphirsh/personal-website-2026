@@ -294,7 +294,9 @@
 .replay.ended .replay-end { visibility: visible; }
 .replay .btn { visibility: hidden; }
 .replay.ended .btn { visibility: visible; }
-.replay.ended .replay-foot .link { display: none; }
+.replay-head { display: flex; gap: var(--space-4); align-items: baseline; flex-wrap: wrap; }
+.replay-head .link { font-size: var(--text-sm); }
+.replay.ended .replay-head .link { visibility: hidden; }
 
 @media (prefers-reduced-motion: reduce) {
   .replay.playing .agent-cursor { animation: none; opacity: 1; }

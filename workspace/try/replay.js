@@ -23,7 +23,7 @@ const WORDS = {
   row: (db) => `Adds a row to ${db}`,
   end: "Workspace didn't run the agent. It just saw the files change.",
   again: 'Play again',
-  skip: 'Skip', // not in the page copy yet
+  skip: 'Skip',
 };
 
 const STEP_MS = 1800;
@@ -33,7 +33,12 @@ const FIRST_MS = 900;
 export function mountReplay(mount, invite, fileName, fileText) {
   const section = el('section', 'replay');
   section.setAttribute('aria-label', 'Replay');
-  section.appendChild(el('p', 'replay-label', WORDS.label));
+  // The skip button sits beside the label, which stays put whatever happens.
+  const head = el('div', 'replay-head');
+  const skip = el('button', 'link', WORDS.skip);
+  skip.type = 'button';
+  head.append(el('p', 'replay-label', WORDS.label), skip);
+  section.appendChild(head);
 
   const stage = el('div', 'replay-stage');
   const agent = el('div', 'agent');
@@ -52,9 +57,7 @@ export function mountReplay(mount, invite, fileName, fileText) {
   const end = el('p', 'replay-end', WORDS.end);
   const again = el('button', 'btn', WORDS.again);
   again.type = 'button';
-  const skip = el('button', 'link', WORDS.skip);
-  skip.type = 'button';
-  foot.append(end, again, skip);
+  foot.append(end, again);
   section.appendChild(foot);
   mount.replaceChildren(section);
 

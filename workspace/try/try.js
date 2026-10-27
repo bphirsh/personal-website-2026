@@ -13,9 +13,10 @@
  * Words are from Marketing/Beta Signups/Page copy.md.
  */
 
-import { readInvite, refuseBySize } from './invite.js';
+import { readInvite, refuseBySize, codeFromHash } from './invite.js';
 import { mountDemo } from './demo.js';
 import { mountReplay } from './replay.js';
+import { mountButton } from './button.js';
 
 const WORDS = {
   dragging: 'Let go to open it',
@@ -39,6 +40,7 @@ const failed = document.getElementById('failed');
 const banners = document.getElementById('banners');
 const demo = document.getElementById('demo');
 const replay = document.getElementById('replay');
+const reply = document.getElementById('reply');
 const dropIdle = [...dropMain.childNodes].map((n) => n.cloneNode(true));
 
 function el(tag, cls, text) {
@@ -74,6 +76,7 @@ function reset() {
   banners.replaceChildren();
   demo.replaceChildren();
   replay.replaceChildren();
+  reply.replaceChildren();
   intake.hidden = false;
 }
 
@@ -90,11 +93,26 @@ function showError(error) {
   failed.appendChild(actions);
 }
 
+/**
+ * The invite code the page uses (M-010): the file's when it has a good one,
+ * else the one after `#` in the link, else none. The `#` part never reaches
+ * the server; the code is sent only when the button is pressed.
+ */
+function inviteCode(properties) {
+  return properties.invite ?? codeFromHash(location.hash);
+}
+
 function showDemo(fileName, text, r) {
   reset();
-  for (const w of r.warnings) banners.appendChild(banner(w));
+  const invite = inviteCode(r.invite.properties);
+  for (const w of r.warnings) {
+    // With a code from the link, a file without one is no longer a problem.
+    if (w.code === 'bad-invite' && invite) continue;
+    banners.appendChild(banner(w));
+  }
   mountDemo(demo, r.invite, fileName, text);
   mountReplay(replay, r.invite, fileName, text);
+  mountButton(reply, { ...r.invite.properties, invite });
 }
 
 function banner(w) {

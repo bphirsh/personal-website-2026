@@ -64,6 +64,20 @@ function display(written) {
 const KEYS = ['format', 'invite', 'name', 'platform', 'role', ...LIST_KEYS, 'project'];
 const INVITE_RE = /^\d{2}-[a-z0-9]{4}$/;
 
+/** Whether `value` is an invite code, `07-k3f9`. */
+export function isInviteCode(value) {
+  return INVITE_RE.test(String(value ?? '').trim().toLowerCase());
+}
+
+/**
+ * The invite code in a page address's `#` part (M-010: `/workspace/try#07-k3f9`),
+ * or null. The part after `#` never reaches the server.
+ */
+export function codeFromHash(hash) {
+  const v = decodeURIComponent(String(hash ?? '').replace(/^#/, '')).trim().toLowerCase();
+  return INVITE_RE.test(v) ? v : null;
+}
+
 /**
  * The words for each code, from Marketing/Beta Signups/Page copy.md (27 Oct
  * 2026): `message` is what the page says, `pasteBack` the box the person
@@ -108,9 +122,9 @@ export const PROBLEMS = Object.freeze({
   },
   'bad-invite': {
     kind: 'warning',
-    message: "Your file has no invite code, so if you press the button at the end, Brian won't know it was you.",
+    message: "Your file has no invite code. Fix the file, or add your email by the button at the end so Brian knows it's you.",
     // When the line is there but is not a code.
-    messageFound: 'Your invite code "{found}" doesn\'t look right; codes look like 07-k3f9. If you press the button at the end, Brian won\'t know it was you.',
+    messageFound: 'Your invite code "{found}" doesn\'t look right; codes look like 07-k3f9. Fix the file, or add your email by the button at the end so Brian knows it\'s you.',
     pasteBack: 'Please set the invite line in my invite file to exactly the code from my invite email, which looks like 07-k3f9, and save it again.',
   },
 });
