@@ -235,8 +235,8 @@ export function mountDemo(mount, invite, fileName, fileText, options = {}) {
     if (!n) return;
     page.dataset.kind = n.kind;
     page.appendChild(breadcrumbs(n));
-    const title = el('h1', 'page-title', tabTitle(n));
-    page.appendChild(title);
+    // A database page carries its own, smaller title in its header, as the app's does.
+    if (n.kind !== 'db') page.appendChild(el('h1', 'page-title', tabTitle(n)));
     if (n.kind === 'folder') folderPage(n);
     else if (n.kind === 'md') page.appendChild(prose(renderBody(n.body)));
     else if (n.kind === 'tasks') page.appendChild(checklist(n));
@@ -301,30 +301,83 @@ export function mountDemo(mount, invite, fileName, fileText, options = {}) {
     return prose(ul);
   }
 
+  // A database page, drawn as the app's is (v0 ui/db: DatabasePage, Grid,
+  // BoardView, ListView, CardProp): a title, a view strip of Table, Board and
+  // List, then the view. Options carry no colour in the app, so none here.
   function databasePage(n) {
-    const out = el('div', 'dbpage');
-    const strip = el('div', 'viewstrip');
-    strip.appendChild(el('span', 'view active', 'Table'));
-    out.appendChild(strip);
-    const scroller = el('div', 'grid-scroll');
-    const grid = el('table', 'grid');
-    grid.setAttribute('role', 'grid');
-    const head = el('tr');
-    n.db.columns.forEach((c) => head.appendChild(el('th', null, c)));
-    grid.appendChild(head);
+    const out = el('div', 'db-page');
+    const header = el('header', 'db-header');
+    header.appendChild(el('h1', 'db-title', n.db.name));
+    out.appendChild(header);
+
+    const fields = fieldTypes(n.db);
+    const groupBy = boardField(n.db, fields);
+    n.view ??= 'table';
+
+    const toolbar = el('div', 'db-toolbar');
+    const views = el('div', 'db-views');
+    views.setAttribute('role', 'tablist');
+    const body = el('div', 'db-view');
+    for (const [id, label] of [['table', 'Table'], ['board', 'Board'], ['list', 'List']]) {
+      const tab = el('button', `db-view-tab${n.view === id ? ' active' : ''}`);
+      tab.type = 'button';
+      tab.setAttribute('role', 'tab');
+      tab.setAttribute('aria-selected', String(n.view === id));
+      tab.append(icon(ICONS[id], 'db-view-icon'), el('span', null, label));
+      tab.addEventListener('click', () => {
+        n.view = id;
+        for (const t of views.children) {
+          const on = t === tab;
+          t.classList.toggle('active', on);
+          t.setAttribute('aria-selected', String(on));
+        }
+        show();
+      });
+      views.appendChild(tab);
+    }
+    toolbar.appendChild(views);
+    out.append(toolbar, body);
+    const count = el('p', 'db-count', `${n.db.rows.length} ${n.db.rows.length === 1 ? 'row' : 'rows'}`);
+    out.appendChild(count);
+
+    function show() {
+      body.replaceChildren(n.view === 'board' ? board(n.db, fields, groupBy) : n.view === 'list' ? list(n.db, fields) : grid(n.db, fields));
+    }
+    show();
+    return out;
+  }
+
+  function grid(db, fields) {
+    const g = el('div', 'grid');
+    g.setAttribute('role', 'grid');
+    const head = el('div', 'grid-header');
+    head.setAttribute('role', 'row');
+    head.appendChild(el('div', 'grid-gutter'));
+    db.columns.forEach((c, i) => {
+      const h = el('div', 'grid-head-cell');
+      h.setAttribute('role', 'columnheader');
+      h.append(icon(ICONS[fields[i]], 'grid-head-icon'), el('span', 'grid-head-text', c));
+      head.appendChild(h);
+    });
+    g.appendChild(head);
     const cells = [];
-    n.db.rows.forEach((r, ri) => {
-      const tr = el('tr');
-      if (state.changed === r) tr.classList.add('changed');
+    db.rows.forEach((r, ri) => {
+      const row = el('div', 'grid-row');
+      row.setAttribute('role', 'row');
+      if (state.changed === r) row.classList.add('changed');
+      row.appendChild(el('div', 'grid-gutter'));
       cells[ri] = [];
       r.forEach((c, ci) => {
-        const td = el('td', ci === 0 ? 'rowname' : null, c);
-        td.tabIndex = -1;
-        td.addEventListener('click', () => select(ri, ci));
-        cells[ri][ci] = td;
-        tr.appendChild(td);
+        const cell = el('div', `grid-cell${fields[ci] === 'number' ? ' align-right' : ''}`);
+        cell.setAttribute('role', 'gridcell');
+        cell.tabIndex = -1;
+        if (ci === 0) cell.appendChild(icon(ICONS.page, 'cell-mark'));
+        cell.appendChild(el('span', 'cell-text', c));
+        cell.addEventListener('click', () => select(ri, ci));
+        cells[ri][ci] = cell;
+        row.appendChild(cell);
       });
-      grid.appendChild(tr);
+      g.appendChild(row);
     });
     let sel = null;
     function select(ri, ci) {
@@ -338,10 +391,72 @@ export function mountDemo(mount, invite, fileName, fileText, options = {}) {
         if (move) { e.preventDefault(); select(ri + move[0], ci + move[1]); }
       };
     }
-    scroller.appendChild(grid);
-    out.appendChild(scroller);
-    if (!n.db.rows.length) out.appendChild(el('p', 'empty', 'No rows'));
-    return out;
+    const scroller = el('div', 'grid-scroll');
+    scroller.appendChild(g);
+    return scroller;
+  }
+
+  // Columns of cards, one per value of the grouping field, then "No {field}"
+  // last, as the app's board does. Without a select field, everything is in
+  // the one column.
+  function board(db, fields, groupBy) {
+    const b = el('div', 'board');
+    const groups = new Map();
+    if (groupBy !== -1) for (const r of db.rows) if (r[groupBy]) groups.set(r[groupBy], []);
+    const none = [];
+    for (const r of db.rows) (groupBy !== -1 && r[groupBy] ? groups.get(r[groupBy]) : none).push(r);
+    const columns = [...groups.entries()].map(([label, rows]) => ({ label, rows }));
+    columns.push({ label: groupBy === -1 ? db.name : `No ${db.columns[groupBy]}`, rows: none, quiet: groupBy !== -1 });
+    for (const c of columns) {
+      const col = el('section', 'board-col');
+      const head = el('header', 'board-col-head');
+      head.append(el('span', `board-col-label${c.quiet ? ' quiet' : ''}`, c.label), el('span', 'board-col-count', String(c.rows.length)));
+      const cards = el('div', 'board-cards');
+      for (const r of c.rows) {
+        const card = el('div', 'board-card');
+        if (state.changed === r) card.classList.add('changed');
+        card.appendChild(el('div', 'board-card-title', r[0] || 'Untitled'));
+        const props = el('div', 'board-card-props');
+        r.forEach((v, i) => {
+          if (i === 0 || i === groupBy || !v) return;
+          props.appendChild(prop(fields[i], db.columns[i], v, 'on-board'));
+        });
+        if (props.children.length) card.appendChild(props);
+        cards.appendChild(card);
+      }
+      col.append(head, cards);
+      b.appendChild(col);
+    }
+    return b;
+  }
+
+  function list(db, fields) {
+    const l = el('div', 'list');
+    for (const r of db.rows) {
+      const row = el('div', 'list-row');
+      if (state.changed === r) row.classList.add('changed');
+      row.append(icon(ICONS.page, 'list-icon'), el('span', 'list-title', r[0] || 'Untitled'));
+      r.forEach((v, i) => { if (i && v) row.appendChild(prop(fields[i], db.columns[i], v, 'on-list')); });
+      l.appendChild(row);
+    }
+    return l;
+  }
+
+  // One property on a card or a list row, as the app's CardProp draws it:
+  // a select as a neutral pill, a number or date as the bare value, anything
+  // else as "Label: value".
+  function prop(type, label, value, where) {
+    const p = el('div', `card-prop ${where}`);
+    if (type === 'select') {
+      const pills = el('span', 'card-prop-pills');
+      pills.appendChild(el('span', 'card-prop-pill', value));
+      p.appendChild(pills);
+    } else if (type === 'number' || type === 'date') {
+      p.appendChild(el('span', 'card-prop-value', value));
+    } else {
+      p.appendChild(el('span', 'card-prop-text', `${label}: ${value}`));
+    }
+    return p;
   }
 
   // Their own file, as a markdown page: its properties as rows under the
@@ -398,6 +513,57 @@ export function mountDemo(mount, invite, fileName, fileText, options = {}) {
     show(n) { state.changed = null; open(n); },
     start: vault.start,
   };
+}
+
+// The app's icons (v0 ui/db/dbicons.ts): 24-unit paths, stroked.
+const ICONS = {
+  table: 'M4 5h16v14H4zM4 10h16M4 15h16M10 5v14',
+  board: 'M4 5h4v14H4zM10 5h4v9h-4zM16 5h4v11h-4z',
+  list: 'M4 6h2M9 6h11M4 12h2M9 12h11M4 18h2M9 18h11',
+  text: 'M4 6h16M4 11h16M4 16h10',
+  number: 'M9 4L7 20M17 4l-2 16M4 9h16M3 15h16',
+  select: 'M6 9l6 6 6-6',
+  date: 'M5 6h14v14H5zM5 10h14M9 4v4M15 4v4',
+  page: 'M7 3h7l5 5v13H7zM14 3v5h5',
+};
+
+function icon(path, cls) {
+  const ns = 'http://www.w3.org/2000/svg';
+  const svg = document.createElementNS(ns, 'svg');
+  svg.setAttribute('viewBox', '0 0 24 24');
+  svg.setAttribute('class', `icon ${cls}`);
+  svg.setAttribute('aria-hidden', 'true');
+  const p = document.createElementNS(ns, 'path');
+  p.setAttribute('d', path);
+  svg.appendChild(p);
+  return svg;
+}
+
+/**
+ * A type for each column, read from its values, since an invite file's table
+ * declares none: numbers, dates (2026-09, 2026-10-02), selects (a field like
+ * Status, or short values that repeat), and text for the rest. The first
+ * column is the row's name.
+ */
+export function fieldTypes(db) {
+  return db.columns.map((name, i) => {
+    if (i === 0) return 'text';
+    const values = db.rows.map((r) => r[i]).filter(Boolean);
+    if (!values.length) return 'text';
+    if (values.every((v) => /^-?\d+(\.\d+)?$/.test(v))) return 'number';
+    if (values.every((v) => /^\d{4}-\d{2}(-\d{2})?$/.test(v))) return 'date';
+    if (/^(status|stage|kind|type|state|role|computer)$/i.test(name)) return 'select';
+    const distinct = new Set(values);
+    if (values.length >= 3 && distinct.size < values.length && values.every((v) => v.length <= 24)) return 'select';
+    return 'text';
+  });
+}
+
+// The field a board groups by, as the app picks it: a select named Status,
+// else the first select; -1 when there is none.
+export function boardField(db, fields) {
+  const status = db.columns.findIndex((c, i) => fields[i] === 'select' && /^status$/i.test(c));
+  return status !== -1 ? status : fields.indexOf('select');
 }
 
 function tabTitle(n) {
