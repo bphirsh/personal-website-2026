@@ -17,6 +17,7 @@ import { readInvite, refuseBySize, codeFromHash } from './invite.js';
 import { mountDemo } from './demo.js';
 import { mountReplay } from './replay.js';
 import { mountButton } from './button.js';
+import { mountTaps } from './taps.js';
 
 const WORDS = {
   dragging: 'Let go to open it',
@@ -30,7 +31,13 @@ const WORDS = {
   dismiss: 'Dismiss',
   howToFix: 'How to fix it',
   carryOn: 'Or carry on: the demo works without it.',
+  sampleBanner: 'This is a sample. Run the prompt from your invite email to see your own work here.',
+  loadMine: 'Load my file',
 };
+
+// The sample person, Sam: made up, and loaded like any dropped file.
+const SAMPLE_URL = '/workspace/try/sample.md';
+const SAMPLE_NAME = 'workspace-sam.md';
 
 const intake = document.getElementById('intake');
 const drop = document.getElementById('drop');
@@ -42,6 +49,8 @@ const demo = document.getElementById('demo');
 const replay = document.getElementById('replay');
 const reply = document.getElementById('reply');
 const dropIdle = [...dropMain.childNodes].map((n) => n.cloneNode(true));
+const sampleLink = document.getElementById('sampleLink');
+const phone = document.getElementById('phone');
 
 function el(tag, cls, text) {
   const n = document.createElement(tag);
@@ -77,7 +86,7 @@ function reset() {
   demo.replaceChildren();
   replay.replaceChildren();
   reply.replaceChildren();
-  intake.hidden = false;
+  intake.hidden = isPhone();
 }
 
 function showError(error) {
@@ -88,9 +97,51 @@ function showError(error) {
   const again = el('button', 'btn', WORDS.tryAnother);
   again.type = 'button';
   again.addEventListener('click', () => { reset(); pick.click(); });
+  const sample = el('button', 'btn btn-quiet', WORDS.sampleInstead);
+  sample.type = 'button';
+  sample.addEventListener('click', showSample);
   const actions = el('div', 'actions');
-  actions.appendChild(again);
+  actions.append(again, sample);
   failed.appendChild(actions);
+}
+
+/**
+ * The sample demo: Sam's file, read like a dropped one, with the sample
+ * banner over it and the three taps in place of a button built from the
+ * file. No bad-invite banner (Sam has no code on purpose); the send carries
+ * the link's code, else none.
+ */
+async function showSample() {
+  let text;
+  try {
+    const res = await fetch(SAMPLE_URL, { credentials: 'omit' });
+    text = res.ok ? await res.text() : null;
+  } catch { text = null; }
+  const r = readInvite(text);
+  if (!r.ok) return showError(r.error);
+  reset();
+  if (isPhone()) intake.hidden = true;
+  const b = el('div', 'banner banner-sample');
+  b.setAttribute('role', 'status');
+  const row = el('div', 'banner-row');
+  row.appendChild(el('span', 'banner-text', WORDS.sampleBanner));
+  if (!isPhone()) {
+    const load = el('button', 'link', WORDS.loadMine);
+    load.type = 'button';
+    load.addEventListener('click', () => { reset(); pick.click(); });
+    row.appendChild(load);
+  }
+  b.appendChild(row);
+  banners.appendChild(b);
+  mountDemo(demo, r.invite, SAMPLE_NAME, text);
+  mountReplay(replay, r.invite, SAMPLE_NAME, text);
+  mountTaps(reply, codeFromHash(location.hash));
+  b.scrollIntoView({ block: 'start', behavior: 'smooth' });
+}
+
+// A phone can't drop a file its agent wrote on a laptop: it gets the sample.
+function isPhone() {
+  return matchMedia('(max-width: 760px) and (pointer: coarse)').matches;
 }
 
 /**
@@ -181,3 +232,8 @@ addEventListener('drop', (e) => {
   setDropText(null);
   take(e.dataTransfer?.files?.[0]);
 });
+
+sampleLink.hidden = false;
+sampleLink.querySelector('button').addEventListener('click', showSample);
+document.getElementById('phoneSample').addEventListener('click', showSample);
+if (isPhone()) { intake.hidden = true; phone.hidden = false; }

@@ -199,3 +199,24 @@ code { font-family: var(--font-mono); font-size: 0.9em; background: var(--code-b
 .choice:hover { background: var(--hover); }
 .choice[aria-pressed="true"] { background: var(--accent-soft); border-color: var(--accent); }
 .btn-big + .reply-field { margin-top: var(--space-4); }
+
+.btn-quiet { color: var(--fg); background: var(--surface); border: var(--border-width) solid var(--border); }
+.banner-sample { background: var(--accent-soft); }
+
+/* ── on a phone ── */
+.phone { padding: var(--space-5); background: var(--surface); border: var(--border-width) solid var(--border); border-radius: var(--radius-lg); }
+.phone[hidden] { display: none; }
+.phone p { font-size: var(--text-prose); line-height: var(--leading-prose); margin-bottom: var(--space-4); }
+
+/* ── the sample's three taps ── */
+.taps {
+  margin-top: var(--space-7);
+  padding: var(--space-5);
+  background: var(--surface);
+  border: var(--border-width) solid var(--border);
+  border-radius: var(--radius-lg);
+}
+.taps-head { font-size: var(--text-h2); font-weight: var(--weight-semibold); line-height: var(--leading-tight); margin-bottom: var(--space-5); }
+.tap { margin-bottom: var(--space-5); }
+.tap-question { font-size: var(--text-base); font-weight: var(--weight-medium); margin-bottom: var(--space-2); }
+.taps .reply { margin-top: 0; padding: 0; border: none; background: none; }

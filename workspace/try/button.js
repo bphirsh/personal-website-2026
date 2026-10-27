@@ -16,7 +16,8 @@ const EMAIL_RE = /^[^\s@]+@[^\s@.]+\.[^\s@]{2,}$/;
 
 const WORDS = {
   sends: 'This sends Brian your invite code, computer, role and tools, and your email if you typed one. Nothing else from your file.',
-  sendsSample: 'This sends Brian these three answers. Nothing else.',
+  sendsSample: 'This sends Brian these three answers, and your email if you typed one. Nothing else.',
+  sendsSampleCode: 'This sends Brian your invite code and these three answers, and your email if you typed one. Nothing else.',
   sending: 'Sending…',
   failed: "That didn't send. Check your connection and try again; nothing was sent.",
   question: 'Which computer would you use Workspace on?',
@@ -81,7 +82,8 @@ export function mountButton(mount, answers, options = {}) {
   mount.replaceChildren(box);
   const send = options.send ?? post;
   // `mac`, `other` and `unknown` are asked first; the answer picks the variant.
-  let platform = ['mac', 'other', 'unknown'].includes(answers.platform) ? null : answers.platform;
+  // (The sample's taps have already asked: `options.sample`.)
+  let platform = !options.sample && ['mac', 'other', 'unknown'].includes(answers.platform) ? null : answers.platform;
 
   render();
 
@@ -90,7 +92,8 @@ export function mountButton(mount, answers, options = {}) {
     if (!platform || !VARIANTS[platform]) return ask();
     const v = VARIANTS[platform];
     if (v.line) box.appendChild(el('p', 'reply-line', v.line));
-    box.appendChild(el('p', 'reply-sends', options.sample ? WORDS.sendsSample : WORDS.sends));
+    const sends = options.sample ? (answers.invite ? WORDS.sendsSampleCode : WORDS.sendsSample) : WORDS.sends;
+    box.appendChild(el('p', 'reply-sends', sends));
 
     // The email box: above the button when there is no code, behind a link
     // under the button when there is.

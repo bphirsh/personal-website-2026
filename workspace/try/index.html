@@ -35,8 +35,13 @@
     </label>
 
     <p class="privacy">Your file is read in this browser and never uploaded. Nothing in it reaches anyone unless you press the button at the end.</p>
-    <!-- The sample arrives with "The sample demo and phone layout". -->
     <p class="sample-link" id="sampleLink" hidden><button type="button" class="link">No file yet? Just show me a sample</button></p>
+  </div>
+
+  <!-- On a phone, in place of the drop zone. -->
+  <div class="phone" id="phone" hidden>
+    <p>You're on a phone, so here's a sample. Open this page on your laptop to load your own file.</p>
+    <button type="button" class="btn btn-big" id="phoneSample">Show me the sample</button>
   </div>
 
   <section class="failed" id="failed" aria-live="polite" hidden></section>
