@@ -97,7 +97,7 @@ export const PROBLEMS = Object.freeze({
   'not-text': {
     kind: 'error',
     message: "This isn't a text file.",
-    pasteBack: "The file I dropped wasn't plain text. Please save my invite file again as plain text, named workspace-<my first name>.md.",
+    pasteBack: 'Please save my invite file again as plain text, named workspace-<my first name>.md.',
   },
   'too-large': {
     kind: 'error',
@@ -112,7 +112,7 @@ export const PROBLEMS = Object.freeze({
   'unclosed-properties': {
     kind: 'error',
     message: 'The answers block at the top never closes.',
-    pasteBack: 'In my invite file, the properties block at the top has no closing --- line. Please add one after the last property, before the first # heading, and save it again.',
+    pasteBack: "My invite file's properties block has no closing --- line. Please add one before the first # heading and save it again.",
   },
   'unknown-version': {
     kind: 'error',

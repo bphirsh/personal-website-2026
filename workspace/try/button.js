@@ -13,6 +13,7 @@ const EMAIL_RE = /^[^\s@]+@[^\s@.]+\.[^\s@]{2,}$/;
 const WORDS = {
   sends: 'Sends Brian your email, invite code, computer, role and tools. Nothing else.',
   sendsSample: 'Sends Brian your email and these three answers. Nothing else.',
+  sendsSampleCode: 'This sends Brian your invite code, your email and these three answers. Nothing else.',
   notify: 'Notify',
   placeholder: 'you@example.com',
   noEmail: 'Add your email first.',
@@ -82,7 +83,8 @@ export function mountButton(mount, answers, options = {}) {
     box.replaceChildren();
     if (!platform || !VARIANTS[platform]) return ask();
     const v = VARIANTS[platform];
-    box.appendChild(el('p', 'reply-sends', options.sample ? WORDS.sendsSample : WORDS.sends));
+    const sends = options.sample ? (answers.invite ? WORDS.sendsSampleCode : WORDS.sendsSample) : WORDS.sends;
+    box.appendChild(el('p', 'reply-sends', sends));
     if (v.line) box.appendChild(el('p', 'reply-line', v.line));
 
     // One line, the email box always shown (M-013): "Email me at [box] when it's ready!" and Notify. A form, so Return sends it too.
