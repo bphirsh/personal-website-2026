@@ -14,11 +14,30 @@
 <link rel="stylesheet" href="/workspace/try/tokens.css">
 <link rel="stylesheet" href="/workspace/try/try.css">
 <link rel="stylesheet" href="/workspace/try/demo.css">
-<!-- The founder card's QR code: a small MIT library kept in the site (vendor/qrcode.js says where it is from). -->
-<script src="/workspace/try/vendor/qrcode.js" defer></script>
-<script type="module" src="/workspace/try/try.js"></script>
+<!-- boot.js decides: on a touch-only device it shows the covers below and loads nothing else; otherwise it loads the page's scripts (try.js, and vendor/qrcode.js for the founder card). -->
+<script type="module" src="/workspace/try/boot.js"></script>
 </head>
 <body>
+
+<!-- On a touch-only device (a phone or an iPad; Brian, 27 Oct 2026), the page is replaced by these two covers, and none of its scripts run. Shown by CSS on the same rule, so they show before any script; boot.js swaps the first for the second. -->
+<div class="covers" id="covers">
+  <section class="cover" id="cover1">
+    <a href="/workspace/" class="back">← Workspace</a>
+    <div class="cover-body">
+      <p class="cover-emoji" aria-hidden="true">🥺</p>
+      <h1 class="cover-head">Please use a computer for this page</h1>
+    </div>
+    <button type="button" class="link cover-link" id="coverInsist">Pfff, just show me the page</button>
+  </section>
+  <section class="cover" id="cover2" hidden>
+    <a href="/workspace/" class="back">← Workspace</a>
+    <div class="cover-body">
+      <p class="cover-emoji" aria-hidden="true">👹</p>
+      <h1 class="cover-head">No!</h1>
+      <p class="cover-text">Really, this page doesn't work unless you're at a computer. Come back when you've got time.</p>
+    </div>
+  </section>
+</div>
 
 <main class="try">
   <div class="topbar">
@@ -49,11 +68,6 @@
     <p class="get-file-status" id="getFileStatus" role="status" aria-live="polite"></p>
   </div>
 
-  <!-- On a phone, in place of the drop zone. -->
-  <div class="phone" id="phone" hidden>
-    <p>On a phone? Here's example data. Load your own on a laptop.</p>
-    <button type="button" class="btn btn-big" id="phoneSample">Show example data</button>
-  </div>
   </section>
 
   <!-- After their file is read: the drop zone leaves, and this stays, so the promise is still beside the way to choose another file. -->

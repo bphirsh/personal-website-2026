@@ -60,7 +60,6 @@ const reply = document.getElementById('reply');
 const card = document.getElementById('card');
 const dropIdle = [...dropMain.childNodes].map((n) => n.cloneNode(true));
 const sampleLink = document.getElementById('sampleLink');
-const phone = document.getElementById('phone');
 const loaded = document.getElementById('loaded');
 const loading = document.getElementById('loading');
 const loadingLine = document.getElementById('loadingLine');
@@ -109,7 +108,7 @@ function reset() {
   loaded.hidden = true;
   loading.hidden = true;
   for (const s of storySections) s.hidden = true;
-  intake.hidden = isPhone();
+  intake.hidden = false;
 }
 
 /**
@@ -184,18 +183,15 @@ function showSample() {
   const r = readInvite(text);
   if (!r.ok) return showError(r.error);
   reset();
-  if (isPhone()) intake.hidden = true;
   const b = el('div', 'banner banner-sample');
   b.setAttribute('role', 'status');
   const row = el('div', 'banner-row');
   row.appendChild(el('span', 'banner-text', WORDS.sampleBanner));
-  if (!isPhone()) {
-    const load = el('button', 'link', WORDS.loadMine);
-    load.type = 'button';
-    // As Load a different file: cancelling the picker leaves the example data where it was.
-    load.addEventListener('click', () => pick.click());
-    row.appendChild(load);
-  }
+  const load = el('button', 'link', WORDS.loadMine);
+  load.type = 'button';
+  // As Load a different file: cancelling the picker leaves the example data where it was.
+  load.addEventListener('click', () => pick.click());
+  row.appendChild(load);
   b.appendChild(row);
   banners.appendChild(b);
   mountDemo(demo, r.invite, SAMPLE_NAME, text, { sample: true, full: true });
@@ -203,11 +199,6 @@ function showSample() {
   mountFiles(filesMount, filesSample(r.invite).db);
   mountTaps(reply, codeFromHash(location.hash));
   revealWorkspace();
-}
-
-// A phone can't drop a file its agent wrote on a laptop: it gets the sample.
-function isPhone() {
-  return matchMedia('(max-width: 760px) and (pointer: coarse)').matches;
 }
 
 /**
@@ -323,5 +314,3 @@ sampleLink.hidden = false;
 document.getElementById('loadAnother').addEventListener('click', () => pick.click());
 document.getElementById('skipDemo').addEventListener('click', showSample);
 wireGetFile(document.getElementById('getFile'), document.getElementById('getFileStatus'), () => codeFromHash(location.hash));
-document.getElementById('phoneSample').addEventListener('click', showSample);
-if (isPhone()) { intake.hidden = true; phone.hidden = false; }
