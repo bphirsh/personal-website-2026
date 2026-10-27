@@ -18,7 +18,6 @@ const WORDS = {
   page: (project) => `Writes "Notes on ${project}"`,
   row: (db) => `Adds a row to ${db}`,
   again: 'Play again',
-  skip: 'Skip',
 };
 
 const STEP_MS = 1800;
@@ -52,14 +51,12 @@ export function mountReplay(mount, invite, fileName, fileText) {
   stage.append(agent, screen);
   section.appendChild(stage);
 
-  // Skip while it plays; Play again once it has ended.
-  const foot = el('div', 'replay-foot');
-  const skip = el('button', 'link', WORDS.skip);
-  skip.type = 'button';
-  const again = el('button', 'btn btn-quiet', WORDS.again);
+  // When it ends, the stage grays out with Play again over it (M-014; Skip is gone).
+  const over = el('div', 'replay-over');
+  const again = el('button', 'btn btn-big', WORDS.again);
   again.type = 'button';
-  foot.append(skip, again);
-  section.appendChild(foot);
+  over.appendChild(again);
+  stage.appendChild(over);
   mount.replaceChildren(section);
 
   const { properties: p } = invite;
@@ -96,29 +93,22 @@ export function mountReplay(mount, invite, fileName, fileText) {
 
   function play() {
     reset();
+    // With reduced motion the steps come quicker and nothing in them moves (the CSS holds the tint still and stops the cursor).
+    const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const stepMs = reduced ? 900 : STEP_MS;
+    const firstMs = reduced ? 300 : FIRST_MS;
     section.dataset.started = String(Math.round(performance.now())); // when it began, for the scroll check
     const list = script();
     list.forEach((step, i) => {
       timers.push(setTimeout(() => {
         step.run();
         steps.appendChild(el('li', null, step.caption));
-        if (i === list.length - 1) timers.push(setTimeout(finish, STEP_MS / 2));
-      }, FIRST_MS + i * STEP_MS));
+        if (i === list.length - 1) timers.push(setTimeout(finish, stepMs / 2));
+      }, firstMs + i * stepMs));
     });
   }
 
-  // Skipping lands on the end state, every change made.
-  function skipToEnd() {
-    if (section.classList.contains('ended')) return;
-    reset();
-    for (const step of script()) {
-      step.run();
-      steps.appendChild(el('li', null, step.caption));
-    }
-    finish();
-  }
-
-  // It starts once, when most of it is on screen; Play again runs it after that, and skipping first means it never starts by itself.
+  // It starts once, when most of it is on screen; Play again runs it after that.
   const steps20 = Array.from({ length: 21 }, (_, i) => i / 20);
   const seen = new IntersectionObserver((entries) => {
     for (const e of entries) {
@@ -128,12 +118,11 @@ export function mountReplay(mount, invite, fileName, fileText) {
     }
   }, { threshold: steps20 });
   again.addEventListener('click', () => { seen.disconnect(); play(); });
-  skip.addEventListener('click', () => { seen.disconnect(); skipToEnd(); });
 
   reset();
   seen.observe(section);
 
-  return { play, skip: skipToEnd };
+  return { play, finish };
 }
 
 // The new page: their project and their tools.

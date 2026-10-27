@@ -1,60 +1,69 @@
 #!/usr/bin/env node
 /**
- * carry-tokens — copy Workspace's design tokens into the site, as values the
- * site owns.
+ * carry-tokens — copy Workspace's design tokens into the site, as values the site owns.
  *
- *   node tools/carry-tokens.mjs [<path to the app's themes folder>]
+ *   node tools/carry-tokens.mjs [<path to the app's code folder>]
  *
- * /workspace/try is a preview of the app, so it is built from the app's own
- * tokens rather than imitated by eye. The app keeps them as one JSON file per
- * theme (light.json, dark.json) in its repository; this reads those two and
- * writes workspace/try/tokens.css: light on :root, dark under
- * prefers-color-scheme. The app's files are only read. Run it again when the
- * app's tokens change, and commit the result.
+ * /workspace/try is a preview of the app, so it is built from the app's own tokens rather than imitated by eye. The app keeps one JSON file per theme version in `src/renderer/src/theme/themes/`, and lists its themes, each a day and a night version, as `THEMES` in `src/shared/theme.ts`. This reads both and writes workspace/try/tokens.css:
+ *
+ * - the Default theme on :root, its night version under prefers-color-scheme: dark;
+ * - every other theme under :root[data-style="<id>"], day and night the same way, so the page's style switcher sets one attribute and the visitor's own day or night setting picks the version (M-014).
+ *
+ * It also copies the themes' CREDITS.md beside it, since five themes start from MIT-licensed palettes whose notice travels with them. The app's files are only read. Run it again when the app's themes change, and commit the result.
  */
 
 import { readFileSync, writeFileSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-const themes = process.argv[2] ?? '/Users/brian/Syncthing/Projects/Agentic Workspace/v0/code/src/renderer/src/theme/themes';
-const out = join(dirname(fileURLToPath(import.meta.url)), '..', 'workspace', 'try', 'tokens.css');
+const code = process.argv[2] ?? '/Users/brian/Syncthing/Projects/Agentic Workspace/v0/code';
+const themesDir = join(code, 'src/renderer/src/theme/themes');
+const here = dirname(fileURLToPath(import.meta.url));
+const out = join(here, '..', 'workspace', 'try', 'tokens.css');
+const credits = join(here, '..', 'workspace', 'try', 'THEME-CREDITS.md');
 
-const load = (name) => JSON.parse(readFileSync(join(themes, `${name}.json`), 'utf8'));
-const light = load('light');
-const dark = load('dark');
-
-const names = Object.keys(light.tokens);
-const missing = names.filter((n) => !(n in dark.tokens));
-if (missing.length) {
-  console.error(`dark.json is missing ${missing.join(', ')}`);
-  process.exit(1);
-}
-// The app rejects a value carrying ; { } for the same reason: it would smuggle CSS.
-const unsafe = [light, dark].flatMap((t) => Object.entries(t.tokens).filter(([, v]) => /[;{}]/.test(v)).map(([k]) => k));
-if (unsafe.length) {
-  console.error(`unsafe token values: ${unsafe.join(', ')}`);
+// THEMES in theme.ts: { id, name, day, night } literals, read without running TypeScript.
+const source = readFileSync(join(code, 'src/shared/theme.ts'), 'utf8');
+const block = source.slice(source.indexOf('export const THEMES = ['), source.indexOf('] as const satisfies'));
+const themes = [...block.matchAll(/\{\s*id:\s*'([^']+)',\s*name:\s*'([^']+)',\s*day:\s*'([^']+)',\s*night:\s*'([^']+)'\s*\}/g)]
+  .map(([, id, name, day, night]) => ({ id, name, day, night }));
+if (themes.length === 0 || themes[0].id !== 'default') {
+  console.error('could not read THEMES from theme.ts, or Default is not first');
   process.exit(1);
 }
 
-const block = (theme, indent) => names.map((n) => `${indent}--${n}: ${theme.tokens[n]};`).join('\n');
-
-const css = `/* Workspace's design tokens, carried over from the app by tools/carry-tokens.mjs
-   on ${new Date().toISOString().slice(0, 10)}. Generated: change the app's theme files and run the
-   script again rather than editing this. */
-
-:root {
-${block(light, '  ')}
-  color-scheme: light;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-${block(dark, '    ')}
-    color-scheme: dark;
+const load = (file) => JSON.parse(readFileSync(join(themesDir, `${file}.json`), 'utf8')).tokens;
+const names = Object.keys(load('light'));
+const versions = new Map();
+for (const t of themes) {
+  for (const v of [t.day, t.night]) {
+    const tokens = load(v);
+    const missing = names.filter((n) => !(n in tokens));
+    if (missing.length) { console.error(`${v}.json is missing ${missing.join(', ')}`); process.exit(1); }
+    // The app rejects a value carrying ; { } for the same reason: it would smuggle CSS.
+    const unsafe = names.filter((n) => /[;{}]/.test(tokens[n]));
+    if (unsafe.length) { console.error(`${v}.json has unsafe values: ${unsafe.join(', ')}`); process.exit(1); }
+    versions.set(v, tokens);
   }
 }
-`;
 
-writeFileSync(out, css);
-console.log(`wrote ${out}: ${names.length} tokens, light and dark`);
+const decls = (tokens, indent) => names.map((n) => `${indent}--${n}: ${tokens[n]};`).join('\n');
+const rule = (selector, tokens, scheme, indent = '') => `${indent}${selector} {\n${decls(tokens, `${indent}  `)}\n${indent}  color-scheme: ${scheme};\n${indent}}`;
+
+const parts = [`/* Workspace's design tokens, carried over from the app by tools/carry-tokens.mjs on ${new Date().toISOString().slice(0, 10)}: ${themes.length} themes (${themes.map((t) => t.name).join(', ')}), each a day and a night version. Generated: change the app's theme files and run the script again rather than editing this. Where the colours come from: THEME-CREDITS.md. */`];
+for (const t of themes) {
+  const sel = t.id === 'default' ? ':root' : `:root[data-style="${t.id}"]`;
+  parts.push(`/* ${t.name} */`);
+  parts.push(rule(sel, versions.get(t.day), 'light'));
+  parts.push(`@media (prefers-color-scheme: dark) {\n${rule(sel, versions.get(t.night), 'dark', '  ')}\n}`);
+}
+writeFileSync(out, parts.join('\n\n') + '\n');
+
+// The list the switcher shows, in the app's order.
+// Each with a swatch of its own ground, surface and accent, day and night, for the switcher's menu.
+const swatch = (v) => { const t = versions.get(v); return { bg: t.bg, surface: t.surface, accent: t.accent }; };
+const list = `/* Generated by tools/carry-tokens.mjs from the app's THEMES. */\nexport const STYLES = ${JSON.stringify(themes.map(({ id, name, day, night }) => ({ id, name, day: swatch(day), night: swatch(night) })), null, 2)};\n`;
+writeFileSync(join(here, '..', 'workspace', 'try', 'styles.js'), list);
+
+writeFileSync(credits, readFileSync(join(themesDir, 'CREDITS.md'), 'utf8'));
+console.log(`wrote ${out}: ${themes.length} themes, ${versions.size} versions, ${names.length} tokens each; styles.js; THEME-CREDITS.md`);

@@ -19,10 +19,11 @@ import { mountReplay } from './replay.js';
 import { mountButton } from './button.js';
 import { mountTaps } from './taps.js';
 import { mountCard } from './card.js';
+import { mountStyleSwitcher } from './style.js';
 
 const WORDS = {
   dragging: 'Let go',
-  reading: 'Reading…',
+  reading: 'Reading your file…',
   errorHeading: "This file couldn't be opened",
   pasteThis: 'Paste this to your agent:',
   copy: 'Copy',
@@ -33,7 +34,13 @@ const WORDS = {
   howToFix: 'How to fix it',
   sampleBanner: 'Example data. Run the prompt from your invite to see your own.',
   loadMine: 'Load my file',
+  // After "Reading your file…", one at a time, each replacing the last (M-014).
+  loading: ['Working magic…', 'Creating your new Workspace…'],
 };
+
+// How long the loading moment lasts (M-014): long enough to anticipate, short enough not to wait. With reduced motion, one still line and a short pause.
+const LOADING_MS = 1800;
+const LOADING_REDUCED_MS = 500;
 
 // The sample person, Sam: made up, and loaded like any dropped file.
 const SAMPLE_URL = '/workspace/try/sample.md';
@@ -53,6 +60,10 @@ const dropIdle = [...dropMain.childNodes].map((n) => n.cloneNode(true));
 const sampleLink = document.getElementById('sampleLink');
 const phone = document.getElementById('phone');
 const loaded = document.getElementById('loaded');
+const loading = document.getElementById('loading');
+const loadingLine = document.getElementById('loadingLine');
+const storySections = ['story', 'figures', 'agentTools'].map((id) => document.getElementById(id));
+const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
 
 function el(tag, cls, text) {
   const n = document.createElement(tag);
@@ -76,7 +87,7 @@ async function take(file) {
     outcome = readInvite(text);
   }
   setDropText(null);
-  if (outcome.ok) showDemo(file.name, text, outcome);
+  if (outcome.ok) await anticipate().then(() => showDemo(file.name, text, outcome));
   else showError(outcome.error);
   document.dispatchEvent(new CustomEvent('invite-read', { detail: { fileName: file.name, text: outcome.ok ? text : null, ...outcome } }));
 }
@@ -90,7 +101,37 @@ function reset() {
   reply.replaceChildren();
   card.replaceChildren();
   loaded.hidden = true;
+  loading.hidden = true;
+  for (const s of storySections) s.hidden = true;
   intake.hidden = isPhone();
+}
+
+/**
+ * The moment between a drop and the workspace (M-014): the drop zone goes, a mark animates and the lines change, then it resolves. Reduced motion gets the first line, still, for a short pause.
+ */
+function anticipate() {
+  reset();
+  intake.hidden = true;
+  loading.hidden = false;
+  const lines = WORDS.loading;
+  loadingLine.textContent = lines[0];
+  const reduced = reducedMotion.matches;
+  const total = reduced ? LOADING_REDUCED_MS : LOADING_MS;
+  return new Promise((resolve) => {
+    if (!reduced) lines.slice(1).forEach((line, i) => setTimeout(() => { loadingLine.textContent = line; }, ((i + 1) * total) / lines.length));
+    setTimeout(resolve, total);
+  });
+}
+
+// The workspace fills almost the whole window, with nothing above or below it in view (M-014); the rest follows on scroll.
+function revealWorkspace() {
+  // A section still waiting on its words (the speed figures) stays hidden.
+  for (const s of storySections) s.hidden = s.hasAttribute('data-pending');
+  const win = demo.querySelector('.win');
+  if (!win) return;
+  // A few pixels of ground above it, and the row above (Load a different file) fully out of view.
+  const top = win.getBoundingClientRect().top + scrollY - Math.min(Math.round(innerHeight * 0.02), 24);
+  scrollTo({ top, behavior: reducedMotion.matches ? 'auto' : 'smooth' });
 }
 
 function showError(error) {
@@ -137,10 +178,10 @@ async function showSample() {
   }
   b.appendChild(row);
   banners.appendChild(b);
-  mountDemo(demo, r.invite, SAMPLE_NAME, text, { sample: true });
+  mountDemo(demo, r.invite, SAMPLE_NAME, text, { sample: true, full: true });
   mountReplay(replay, r.invite, SAMPLE_NAME, text);
   mountTaps(reply, codeFromHash(location.hash));
-  b.scrollIntoView({ block: 'start', behavior: 'smooth' });
+  revealWorkspace();
 }
 
 // A phone can't drop a file its agent wrote on a laptop: it gets the sample.
@@ -168,11 +209,12 @@ function showDemo(fileName, text, r) {
     if (w.code === 'bad-invite' && invite) continue;
     banners.appendChild(banner(w));
   }
-  mountDemo(demo, r.invite, fileName, text);
+  mountDemo(demo, r.invite, fileName, text, { full: true });
   mountReplay(replay, r.invite, fileName, text);
   mountButton(reply, { ...r.invite.properties, invite });
   // The card is theirs, so only for their own file, never for the sample.
   mountCard(card, { ...r.invite.properties, invite });
+  revealWorkspace();
 }
 
 function banner(w) {
@@ -246,6 +288,7 @@ addEventListener('drop', (e) => {
   take(e.dataTransfer?.files?.[0]);
 });
 
+mountStyleSwitcher(document.getElementById('styleSwitch'));
 sampleLink.hidden = false;
 document.getElementById('loadAnother').addEventListener('click', () => pick.click());
 sampleLink.querySelector('button').addEventListener('click', showSample);

@@ -21,12 +21,12 @@ code { font-family: var(--font-mono); font-size: 0.9em; background: var(--code-b
   padding: var(--space-7) var(--space-4) var(--space-8);
 }
 
+.topbar { display: flex; align-items: center; justify-content: space-between; gap: var(--space-4); margin-bottom: var(--space-6); }
 .back {
   display: inline-block;
   font-size: var(--text-sm);
   color: var(--fg-secondary);
   text-decoration: none;
-  margin-bottom: var(--space-6);
 }
 .back:hover { color: var(--fg); }
 
@@ -268,4 +268,59 @@ code { font-family: var(--font-mono); font-size: 0.9em; background: var(--code-b
   .reply-sentence { font-size: var(--text-h3); }
   .reply-sentence .reply-email { width: 100%; font-size: var(--text-base); }
   .reply-form .btn-big { width: 100%; }
+}
+
+/* ── the style switcher (M-014): a button and its menu, as the app's menus look ── */
+.style-switch { position: relative; }
+.style-button, .style-item {
+  display: inline-flex; align-items: center; gap: var(--space-2);
+  font: inherit; font-size: var(--text-sm); color: var(--fg);
+  background: var(--surface); border: var(--border-width) solid var(--border); border-radius: var(--radius-md);
+  padding: var(--space-1) var(--space-3); cursor: pointer;
+}
+.style-button:hover, .style-item:hover { background: var(--hover); }
+.style-current { color: var(--fg-secondary); }
+.style-swatch { width: var(--space-3); height: var(--space-3); border-radius: 50%; border: var(--border-width) solid var(--border); flex: none; }
+.style-menu {
+  position: absolute; right: 0; top: calc(100% + var(--space-1)); z-index: 10;
+  list-style: none; min-width: 180px; padding: var(--space-1);
+  background: var(--surface); border: var(--border-width) solid var(--border); border-radius: var(--radius-lg); box-shadow: var(--shadow-float);
+}
+.style-menu[hidden] { display: none; }
+.style-item { width: 100%; border-color: transparent; background: none; }
+.style-item[aria-checked="true"] { background: var(--accent-soft); }
+
+/* ── the moment after a drop ── */
+.loading { min-height: 60vh; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: var(--space-4); text-align: center; }
+.loading[hidden] { display: none; }
+.loading-line { font-size: var(--text-h3); font-weight: var(--weight-medium); color: var(--fg); }
+.loading-mark { display: flex; gap: var(--space-2); }
+.loading-mark span { width: var(--space-3); height: var(--space-3); border-radius: var(--radius-sm); background: var(--accent); animation: loading-bounce 900ms var(--easing) infinite; }
+.loading-mark span:nth-child(2) { animation-delay: 150ms; background: var(--chart-1); }
+.loading-mark span:nth-child(3) { animation-delay: 300ms; background: var(--chart-3); }
+@keyframes loading-bounce { 0%, 100% { transform: translateY(0); opacity: 0.6; } 50% { transform: translateY(calc(var(--space-3) * -1)); opacity: 1; } }
+
+/* ── the story, the figures and the agent tools, after the workspace ── */
+.story { margin-top: calc(var(--space-8) * 2); text-align: center; }
+.story[hidden], .figures[hidden], .agent-tools[hidden] { display: none; }
+.story-head { font-size: var(--text-h1); font-weight: var(--weight-semibold); line-height: var(--leading-tight); }
+.story-sub { font-size: var(--text-prose); line-height: var(--leading-prose); color: var(--fg-secondary); max-width: 36em; margin: var(--space-3) auto 0; }
+.section-title { font-size: var(--text-h2); font-weight: var(--weight-semibold); line-height: var(--leading-tight); margin-bottom: var(--space-4); }
+.figures, .agent-tools { margin-top: var(--space-8); }
+.figure-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: var(--space-4); }
+.figure { padding: var(--space-5); background: var(--surface); border: var(--border-width) solid var(--border); border-radius: var(--radius-lg); }
+.figure-number { display: block; font-size: var(--text-title); font-weight: var(--weight-semibold); line-height: var(--leading-tight); color: var(--accent); }
+.figure-label { color: var(--fg-secondary); }
+.tool-list { list-style: none; display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: var(--space-4); }
+.tool-list li { display: flex; flex-direction: column; gap: var(--space-3); padding: var(--space-5); background: var(--surface); border: var(--border-width) solid var(--border); border-radius: var(--radius-lg); font-weight: var(--weight-medium); }
+.tool-list .icon { width: var(--space-6); height: var(--space-6); color: var(--accent); fill: none; stroke: currentColor; stroke-width: 1.75; stroke-linecap: round; stroke-linejoin: round; }
+
+@media (max-width: 600px) {
+  .story-head { font-size: var(--text-h2); }
+}
+
+/* With reduced motion nothing moves for longer than a fade (M-014). */
+@media (prefers-reduced-motion: reduce) {
+  .loading-mark span { animation: none; opacity: 1; }
+  .replay-over { transition: none; }
 }

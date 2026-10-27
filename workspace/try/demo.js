@@ -120,7 +120,9 @@ export function mountDemo(mount, invite, fileName, fileText, options = {}) {
   const state = { tabs: [vault.start, vault.file], active: vault.start, changed: null };
 
   const wrap = el('div', 'demo');
-  if (options.above !== false) wrap.appendChild(el('p', 'demo-above', options.sample ? WORDS.aboveSample : WORDS.above));
+  // `options.full`: the window fills almost the whole screen, with no text above it (M-014).
+  if (options.full) wrap.classList.add('demo-full');
+  else if (options.above !== false) wrap.appendChild(el('p', 'demo-above', options.sample ? WORDS.aboveSample : WORDS.above));
   const win = el('div', 'win');
   win.setAttribute('role', 'region');
   win.setAttribute('aria-label', options.label ?? 'Workspace preview');

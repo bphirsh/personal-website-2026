@@ -11,7 +11,7 @@ const ENDPOINT = '/api/invite-reply';
 const EMAIL_RE = /^[^\s@]+@[^\s@.]+\.[^\s@]{2,}$/;
 
 const WORDS = {
-  sends: 'Sends Brian your email, invite code, computer, role and tools. Nothing else.',
+  sends: 'Sends Brian your email, code, computer, role and tools. Nothing else.',
   sendsSample: 'Sends Brian your email and these three answers. Nothing else.',
   sendsSampleCode: 'This sends Brian your invite code, your email and these three answers. Nothing else.',
   notify: 'Notify',
@@ -19,7 +19,7 @@ const WORDS = {
   noEmail: 'Add your email first.',
   badEmail: "That doesn't look like an email address.",
   sending: 'Sending…',
-  failed: "That didn't send. Try again; nothing was sent.",
+  failed: "That didn't send. Try again.",
   thanks: (name) => (name && name !== 'You' ? `Thanks, ${name}! Brian will email you.` : 'Thanks! Brian will email you.'),
   question: 'Which computer would you use Workspace on?',
   chipHelp: 'Not sure? Apple menu → About This Mac: "Chip: Apple M…" is Apple silicon.',

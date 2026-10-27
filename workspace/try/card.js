@@ -10,7 +10,7 @@
 
 const WORDS = {
   heading: 'Your founder card',
-  sub: 'Made in your browser. Nothing is posted.',
+  sub: 'Nothing is posted.',
   founder: (n) => `Founder #${n}`,
   roles: { coder: 'Builds with code', 'knowledge-worker': 'Thinks in documents', both: 'Code and documents', other: 'Code and documents' },
   worksWith: (tools) => `Works with ${tools}`,
@@ -21,7 +21,7 @@ const WORDS = {
   download: 'Download image',
   copy: 'Copy image',
   copied: 'Copied',
-  noCopy: "Copying images isn't supported here; use Download.",
+  noCopy: "Can't copy here; use Download.",
 };
 
 const W = 1200;
@@ -97,6 +97,9 @@ export function mountCard(mount, answers) {
     }
   });
 
+  // Its colours are the page's tokens, so a new style (or day turning to night) redraws it.
+  document.addEventListener('stylechange', draw);
+  matchMedia('(prefers-color-scheme: dark)').addEventListener('change', draw);
   // System fonts are ready at once; draw again after layout settles anyway.
   draw();
   document.fonts?.ready?.then(draw);

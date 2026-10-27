@@ -292,8 +292,7 @@
   position: relative;
   left: 50%;
   transform: translateX(-50%);
-  /* Brian: more space between trying it and the agent at work. */
-  margin-top: calc(var(--space-8) * 2);
+  margin-top: var(--space-6);
 }
 .replay-stage { display: grid; grid-template-columns: 260px minmax(0, 1fr); gap: var(--space-5); align-items: start; }
 .replay .demo { width: auto; left: auto; transform: none; margin-top: 0; }
@@ -327,10 +326,18 @@
 .agent-steps li { padding: var(--space-2) 0; border-top: var(--border-width) solid var(--border); }
 .agent-steps li::before { content: '✓ '; color: var(--accent); }
 
-.replay-foot { display: flex; gap: var(--space-4); align-items: center; flex-wrap: wrap; margin-top: var(--space-4); min-height: var(--space-6); }
-.replay .btn { display: none; }
-.replay.ended .btn { display: inline-block; }
-.replay.ended .replay-foot .link { display: none; }
+/* When it ends: the stage grays out, Play again over it (M-014). */
+.replay-stage { position: relative; }
+.replay-over {
+  position: absolute; inset: calc(var(--space-2) * -1);
+  display: flex; align-items: center; justify-content: center;
+  background: color-mix(in srgb, var(--bg) 72%, transparent);
+  border-radius: var(--radius-lg);
+  opacity: 0; pointer-events: none;
+  transition: opacity var(--duration-slow) var(--easing);
+}
+.replay.ended .replay-over { opacity: 1; pointer-events: auto; }
+.replay.ended .replay-stage > :not(.replay-over) { filter: grayscale(1); }
 
 @media (prefers-reduced-motion: reduce) {
   .replay.playing .agent-cursor { animation: none; opacity: 1; }
@@ -339,4 +346,11 @@
 @media (max-width: 760px) {
   .replay-stage { grid-template-columns: 1fr; }
   .replay .win-body { height: auto; }
+}
+
+/* ── the workspace, filling almost the whole window after a drop (M-014) ── */
+.demo.demo-full { margin-top: var(--space-8); }
+.demo-full .win-body { height: calc(94vh - var(--tabbar-height) - var(--border-width) * 3); min-height: 480px; }
+@media (max-width: 760px) {
+  .demo-full .win-body { height: auto; }
 }

@@ -92,7 +92,7 @@ export const PROBLEMS = Object.freeze({
   'empty-file': {
     kind: 'error',
     message: 'The file is empty.',
-    pasteBack: 'My invite file is empty. Please write it again in the workspace-invite/1 format and save it.',
+    pasteBack: 'My invite file is empty. Please write it again.',
   },
   'not-text': {
     kind: 'error',
@@ -102,32 +102,32 @@ export const PROBLEMS = Object.freeze({
   'too-large': {
     kind: 'error',
     message: 'This file is too big (over 200 KB).',
-    pasteBack: 'My invite file is over 200 KB. Please write it again in the workspace-invite/1 format, shorter.',
+    pasteBack: 'My invite file is over 200 KB. Please write it again, shorter.',
   },
   'no-properties': {
     kind: 'error',
     message: 'The answers block at the top is missing.',
-    pasteBack: 'My invite file has no properties block. Please put the --- block from the workspace-invite/1 format at the very top and save it again.',
+    pasteBack: 'My invite file has no --- properties block at the top. Please add it and save again.',
   },
   'unclosed-properties': {
     kind: 'error',
     message: 'The answers block at the top never closes.',
-    pasteBack: "My invite file's properties block has no closing --- line. Please add one before the first # heading and save it again.",
+    pasteBack: "My invite file's --- block at the top never closes. Please add the closing --- line.",
   },
   'unknown-version': {
     kind: 'error',
-    message: 'This file is format {found}; this page reads workspace-invite/1.',
+    message: 'This page reads workspace-invite/1, not {found}.',
     pasteBack: "Please change my invite file's format line to format: workspace-invite/1 and save it again.",
   },
   'bad-table': {
     kind: 'warning',
     message: 'Your "{name}" table couldn\'t be read, so it\'s left out.',
-    pasteBack: 'In my invite file, the "{name}" table can\'t be read: it needs a header row, then a row like | --- | --- |, then one row per line. Please fix it and save again.',
+    pasteBack: 'Please fix the "{name}" table in my invite file: a header row, then | --- | --- |, then one row per line.',
   },
   'bad-invite': {
     kind: 'warning',
     // One banner whether the line is missing or wrong, and no box to paste: the email box makes fixing the file unnecessary (Page copy, M-013).
-    message: "No invite code in your file. That's fine: your email at the end tells Brian it's you.",
+    message: 'No invite code in your file. Your email at the end will do.',
     pasteBack: null,
   },
 });
