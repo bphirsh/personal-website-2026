@@ -2,11 +2,7 @@
  * The share card: a founder card drawn in the browser, to download or copy
  * (M-008). Nothing is stored or published, and drawing it makes no request.
  *
- * By default it carries only their founder number, role and tools, plus
- * what Workspace is and the public signup page's address. Their project is
- * drawn only while the tick box is ticked; it is unticked to start, and the
- * card is redrawn from scratch each time, so an unticked card holds nothing
- * of the project at all. Their name is never on it.
+ * It carries their founder number, role, what they are building (always, since M-013 changed M-008), their tools, what Workspace is and the public signup page's address. Their name is never on it.
  *
  * Words are from Marketing/Beta Signups/Page copy.md, "The share card". The
  * colours and fonts are the app's tokens, read from the page.
@@ -14,7 +10,7 @@
 
 const WORDS = {
   heading: 'Your founder card',
-  sub: 'Made in your browser. Download it or copy it; nothing is posted anywhere.',
+  sub: 'Made in your browser. Nothing is posted.',
   founder: (n) => `Founder #${n}`,
   roles: { coder: 'Builds with code', 'knowledge-worker': 'Thinks in documents', both: 'Code and documents', other: 'Code and documents' },
   worksWith: (tools) => `Works with ${tools}`,
@@ -22,25 +18,25 @@ const WORDS = {
   what: 'Workspace — a Mac app for the files you and your agents share',
   address: 'brianhirsh.com/workspace/signup',
   building: (p) => `Building: ${p}`,
-  tick: "Show what I'm building on the card",
   download: 'Download image',
   copy: 'Copy image',
   copied: 'Copied',
-  noCopy: "Your browser can't copy images; use Download instead.",
+  noCopy: "Copying images isn't supported here; use Download.",
 };
 
 const W = 1200;
 const H = 630;
 
 /** The lines the card holds, in order, for these answers. */
-export function cardLines({ invite, role, ai_tools, knowledge_tools, project }, showProject) {
+export function cardLines({ invite, role, ai_tools, knowledge_tools, project }) {
   const tools = [...ai_tools, ...knowledge_tools].map((t) => t.label);
   const shown = tools.slice(0, 5).join(', ') + (tools.length > 5 ? `, ${WORDS.more(tools.length - 5)}` : '');
   return {
     founder: invite ? WORDS.founder(invite.slice(0, 2)) : null,
     role: WORDS.roles[role] ?? WORDS.roles.other,
+    // Always on the card since M-013 (Brian: "can't be hidden"), and drawn under the role, before the tools.
+    project: project ? WORDS.building(project) : null,
     tools: tools.length ? WORDS.worksWith(shown) : null,
-    project: showProject && project ? WORDS.building(project) : null,
     what: WORDS.what,
     address: WORDS.address,
   };
@@ -57,12 +53,6 @@ export function mountCard(mount, answers) {
   canvas.setAttribute('role', 'img');
   section.appendChild(canvas);
 
-  const tick = el('input');
-  tick.type = 'checkbox';
-  tick.checked = false;
-  const tickLabel = el('label', 'card-tick');
-  tickLabel.append(tick, el('span', null, WORDS.tick));
-  section.appendChild(tickLabel);
 
   const actions = el('div', 'actions');
   const download = el('button', 'btn', WORDS.download);
@@ -76,13 +66,12 @@ export function mountCard(mount, answers) {
   mount.replaceChildren(section);
 
   function draw() {
-    const lines = cardLines(answers, tick.checked);
+    const lines = cardLines(answers);
     canvas.setAttribute('aria-label', Object.values(lines).filter(Boolean).join('. '));
     paint(canvas, lines);
     copy.textContent = WORDS.copy;
   }
 
-  tick.addEventListener('change', draw);
   download.addEventListener('click', () => {
     canvas.toBlob((blob) => {
       // An object URL for a blob made here: nothing is fetched or sent.
@@ -111,7 +100,7 @@ export function mountCard(mount, answers) {
   // System fonts are ready at once; draw again after layout settles anyway.
   draw();
   document.fonts?.ready?.then(draw);
-  return { canvas, tick, redraw: draw };
+  return { canvas, redraw: draw };
 }
 
 function paint(canvas, lines) {
@@ -152,17 +141,17 @@ function paint(canvas, lines) {
   ctx.font = `600 76px ${font}`;
   y = wrap(ctx, lines.role, x, y, W - x * 2, 88);
 
-  if (lines.tools) {
-    y += 20;
-    ctx.fillStyle = t('fg-secondary');
-    ctx.font = `400 36px ${font}`;
-    y = wrap(ctx, lines.tools, x, y, W - x * 2, 48);
-  }
   if (lines.project) {
     y += 12;
     ctx.fillStyle = t('fg');
     ctx.font = `500 36px ${font}`;
     y = wrap(ctx, lines.project, x, y, W - x * 2, 48);
+  }
+  if (lines.tools) {
+    y += 8;
+    ctx.fillStyle = t('fg-secondary');
+    ctx.font = `400 32px ${font}`;
+    y = wrap(ctx, lines.tools, x, y, W - x * 2, 44);
   }
 
   ctx.fillStyle = t('fg-secondary');

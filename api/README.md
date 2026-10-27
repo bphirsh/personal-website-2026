@@ -6,7 +6,7 @@ Three Vercel serverless functions that power `/workspace/signup/`, `/workspace/d
 |---|---|
 | `POST /api/signup` | Validates a name + email-or-phone, emails it to you |
 | `POST /api/download-auth` | Checks the password, returns the build's URL |
-| `POST /api/invite-reply` | The button on `/workspace/try`: emails you the invite code, computer, role and tools, and an email only if typed. Stores nothing |
+| `POST /api/invite-reply` | The button on `/workspace/try`: emails you their email, invite code, computer, role and tools. Stores nothing |
 
 ## Why it's built this way
 

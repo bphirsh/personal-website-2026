@@ -123,7 +123,7 @@ code { font-family: var(--font-mono); font-size: 0.9em; background: var(--code-b
   text-decoration: underline;
   text-underline-offset: 2px;
 }
-.sample-link { margin-top: var(--space-2); font-size: var(--text-sm); }
+.sample-link { margin-top: var(--space-3); }
 
 .btn {
   font: inherit;
@@ -154,8 +154,7 @@ code { font-family: var(--font-mono); font-size: 0.9em; background: var(--code-b
   font-size: var(--text-sm);
   color: var(--fg-secondary);
 }
-.foot p + p { margin-top: var(--space-2); }
-.foot a { color: var(--accent); }
+
 
 /* ── the button at the end ── */
 .reply {
@@ -232,11 +231,41 @@ code { font-family: var(--font-mono); font-size: 0.9em; background: var(--code-b
 .card-head { font-size: var(--text-h3); font-weight: var(--weight-semibold); line-height: var(--leading-tight); }
 .card-sub { font-size: var(--text-sm); color: var(--fg-secondary); margin: var(--space-1) 0 var(--space-4); }
 .card-canvas { display: block; width: 100%; height: auto; border-radius: var(--radius-md); box-shadow: var(--shadow-float); }
-.card-tick { display: flex; gap: var(--space-2); align-items: center; margin-top: var(--space-4); font-size: var(--text-sm); cursor: pointer; }
-.card-tick input { accent-color: var(--accent); }
 
 /* ── after a file is read: a small way back, with the promise beside it ── */
 .loaded { display: flex; gap: var(--space-3); align-items: baseline; flex-wrap: wrap; font-size: var(--text-sm); }
 .loaded[hidden] { display: none; }
 .loaded .link { flex: 0 0 auto; }
 .loaded .privacy { margin-top: 0; flex: 1 1 320px; }
+
+/* ── the signup, bigger since M-013: "Email me at [box] when it's ready!" and Notify ── */
+.reply { padding: var(--space-6); }
+.reply-sends { margin-bottom: var(--space-3); }
+.reply-form { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-3) var(--space-4); }
+.reply-sentence {
+  display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--space-2);
+  font-size: var(--text-h2); font-weight: var(--weight-semibold); line-height: var(--leading-tight);
+}
+.reply-sentence .reply-email {
+  width: 14em; max-width: 100%;
+  font-size: var(--text-h3); font-weight: var(--weight-normal);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-md);
+}
+.reply-form .btn-big { font-size: var(--text-h3); padding: var(--space-2) var(--space-6); }
+.reply-after { font-size: var(--text-h3); font-weight: var(--weight-medium); }
+
+/* ── the foot: four promises as icons, then one line from Brian ── */
+.foot .icon { width: var(--icon-size); height: var(--icon-size); flex: none; fill: none; stroke: currentColor; stroke-width: 1.75; stroke-linecap: round; stroke-linejoin: round; }
+.promises { list-style: none; display: flex; flex-wrap: wrap; gap: var(--space-3) var(--space-6); margin-bottom: var(--space-4); }
+.promises li { display: flex; align-items: center; gap: var(--space-2); color: var(--fg); font-weight: var(--weight-medium); }
+.promises .icon { color: var(--accent); }
+.foot-note { color: var(--fg); margin-bottom: var(--space-2); }
+.foot-made a { color: var(--accent); }
+
+@media (max-width: 600px) {
+  .reply { padding: var(--space-4); }
+  .reply-sentence { font-size: var(--text-h3); }
+  .reply-sentence .reply-email { width: 100%; font-size: var(--text-base); }
+  .reply-form .btn-big { width: 100%; }
+}

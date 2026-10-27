@@ -88,15 +88,6 @@
   margin-left: var(--space-2);
 }
 
-.hint {
-  margin: var(--space-1) var(--space-2) var(--space-2);
-  padding: var(--space-2) var(--space-3);
-  font-size: var(--text-xs);
-  color: var(--fg);
-  background: var(--accent-soft);
-  border-left: 2px solid var(--accent);
-  border-radius: var(--radius-sm);
-}
 
 /* ── pane ── */
 .pane { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; background: var(--surface); }
@@ -301,18 +292,8 @@
   position: relative;
   left: 50%;
   transform: translateX(-50%);
-  margin-top: var(--space-7);
-}
-.replay-label {
-  display: inline-block;
-  font-size: var(--text-sm);
-  font-weight: var(--weight-medium);
-  color: var(--fg);
-  background: var(--surface-sunken);
-  border: var(--border-width) solid var(--border);
-  border-radius: var(--radius-md);
-  padding: var(--space-1) var(--space-3);
-  margin-bottom: var(--space-3);
+  /* Brian: more space between trying it and the agent at work. */
+  margin-top: calc(var(--space-8) * 2);
 }
 .replay-stage { display: grid; grid-template-columns: 260px minmax(0, 1fr); gap: var(--space-5); align-items: start; }
 .replay .demo { width: auto; left: auto; transform: none; margin-top: 0; }
@@ -347,13 +328,9 @@
 .agent-steps li::before { content: '✓ '; color: var(--accent); }
 
 .replay-foot { display: flex; gap: var(--space-4); align-items: center; flex-wrap: wrap; margin-top: var(--space-4); min-height: var(--space-6); }
-.replay-end { flex: 1 1 320px; font-size: var(--text-sm); color: var(--fg-secondary); visibility: hidden; }
-.replay.ended .replay-end { visibility: visible; }
-.replay .btn { visibility: hidden; }
-.replay.ended .btn { visibility: visible; }
-.replay-head { display: flex; gap: var(--space-4); align-items: baseline; flex-wrap: wrap; }
-.replay-head .link { font-size: var(--text-sm); }
-.replay.ended .replay-head .link { visibility: hidden; }
+.replay .btn { display: none; }
+.replay.ended .btn { display: inline-block; }
+.replay.ended .replay-foot .link { display: none; }
 
 @media (prefers-reduced-motion: reduce) {
   .replay.playing .agent-cursor { animation: none; opacity: 1; }

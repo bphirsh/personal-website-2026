@@ -1,13 +1,9 @@
 /**
- * The button at the end of /workspace/try: it sends Brian the invite code,
- * computer, role and tools, and an email only if they typed one (M-005,
- * M-007, M-010). Nothing else from their file is ever sent; the body is built
- * here from those fields alone and nothing else.
+ * The signup at the end of /workspace/try: it sends Brian their email, invite code, computer, role and tools (M-005, M-007, M-010, M-013). The email box is always shown and must be filled; nothing else from their file is ever sent, and the body is built here from those fields alone.
  *
- * The button changes with the computer. A file that says `mac`, `other` or
- * `unknown` gets the question first, and the variant follows the answer.
+ * The line around the box changes with the computer. A file that says `mac`, `other` or `unknown` gets the question first, and the line follows the answer.
  *
- * Words are from Marketing/Beta Signups/Page copy.md, "The button".
+ * Words are from Marketing/Beta Signups/Page copy.md, "The signup".
  */
 
 const ENDPOINT = '/api/invite-reply';
@@ -15,19 +11,17 @@ const ENDPOINT = '/api/invite-reply';
 const EMAIL_RE = /^[^\s@]+@[^\s@.]+\.[^\s@]{2,}$/;
 
 const WORDS = {
-  sends: 'This sends Brian your invite code, computer, role and tools, and your email if you typed one. Nothing else from your file.',
-  sendsSample: 'This sends Brian these three answers, and your email if you typed one. Nothing else.',
-  sendsSampleCode: 'This sends Brian your invite code and these three answers, and your email if you typed one. Nothing else.',
+  sends: 'Sends Brian your email, invite code, computer, role and tools. Nothing else.',
+  sendsSample: 'Sends Brian your email and these three answers. Nothing else.',
+  notify: 'Notify',
+  placeholder: 'you@example.com',
+  noEmail: 'Add your email first.',
+  badEmail: "That doesn't look like an email address.",
   sending: 'Sending…',
-  failed: "That didn't send. Check your connection and try again; nothing was sent.",
+  failed: "That didn't send. Try again; nothing was sent.",
+  thanks: (name) => (name && name !== 'You' ? `Thanks, ${name}! Brian will email you.` : 'Thanks! Brian will email you.'),
   question: 'Which computer would you use Workspace on?',
-  chipHelp: 'Not sure which Mac? Apple menu → About This Mac: "Chip: Apple M…" is Apple silicon; "Processor: …Intel…" is Intel.',
-  emailLabel: 'Your email (optional)',
-  emailWhy: "So Brian knows it's you. It goes only to him, with your answer, and is never shared or added to a list.",
-  emailPlaceholder: 'you@example.com',
-  differentEmail: 'Use a different email?',
-  differentWhy: "Only if you'd like Brian to reply somewhere other than the address he invited you at.",
-  badEmail: "That doesn't look like an email address. Fix it, or clear the box to send without one.",
+  chipHelp: 'Not sure? Apple menu → About This Mac: "Chip: Apple M…" is Apple silicon.',
 };
 
 // The choices, in the copy's order, and the platform each means.
@@ -39,16 +33,13 @@ export const COMPUTERS = [
   ['other', 'Something else'],
 ];
 
+// The line for each computer, around the email box: "Email me at [ ] …" (M-007, M-013).
 const VARIANTS = {
-  'mac-apple-silicon': { button: "Yes! I want it when it's ready", after: (n) => `Thanks, ${n}. Brian has your answer and will be in touch when the build is ready.` },
-  windows: { button: 'Tell me when Windows is ready', after: (n) => `Thanks, ${n}. Brian knows you're on Windows and will let you know.` },
-  linux: { button: "Tell me if there's a Linux version", after: (n) => `Thanks, ${n}. Brian knows you're on Linux.` },
-  'mac-intel': {
-    line: "Workspace's build needs a Mac with Apple silicon (M1 or later), so it won't run on this Mac.",
-    button: 'Keep me posted anyway',
-    after: (n) => `Thanks, ${n}. Brian knows you're on an Intel Mac.`,
-  },
-  other: { button: 'Keep me posted', after: (n) => `Thanks, ${n}. Brian has your answer.` },
+  'mac-apple-silicon': { after: "when it's ready!" },
+  windows: { after: "when there's a Windows version!" },
+  linux: { after: "if there's a Linux version!" },
+  'mac-intel': { line: 'The build needs a Mac with Apple silicon (M1 or later).', after: 'if that changes!' },
+  other: { after: 'with news!' },
 };
 
 /**
@@ -91,52 +82,42 @@ export function mountButton(mount, answers, options = {}) {
     box.replaceChildren();
     if (!platform || !VARIANTS[platform]) return ask();
     const v = VARIANTS[platform];
+    box.appendChild(el('p', 'reply-sends', options.sample ? WORDS.sendsSample : WORDS.sends));
     if (v.line) box.appendChild(el('p', 'reply-line', v.line));
-    const sends = options.sample ? (answers.invite ? WORDS.sendsSampleCode : WORDS.sendsSample) : WORDS.sends;
-    box.appendChild(el('p', 'reply-sends', sends));
 
-    // The email box: above the button when there is no code, behind a link
-    // under the button when there is.
+    // One line, the email box always shown (M-013): "Email me at [box] when it's ready!" and Notify. A form, so Return sends it too.
+    const form = el('form', 'reply-form');
+    form.noValidate = true;
     const email = el('input', 'reply-email');
     email.type = 'email';
     email.autocomplete = 'email';
     email.maxLength = 160;
-    email.placeholder = WORDS.emailPlaceholder;
-    email.id = `reply-email-${Math.random().toString(36).slice(2, 8)}`;
-    const label = el('label', 'reply-email-label', WORDS.emailLabel);
-    label.htmlFor = email.id;
-    const field = el('div', 'reply-field');
-    field.append(label, email, el('p', 'small', answers.invite ? WORDS.differentWhy : WORDS.emailWhy));
-
-    const button = el('button', 'btn btn-big', v.button);
-    button.type = 'button';
+    email.required = true;
+    email.placeholder = WORDS.placeholder;
+    const sentence = el('label', 'reply-sentence');
+    sentence.append(el('span', null, 'Email me at'), email, el('span', null, v.after));
+    const button = el('button', 'btn btn-big', WORDS.notify);
+    button.type = 'submit';
+    form.append(sentence, button);
     const status = el('p', 'reply-status');
     status.setAttribute('role', 'status');
+    box.append(form, status);
 
-    if (answers.invite) {
-      field.hidden = true;
-      const open = el('button', 'link', WORDS.differentEmail);
-      open.type = 'button';
-      open.addEventListener('click', () => { field.hidden = false; open.remove(); email.focus(); });
-      box.append(button, open, field, status);
-    } else {
-      box.append(field, button, status);
-    }
-
-    button.addEventListener('click', async () => {
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
       const typed = email.value.trim();
-      if (typed && !EMAIL_RE.test(typed)) {
-        status.textContent = WORDS.badEmail;
+      if (!typed || !EMAIL_RE.test(typed)) {
+        status.textContent = typed ? WORDS.badEmail : WORDS.noEmail;
         email.focus();
         return;
       }
       button.disabled = true;
       status.textContent = WORDS.sending;
-      const body = replyBody({ ...answers, platform }, email.value);
+      const body = replyBody({ ...answers, platform }, typed);
       let ok = false;
       try { ok = await send(body); } catch { ok = false; }
       if (ok) {
-        box.replaceChildren(el('p', 'reply-after', thanks(v.after(answers.name), answers.name)));
+        box.replaceChildren(el('p', 'reply-after', WORDS.thanks(answers.name)));
       } else {
         status.textContent = WORDS.failed;
         button.disabled = false;
@@ -155,11 +136,6 @@ export function mountButton(mount, answers, options = {}) {
     }
     box.append(choices, el('p', 'small', WORDS.chipHelp));
   }
-}
-
-// A file with no name reads as "You": "Thanks, You." becomes "Thanks."
-function thanks(line, name) {
-  return name === 'You' ? line.replace(/^Thanks, You\./, 'Thanks.') : line;
 }
 
 async function post(body) {

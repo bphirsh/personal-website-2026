@@ -46,12 +46,13 @@ const page = replyBody({
   invite: '91-q7m2', platform: 'mac-apple-silicon', role: 'coder',
   ai_tools: [tool('claude-code'), tool('cursor'), tool('Zed assistant', false)],
   knowledge_tools: [tool('obsidian')],
-}, '');
+}, 'priya@example.test');
 
 const cases = [
-  ['the page body, no email', 'POST', page, (r) => r.status === 201 && r.sent.length === 1 && !('reply_to' in r.sent[0].body)],
-  ['the page body has exactly five fields', null, page, () => Object.keys(page).sort().join() === 'ai_tools,invite,knowledge_tools,platform,role'],
-  ['with a typed email: six fields, Reply-To set', 'POST', replyBody({ ...page, ai_tools: [], knowledge_tools: [] }, 'sam@example.test'), (r) => r.status === 201 && r.sent[0].body.reply_to === 'sam@example.test'],
+  ['the page body: six fields, the email among them', null, page, () => Object.keys(page).sort().join() === 'ai_tools,email,invite,knowledge_tools,platform,role'],
+  ['the page body is sent, Reply-To their email', 'POST', page, (r) => r.status === 201 && r.sent.length === 1 && r.sent[0].body.reply_to === 'priya@example.test'],
+  ['no email is refused (M-013)', 'POST', (({ email, ...rest }) => rest)(page), (r) => r.status === 400 && r.sent.length === 0],
+  ['an empty email is refused', 'POST', { ...page, email: '  ' }, (r) => r.status === 400 && r.sent.length === 0],
   ['the sample: invite none', 'POST', { ...page, invite: 'none' }, (r) => r.status === 201 && r.sent[0].body.subject.includes('none')],
   ['extra fields are ignored, never emailed', 'POST', { ...page, name: 'Secret Name', file: '# Page: private' }, (r) => r.status === 201 && !JSON.stringify(r.sent).includes('Secret Name') && !JSON.stringify(r.sent).includes('private')],
   ['HTML in a tool is escaped', 'POST', { ...page, ai_tools: ['<b>x</b>'] }, (r) => r.status === 201 && r.sent[0].body.html.includes('&lt;b&gt;x&lt;/b&gt;')],
@@ -80,7 +81,7 @@ for (const [name, method, body, ok] of cases) {
 console.log('\nThe body the page sends for ok-coder-mac:');
 console.log(JSON.stringify(page, null, 2));
 const shown = await call('POST', replyBody({ ...page, ai_tools: [tool('claude-code')], knowledge_tools: [tool('obsidian')] }, 'sam@example.test'));
-console.log('\nWhat Resend would be asked to send, with a typed email:');
+console.log('\nWhat Resend would be asked to send:');
 console.log(JSON.stringify({ ...shown.sent[0].body, html: '(the same rows, as a table)' }, null, 2));
 
 console.log(`\n${cases.length - failed} pass, ${failed} fail`);

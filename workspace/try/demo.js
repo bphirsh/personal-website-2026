@@ -19,11 +19,8 @@
 import { renderBody } from './markdown.js';
 
 const WORDS = {
-  above: "This is Workspace with your file in it. Click around: it's a preview, so nothing you do here is saved.",
-  aboveSample: "This is Workspace with a made-up person's file in it. Click around: it's a preview, so nothing you do here is saved.",
-  hintFile: 'Your file. Workspace shows it as a page, like any other.',
-  hintTasks: 'Tasks you mentioned, as a checklist.',
-  hintDatabase: 'Your table, as a database page.',
+  above: 'Your file, as Workspace shows it. Click around; nothing here is saved.',
+  aboveSample: "A made-up person's file. Click around; nothing here is saved.",
   sample: 'Sample',
 };
 
@@ -55,7 +52,7 @@ export function buildVault(invite, fileName, fileText) {
   const knowledge = layout === 'knowledge-worker' || layout === 'both';
 
   const theirPages = pages.length ? pages.map((pg) => node('md', `${pg.title}.md`, { title: pg.title, body: pg.body })) : [node('md', `${SAMPLE.page.title}.md`, { ...SAMPLE.page, sample: true })];
-  const theirTasks = node('tasks', 'tasks.md', { title: 'tasks', tasks: (tasks.length ? tasks : SAMPLE.tasks).map((t) => ({ ...t })), sample: !tasks.length, hint: tasks.length ? WORDS.hintTasks : null });
+  const theirTasks = node('tasks', 'tasks.md', { title: 'tasks', tasks: (tasks.length ? tasks : SAMPLE.tasks).map((t) => ({ ...t })), sample: !tasks.length });
   const theirDbs = databases.map((d) => node('db', d.name, { db: copyDb(d) }));
 
   const people = node('db', 'People', {
@@ -74,7 +71,7 @@ export function buildVault(invite, fileName, fileText) {
   });
 
   const root = [];
-  const file = node('file', fileName, { title: fileName.replace(/\.(md|txt)$/i, ''), text: fileText, hint: WORDS.hintFile });
+  const file = node('file', fileName, { title: fileName.replace(/\.(md|txt)$/i, ''), text: fileText });
   let start;
 
   if (coder) {
@@ -91,8 +88,6 @@ export function buildVault(invite, fileName, fileText) {
   }
   root.push(people, tools, file);
 
-  // The hint for "your table" goes on their first database, else on People.
-  (theirDbs[0] ?? people).hint = WORDS.hintDatabase;
 
   return { root, start, file, owner: p.name, tasks: theirTasks, databases: theirDbs, tools };
 }
@@ -110,9 +105,7 @@ function labels(list) {
  * change the window as files change, each change marked with the app's
  * fading tint for something changed from outside.
  *
- * `options.above` false leaves out the line above the window, `options.hints`
- * false leaves out the hints, `options.sample` says the file is the made-up
- * sample's, and `options.label` names the window region for screen readers.
+ * `options.above` false leaves out the line above the window, `options.sample` says the file is the made-up sample's, and `options.label` names the window region for screen readers.
  */
 export function mountDemo(mount, invite, fileName, fileText, options = {}) {
   const vault = buildVault(invite, fileName, fileText);
@@ -120,7 +113,6 @@ export function mountDemo(mount, invite, fileName, fileText, options = {}) {
   (function index(list, parent) {
     for (const n of list) {
       parents.set(n.id, parent);
-      if (options.hints === false) n.hint = null;
       if (n.children) index(n.children, n);
     }
   })(vault.root, null);
@@ -148,7 +140,6 @@ export function mountDemo(mount, invite, fileName, fileText, options = {}) {
   mount.replaceChildren(wrap);
 
   function open(n) {
-    if (n.hint) n.hint = null; // a hint leaves once clicked
     if (!state.tabs.includes(n)) state.tabs.push(n);
     state.active = n;
     render();
@@ -193,7 +184,6 @@ export function mountDemo(mount, invite, fileName, fileText, options = {}) {
         if (n.sample) row.appendChild(el('span', 'chip', WORDS.sample));
         row.addEventListener('click', () => open(n));
         li.appendChild(row);
-        if (n.hint) li.appendChild(el('div', 'hint', n.hint));
         if (n.kind === 'folder' && n.open) {
           const sub = el('ul', 'tree');
           sub.setAttribute('role', 'group');

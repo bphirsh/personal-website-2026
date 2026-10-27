@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Your Workspace — Brian Hirsh</title>
-<meta name="description" content="Drop the file your agent wrote and see what Workspace would look like with your work in it.">
+<meta name="description" content="Drop the file your agent wrote to see Workspace with your work in it.">
 <meta name="robots" content="noindex">
 <link rel="icon" href="/favicon.ico" sizes="any">
 <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
@@ -23,32 +23,30 @@
 
   <header class="head">
     <h1 class="title">Your Workspace, from your own file</h1>
-    <p class="lede">Drop the file your agent just wrote, and see what Workspace would look like with your work in it.</p>
-    <p class="small">Works best on a laptop.</p>
+    <p class="lede">Drop the file your agent wrote to see Workspace with your work in it.</p>
   </header>
 
   <div id="intake">
     <label class="drop" id="drop" for="pick">
       <input type="file" id="pick" accept=".md,.txt,text/markdown,text/plain">
-      <span class="drop-main" id="dropMain">Drop workspace-<em>your name</em>.md here</span>
+      <span class="drop-main" id="dropMain">Drop your workspace file here</span>
       <span class="drop-sub">or <span class="drop-button">Choose file</span></span>
     </label>
 
-    <p class="privacy">Your file is read in this browser and never uploaded. Nothing in it reaches anyone unless you press the button at the end.</p>
-    <p class="sample-link" id="sampleLink" hidden><button type="button" class="link">No file yet? Just show me a sample</button></p>
+    <p class="privacy">Nothing leaves your computer. This all runs in your browser.</p>
+    <p class="sample-link" id="sampleLink" hidden><button type="button" class="btn btn-quiet">Skip upload, show example data</button></p>
   </div>
 
   <!-- On a phone, in place of the drop zone. -->
   <div class="phone" id="phone" hidden>
-    <p>You're on a phone, so here's a sample. Open this page on your laptop to load your own file.</p>
-    <button type="button" class="btn btn-big" id="phoneSample">Show me the sample</button>
+    <p>On a phone? Here's example data. Open this on your laptop to load your own.</p>
+    <button type="button" class="btn btn-big" id="phoneSample">Show example data</button>
   </div>
 
-  <!-- After their file is read: the drop zone leaves, and this stays, so the
-       promise is still beside the way to choose another file. -->
+  <!-- After their file is read: the drop zone leaves, and this stays, so the promise is still beside the way to choose another file. -->
   <div class="loaded" id="loaded" hidden>
     <button type="button" class="link" id="loadAnother">Load a different file</button>
-    <p class="privacy">Your file is read in this browser and never uploaded. Nothing in it reaches anyone unless you press the button at the end.</p>
+    <p class="privacy">Nothing leaves your computer. This all runs in your browser.</p>
   </div>
 
   <section class="failed" id="failed" aria-live="polite" hidden></section>
@@ -59,9 +57,16 @@
   <div id="card"></div>
 </main>
 
+<!-- M-013: four line icons, inline, in the app's icon style (24-unit paths, stroked); no icon font and no request. -->
 <footer class="foot">
-  <p>This page has no analytics, cookies or tracking. Your file is read in this browser and never uploaded. Only the button sends anything, by email to Brian: your invite code, computer, role and tools, and your email if you typed one.</p>
-  <p>Workspace is made by Brian Hirsh. <a href="/workspace/signup/">The public signup page</a></p>
+  <ul class="promises">
+    <li><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 5h18v14H3zM3 9h18M6 7h.01M9 7h.01"/></svg>100% in-browser</li>
+    <li><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 20v-6M12 20V8M18 20v-9M4 4l16 16"/></svg>No analytics</li>
+    <li><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3a9 9 0 109 9 3 3 0 01-3-3 3 3 0 01-3-3 3 3 0 01-3-3zM9 10h.01M14 15h.01M9 16h.01M4 4l16 16"/></svg>No cookies</li>
+    <li><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7zM12 15a3 3 0 100-6 3 3 0 000 6zM4 4l16 16"/></svg>No tracking</li>
+  </ul>
+  <p class="foot-note">No catch. I just wanted to make this fun. — Brian</p>
+  <p class="foot-made">Made by Brian Hirsh · <a href="/workspace/signup/">Public signup page</a></p>
 </footer>
 
 </body>

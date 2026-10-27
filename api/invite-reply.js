@@ -1,8 +1,7 @@
 /**
  * POST /api/invite-reply — the button at the end of /workspace/try.
  *
- * Emails me what the person chose to send after seeing the demo: their invite
- * code, computer, role and tools, and an email address only if they typed one.
+ * Emails me what the person chose to send after seeing the demo: their email address (required since M-013, so I can write back), invite code, computer, role and tools.
  * Nothing from their file is sent or seen here; the file is read in their
  * browser and stays there. Like /api/signup, there is no database on purpose:
  * the reply is one email to me, and nothing is stored.
@@ -59,11 +58,10 @@ function readReply(data) {
   const knowledge = toolList(data.knowledge_tools);
   if (!ai || !knowledge) return { ok: false, error: 'The tools list could not be read.' };
 
-  let email = null;
-  if (data.email !== undefined && String(data.email).trim() !== '') {
-    email = String(data.email).trim();
-    if (email.length > 160 || !EMAIL_RE.test(email)) return { ok: false, error: "That doesn't look like an email address." };
-  }
+  // Required since M-013: the signup is "Email me at … when it's ready!".
+  const email = String(data.email ?? '').trim();
+  if (!email) return { ok: false, error: 'Add your email first.' };
+  if (email.length > 160 || !EMAIL_RE.test(email)) return { ok: false, error: "That doesn't look like an email address." };
 
   return { ok: true, reply: { invite, platform, role, ai_tools: ai, knowledge_tools: knowledge, email } };
 }
@@ -107,7 +105,7 @@ module.exports = async (req, res) => {
     ['Role', r.role],
     ['AI tools', r.ai_tools.join(', ') || '(none)'],
     ['Knowledge tools', r.knowledge_tools.join(', ') || '(none)'],
-    ...(r.email ? [['Email', r.email]] : []),
+    ['Email', r.email],
     ['When', when],
   ];
 
@@ -121,8 +119,8 @@ module.exports = async (req, res) => {
       body: JSON.stringify({
         from: process.env.RESEND_FROM || 'Workspace Dev <onboarding@resend.dev>',
         to: [to],
-        // Reply-To only when they typed an email, so replying goes straight to them.
-        ...(r.email ? { reply_to: r.email } : {}),
+        // Reply-To their email, so replying goes straight to them.
+        reply_to: r.email,
         subject: `Workspace invite reply — ${r.invite} (${r.platform})`,
         html:
           `<h2 style="font-family:system-ui,sans-serif">Workspace invite reply</h2>` +

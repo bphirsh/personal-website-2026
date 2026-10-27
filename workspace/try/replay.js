@@ -4,10 +4,7 @@
  * in the left bar, a row added to a database — built from the person's own
  * project and tools.
  *
- * M-006: the agent is outside the app. It is drawn only in its own panel,
- * never in the window; the window just shows files changing, marked the way
- * the app marks a change from outside. The whole thing is scripted, and the
- * label saying so stays on screen while it plays and after it stops.
+ * M-006: the agent is outside the app. It is drawn only in its own panel, never in the window; the window just shows files changing, marked the way the app marks a change from outside. It is scripted. M-013 (Brian, 27 Oct) took away its "Replay" label and its closing line, and it starts only once most of it is on screen.
  *
  * It runs on a copy of the demo, so the window above it stays as they left it.
  * Words are from Marketing/Beta Signups/Page copy.md, "The replay".
@@ -16,29 +13,31 @@
 import { mountDemo } from './demo.js';
 
 const WORDS = {
-  label: 'Replay: an example of an agent working on your files. Scripted, not live.',
-  agent: 'Claude, working in your project folder',
-  tick: (task) => `Ticks "${task}" in tasks.md`,
-  page: (project) => `Writes a new page: "Notes on ${project}"`,
+  agent: 'Claude, in your project folder',
+  tick: (task) => `Ticks "${task}"`,
+  page: (project) => `Writes "Notes on ${project}"`,
   row: (db) => `Adds a row to ${db}`,
-  end: "Workspace didn't run the agent. It just saw the files change.",
   again: 'Play again',
   skip: 'Skip',
 };
 
 const STEP_MS = 1800;
 const FIRST_MS = 900;
+// How much of the replay must be on screen before it starts (Brian: "mostly onto that section").
+export const START_SHARE = 0.6;
+
+/**
+ * How much of a section is on screen, as a share of what could be: its own height, or the screen's when the section is taller than the screen (on a phone it is), so a tall section can still reach the share.
+ */
+export function visibleShare(sectionHeight, visibleHeight, screenHeight) {
+  const most = Math.min(sectionHeight, screenHeight);
+  return most > 0 ? Math.min(1, visibleHeight / most) : 0;
+}
 
 /** Build the replay into `mount` for a read invite. */
 export function mountReplay(mount, invite, fileName, fileText) {
   const section = el('section', 'replay');
-  section.setAttribute('aria-label', 'Replay');
-  // The skip button sits beside the label, which stays put whatever happens.
-  const head = el('div', 'replay-head');
-  const skip = el('button', 'link', WORDS.skip);
-  skip.type = 'button';
-  head.append(el('p', 'replay-label', WORDS.label), skip);
-  section.appendChild(head);
+  section.setAttribute('aria-label', 'An agent working on your files');
 
   const stage = el('div', 'replay-stage');
   const agent = el('div', 'agent');
@@ -53,11 +52,13 @@ export function mountReplay(mount, invite, fileName, fileText) {
   stage.append(agent, screen);
   section.appendChild(stage);
 
+  // Skip while it plays; Play again once it has ended.
   const foot = el('div', 'replay-foot');
-  const end = el('p', 'replay-end', WORDS.end);
-  const again = el('button', 'btn', WORDS.again);
+  const skip = el('button', 'link', WORDS.skip);
+  skip.type = 'button';
+  const again = el('button', 'btn btn-quiet', WORDS.again);
   again.type = 'button';
-  foot.append(end, again);
+  foot.append(skip, again);
   section.appendChild(foot);
   mount.replaceChildren(section);
 
@@ -79,7 +80,7 @@ export function mountReplay(mount, invite, fileName, fileText) {
   function reset() {
     timers.forEach(clearTimeout);
     timers = [];
-    demo = mountDemo(screen, invite, fileName, fileText, { above: false, hints: false, label: 'Workspace, in the replay' });
+    demo = mountDemo(screen, invite, fileName, fileText, { above: false, label: 'Workspace, in the replay' });
     demo.show(demo.start);
     steps.replaceChildren();
     section.classList.remove('ended');
@@ -95,6 +96,7 @@ export function mountReplay(mount, invite, fileName, fileText) {
 
   function play() {
     reset();
+    section.dataset.started = String(Math.round(performance.now())); // when it began, for the scroll check
     const list = script();
     list.forEach((step, i) => {
       timers.push(setTimeout(() => {
@@ -116,11 +118,15 @@ export function mountReplay(mount, invite, fileName, fileText) {
     finish();
   }
 
-  // It starts when it comes into view, once; Play again runs it after that,
-  // and skipping first means it never starts by itself.
+  // It starts once, when most of it is on screen; Play again runs it after that, and skipping first means it never starts by itself.
+  const steps20 = Array.from({ length: 21 }, (_, i) => i / 20);
   const seen = new IntersectionObserver((entries) => {
-    if (entries.some((e) => e.isIntersecting)) { seen.disconnect(); play(); }
-  }, { threshold: 0.4 });
+    for (const e of entries) {
+      const share = visibleShare(e.boundingClientRect.height, e.intersectionRect.height, e.rootBounds?.height ?? innerHeight);
+      section.dataset.share = share.toFixed(2); // read by the scroll check
+      if (share >= START_SHARE) { seen.disconnect(); play(); return; }
+    }
+  }, { threshold: steps20 });
   again.addEventListener('click', () => { seen.disconnect(); play(); });
   skip.addEventListener('click', () => { seen.disconnect(); skipToEnd(); });
 

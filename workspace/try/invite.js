@@ -92,52 +92,50 @@ export const PROBLEMS = Object.freeze({
   'empty-file': {
     kind: 'error',
     message: 'The file is empty.',
-    pasteBack: 'The invite file you wrote for me is empty. Please write it again in the workspace-invite/1 format from my first message, with my answers, and save it again.',
+    pasteBack: 'My invite file is empty. Please write it again in the workspace-invite/1 format and save it.',
   },
   'not-text': {
     kind: 'error',
-    message: "This isn't a text file. Workspace invite files are plain text ending in .md.",
-    pasteBack: "The file I dropped on the page wasn't plain text. Please save my invite file again as plain text, named workspace-<my first name>.md, with nothing but the workspace-invite/1 file in it.",
+    message: "This isn't a text file.",
+    pasteBack: "The file I dropped wasn't plain text. Please save my invite file again as plain text, named workspace-<my first name>.md.",
   },
   'too-large': {
     kind: 'error',
-    message: 'This file is too big to be an invite file (over 200 KB).',
-    pasteBack: 'My invite file is over 200 KB, which is too big. Please write it again in the workspace-invite/1 format, keeping each page to a few sentences and the table to a few rows.',
+    message: 'This file is too big (over 200 KB).',
+    pasteBack: 'My invite file is over 200 KB. Please write it again in the workspace-invite/1 format, shorter.',
   },
   'no-properties': {
     kind: 'error',
-    message: 'The file is missing the block of answers at the top, between two lines of ---.',
-    pasteBack: 'My invite file is missing its properties block. Please put these lines at the very top, before any heading, with my answers filled in, and save it again:\n---\nformat: workspace-invite/1\ninvite: <the code from my invite email>\nname: <my first name>\nplatform:\nrole:\nai_tools: []\nknowledge_tools: []\nfiles_live_in: []\nproject:\n---',
+    message: 'The answers block at the top is missing.',
+    pasteBack: 'My invite file has no properties block. Please put the --- block from the workspace-invite/1 format at the very top and save it again.',
   },
   'unclosed-properties': {
     kind: 'error',
-    message: 'The block of answers at the top starts with --- but never ends with a second ---.',
-    pasteBack: 'In my invite file, the properties block at the top starts with a --- line but has no closing --- line. Please add a line with just --- right after the last property (the line starting files_live_in: or project:), before the first # heading, and save it again.',
+    message: 'The answers block at the top never closes.',
+    pasteBack: 'In my invite file, the properties block at the top has no closing --- line. Please add one after the last property, before the first # heading, and save it again.',
   },
   'unknown-version': {
     kind: 'error',
-    message: "This file says it's format {found}, and this page reads workspace-invite/1.",
-    pasteBack: 'My invite file says format: {found}. Please change that line to exactly format: workspace-invite/1, check the rest of the file follows that format, and save it again.',
+    message: 'This file is format {found}; this page reads workspace-invite/1.',
+    pasteBack: "Please change my invite file's format line to format: workspace-invite/1 and save it again.",
   },
   'bad-table': {
     kind: 'warning',
-    message: 'Your "{name}" table couldn\'t be read, so it\'s left out. Everything else is here.',
-    pasteBack: 'In my invite file, the table under "# Database: {name}" can\'t be read. It needs a header row, then a separator row like | --- | --- | with one --- per column, then one row per line, each starting and ending with |. Please fix that table and save the file again.',
+    message: 'Your "{name}" table couldn\'t be read, so it\'s left out.',
+    pasteBack: 'In my invite file, the "{name}" table can\'t be read: it needs a header row, then a row like | --- | --- |, then one row per line. Please fix it and save again.',
   },
   'bad-invite': {
     kind: 'warning',
-    message: "Your file has no invite code. Fix the file, or add your email by the button at the end so Brian knows it's you.",
-    // When the line is there but is not a code.
-    messageFound: 'Your invite code "{found}" doesn\'t look right; codes look like 07-k3f9. Fix the file, or add your email by the button at the end so Brian knows it\'s you.',
-    pasteBack: 'Please set the invite line in my invite file to exactly the code from my invite email, which looks like 07-k3f9, and save it again.',
+    // One banner whether the line is missing or wrong, and no box to paste: the email box makes fixing the file unnecessary (Page copy, M-013).
+    message: "No invite code in your file. That's fine: your email at the end tells Brian it's you.",
+    pasteBack: null,
   },
 });
 
 function problem(code, vars = {}) {
   const p = PROBLEMS[code];
   const fill = (s) => s.replace(/\{(\w+)\}/g, (_, k) => String(vars[k] ?? ''));
-  const message = vars.found !== undefined && p.messageFound ? p.messageFound : p.message;
-  return { code, ...vars, message: fill(message), pasteBack: fill(p.pasteBack) };
+  return { code, ...vars, message: fill(p.message), pasteBack: p.pasteBack === null ? null : fill(p.pasteBack) };
 }
 
 const fail = (code, vars) => ({ ok: false, error: problem(code, vars) });

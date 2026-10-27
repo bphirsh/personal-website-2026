@@ -21,18 +21,17 @@ import { mountTaps } from './taps.js';
 import { mountCard } from './card.js';
 
 const WORDS = {
-  dragging: 'Let go to open it',
-  reading: 'Reading your file…',
+  dragging: 'Let go',
+  reading: 'Reading…',
   errorHeading: "This file couldn't be opened",
-  pasteThis: 'Paste this to your agent and it will fix the file:',
+  pasteThis: 'Paste this to your agent:',
   copy: 'Copy',
   copied: 'Copied',
   tryAnother: 'Try another file',
-  sampleInstead: 'Show me a sample instead',
+  sampleInstead: 'Show example data',
   dismiss: 'Dismiss',
   howToFix: 'How to fix it',
-  carryOn: 'Or carry on: the demo works without it.',
-  sampleBanner: 'This is a sample. Run the prompt from your invite email to see your own work here.',
+  sampleBanner: 'Example data. Run the prompt from your invite to see your own.',
   loadMine: 'Load my file',
 };
 
@@ -181,19 +180,23 @@ function banner(w) {
   b.setAttribute('role', 'status');
   const row = el('div', 'banner-row');
   row.appendChild(el('span', 'banner-text', w.message));
-  const fix = el('button', 'link', WORDS.howToFix);
-  fix.type = 'button';
   const dismiss = el('button', 'link', WORDS.dismiss);
   dismiss.type = 'button';
   dismiss.addEventListener('click', () => b.remove());
-  row.append(fix, dismiss);
-  b.appendChild(row);
-  const more = el('div', 'banner-more');
-  more.hidden = true;
-  more.appendChild(pasteBox(w.pasteBack));
-  if (w.code === 'bad-invite') more.appendChild(el('p', 'small', WORDS.carryOn));
-  fix.addEventListener('click', () => { more.hidden = !more.hidden; });
-  b.appendChild(more);
+  // A warning with nothing to paste (bad-invite) has no "How to fix it".
+  if (w.pasteBack) {
+    const fix = el('button', 'link', WORDS.howToFix);
+    fix.type = 'button';
+    const more = el('div', 'banner-more');
+    more.hidden = true;
+    more.appendChild(pasteBox(w.pasteBack));
+    fix.addEventListener('click', () => { more.hidden = !more.hidden; });
+    row.append(fix, dismiss);
+    b.append(row, more);
+  } else {
+    row.appendChild(dismiss);
+    b.appendChild(row);
+  }
   return b;
 }
 

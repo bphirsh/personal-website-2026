@@ -3,18 +3,17 @@
  * sample is Sam's file, not theirs, so the answers come from here instead, and
  * they feed the same button a dropped file's properties do (button.js).
  *
- * Words are from Marketing/Beta Signups/Page copy.md, "The sample, and the
- * three taps".
+ * Words are from Marketing/Beta Signups/Page copy.md, "Example data, and the three taps".
  */
 
 import { mountButton, COMPUTERS } from './button.js';
 import { KNOWN, DISPLAY } from './invite.js';
 
 const WORDS = {
-  heading: 'Three taps, and Brian knows where you stand',
-  computer: 'Which computer would you use Workspace on?',
-  work: "What's your work mostly?",
-  tools: 'Which AI tools do you use most?',
+  heading: 'Where do you stand?',
+  computer: 'Your computer?',
+  work: 'Your work?',
+  tools: 'Your AI tools?',
   somethingElse: 'Something else',
 };
 
