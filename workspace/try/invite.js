@@ -120,9 +120,12 @@ export function readInvite(text) {
   }
 }
 
-/** Whether a file of this size can be read at all, before reading it. */
-export function tooLarge(bytes) {
-  return bytes > MAX_BYTES;
+/**
+ * The result for a file the page should not open at all, judged by its size
+ * before reading it; null when it is small enough to read.
+ */
+export function refuseBySize(bytes) {
+  return bytes > MAX_BYTES ? fail('too-large') : null;
 }
 
 function read(text) {

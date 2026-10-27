@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Try Workspace — Brian Hirsh</title>
+<meta name="description" content="Drop the file your agent wrote and see it in Workspace.">
+<meta name="robots" content="noindex">
+<link rel="icon" href="/favicon.ico" sizes="any">
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="manifest" href="/site.webmanifest">
+<!-- No web fonts: the app uses the system stack, and this page makes no
+     request to anyone but this site. -->
+<link rel="stylesheet" href="/workspace/try/tokens.css">
+<link rel="stylesheet" href="/workspace/try/try.css">
+<script type="module" src="/workspace/try/try.js"></script>
+</head>
+<body>
+
+<main class="try">
+  <a href="/workspace/" class="back">← Workspace</a>
+
+  <header class="head">
+    <h1 class="title">See your file in Workspace</h1>
+    <p class="lede">Drop the file your agent wrote for you, and Workspace lays it out as your own folder.</p>
+  </header>
+
+  <label class="drop" id="drop" for="pick">
+    <input type="file" id="pick" accept=".md,.txt,text/markdown,text/plain">
+    <span class="drop-main">Drop your <code>workspace-…md</code> file here</span>
+    <span class="drop-sub">or <span class="drop-link">choose a file</span></span>
+  </label>
+
+  <p class="privacy">Your file is read here, in your browser. Nothing is uploaded or stored, and this page has no analytics, cookies or tracking.</p>
+
+  <section class="result" id="result" aria-live="polite" hidden></section>
+</main>
+
+</body>
+</html>
