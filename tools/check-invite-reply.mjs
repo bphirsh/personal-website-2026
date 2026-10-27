@@ -14,6 +14,7 @@
 
 import { createRequire } from 'node:module';
 import { replyBody } from '../workspace/try/button.js';
+import { codeFromHash } from '../workspace/try/invite.js';
 
 const require = createRequire(import.meta.url);
 const handler = require('../api/invite-reply.js');
@@ -60,6 +61,12 @@ const cases = [
   ['too many tools are refused', 'POST', { ...page, ai_tools: Array(21).fill('x') }, (r) => r.status === 400 && r.sent.length === 0],
   ['a string body is parsed', 'POST', JSON.stringify(page), (r) => r.status === 201],
   ['GET is refused', 'GET', null, (r) => r.status === 405 && r.sent.length === 0],
+  // The code from the link (M-010): a bad # is no code, never an error.
+  ...[['#07-k3f9', '07-k3f9'], ['#07-K3F9', '07-k3f9'], ['#07%2Dk3f9', '07-k3f9'], ['', null], ['#junk', null],
+    ['#100%', null], ['#%E0%A4%A', null], ['#%', null], ['#07-k3f9%', null]]
+    .map(([hash, want]) => [`codeFromHash(${JSON.stringify(hash)}) is ${JSON.stringify(want)}`, null, null, () => {
+      try { return codeFromHash(hash) === want; } catch { return false; }
+    }]),
 ];
 
 let failed = 0;

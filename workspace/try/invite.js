@@ -74,7 +74,11 @@ export function isInviteCode(value) {
  * or null. The part after `#` never reaches the server.
  */
 export function codeFromHash(hash) {
-  const v = decodeURIComponent(String(hash ?? '').replace(/^#/, '')).trim().toLowerCase();
+  let v;
+  // A malformed escape (`#100%`) makes decodeURIComponent throw; the page
+  // never breaks on a link, so that is simply no code.
+  try { v = decodeURIComponent(String(hash ?? '').replace(/^#/, '')); } catch { return null; }
+  v = v.trim().toLowerCase();
   return INVITE_RE.test(v) ? v : null;
 }
 
