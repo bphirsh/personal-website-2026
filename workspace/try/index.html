@@ -73,13 +73,22 @@
   </section>
 
   <div id="replay"></div>
+  <div id="files"></div>
 
-  <!-- Brian's own figures and label (M-015), word for word. -->
+  <!-- Brian's own figures and label (M-015), word for word, as bars (M-016): Notion MCP long, Workspace short, with a little flame off each Workspace bar. They grow once when on screen; still with reduced motion. -->
   <section class="figures" id="figures" hidden>
     <h2 class="section-title">Super-fucking-fast</h2>
-    <div class="figure-row">
-      <div class="figure"><span class="figure-number">10×</span><span class="figure-label">faster than the Notion MCP</span></div>
-      <div class="figure"><span class="figure-number">35%</span><span class="figure-label">fewer tokens</span></div>
+    <div class="speed">
+      <div class="speed-group">
+        <p class="speed-claim"><span class="speed-number">10×</span> faster than the Notion MCP</p>
+        <div class="speed-bar-row"><span class="speed-who">Notion MCP</span><span class="speed-track"><span class="speed-bar slow" style="--to: 100%"></span></span></div>
+        <div class="speed-bar-row"><span class="speed-who">Workspace</span><span class="speed-track"><span class="speed-bar fast" style="--to: 10%"><span class="speed-flame" aria-hidden="true"></span></span></span></div>
+      </div>
+      <div class="speed-group">
+        <p class="speed-claim"><span class="speed-number">35%</span> fewer tokens</p>
+        <div class="speed-bar-row"><span class="speed-who">Notion MCP</span><span class="speed-track"><span class="speed-bar slow" style="--to: 100%"></span></span></div>
+        <div class="speed-bar-row"><span class="speed-who">Workspace</span><span class="speed-track"><span class="speed-bar fast" style="--to: 65%"><span class="speed-flame" aria-hidden="true"></span></span></span></div>
+      </div>
     </div>
   </section>
 
@@ -92,7 +101,34 @@
     </ul>
   </section>
 
-  <div id="reply"></div>
+  <!-- The main call to action (M-016): its own band, headed by Brian's line. -->
+  <section class="signup-band" id="signupBand" hidden>
+    <h2 class="signup-head">I've been onboarding people at every update, about once every 2–3 weeks.</h2>
+    <div id="reply"></div>
+  </section>
+
+  <section class="roadmap" id="roadmap" hidden>
+    <h2 class="section-title">Roadmap</h2>
+    <div class="roadmap-cols">
+      <div class="roadmap-col done"><h3>Done</h3><ul>
+        <li>Databases from folders, with saved views</li>
+        <li>Agent roles, skills and learnings</li>
+        <li>Code pages, version history and a record of what changed</li>
+      </ul></div>
+      <div class="roadmap-col now"><h3>Now</h3><ul>
+        <li>A signed Mac app that updates itself</li>
+        <li>A welcome, with a sample vault to try</li>
+        <li>A plain page on what leaves your Mac</li>
+        <li>Crash reports and feedback that reach us</li>
+      </ul></div>
+      <div class="roadmap-col next"><h3>Next</h3><ul>
+        <li>Agent workflows</li>
+        <li>iOS app</li>
+        <li>Live syncing</li>
+      </ul></div>
+    </div>
+  </section>
+
   <div id="card"></div>
 </main>
 

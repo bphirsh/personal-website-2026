@@ -21,7 +21,8 @@ code { font-family: var(--font-mono); font-size: 0.9em; background: var(--code-b
   padding: var(--space-7) var(--space-4) var(--space-8);
 }
 
-.topbar { display: flex; align-items: center; justify-content: space-between; gap: var(--space-4); margin-bottom: var(--space-6); }
+/* Its height is the old style button's, so moving the picker beside the preview moves nothing down the page (M-016). */
+.topbar { display: flex; align-items: center; justify-content: space-between; gap: var(--space-4); margin-bottom: var(--space-6); min-height: calc(var(--text-sm) * var(--leading-ui) + var(--space-1) * 2 + var(--border-width) * 2); }
 .back {
   display: inline-block;
   font-size: var(--text-sm);
@@ -271,25 +272,21 @@ code { font-family: var(--font-mono); font-size: 0.9em; background: var(--code-b
   .reply-form .btn-big { width: 100%; }
 }
 
-/* ── the style switcher (M-014): a button and its menu, as the app's menus look ── */
-.style-switch { position: relative; }
-.style-button, .style-item {
-  display: inline-flex; align-items: center; gap: var(--space-2);
-  font: inherit; font-size: var(--text-sm); color: var(--fg);
-  background: var(--surface); border: var(--border-width) solid var(--border); border-radius: var(--radius-md);
-  padding: var(--space-1) var(--space-3); cursor: pointer;
+/* ── the style picker (M-016): "Style" and a small square per theme; a row in the top bar, a slim column beside the preview ── */
+.style-pick { display: flex; align-items: center; gap: var(--space-2); }
+.style-label { font-size: var(--text-xs); color: var(--fg-secondary); font-weight: var(--weight-medium); }
+.style-square {
+  width: var(--space-5); height: var(--space-5); padding: 0; flex: none;
+  border: var(--border-width) solid var(--border); border-radius: var(--radius-sm);
+  cursor: pointer;
 }
-.style-button:hover, .style-item:hover { background: var(--hover); }
-.style-current { color: var(--fg-secondary); }
-.style-swatch { width: var(--space-3); height: var(--space-3); border-radius: 50%; border: var(--border-width) solid var(--border); flex: none; }
-.style-menu {
-  position: absolute; right: 0; top: calc(100% + var(--space-1)); z-index: 10;
-  list-style: none; min-width: 180px; padding: var(--space-1);
-  background: var(--surface); border: var(--border-width) solid var(--border); border-radius: var(--radius-lg); box-shadow: var(--shadow-float);
+.style-square:hover { border-color: var(--fg-secondary); }
+.style-square[aria-checked="true"] { box-shadow: 0 0 0 2px var(--surface), 0 0 0 4px var(--accent); }
+.style-pick.docked {
+  position: absolute; top: 0; left: calc(100% + var(--space-4));
+  flex-direction: column; gap: var(--space-2);
+  padding: var(--space-2); background: var(--surface); border: var(--border-width) solid var(--border); border-radius: var(--radius-md);
 }
-.style-menu[hidden] { display: none; }
-.style-item { width: 100%; border-color: transparent; background: none; }
-.style-item[aria-checked="true"] { background: var(--accent-soft); }
 
 /* ── the moment after a drop ── */
 .loading { min-height: 60vh; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: var(--space-4); text-align: center; }
@@ -304,15 +301,11 @@ code { font-family: var(--font-mono); font-size: 0.9em; background: var(--code-b
 /* ── the story, the figures and the agent tools, after the workspace ── */
 /* More room between sections (M-015: "white space is available"). */
 .story { margin-top: calc(var(--space-8) * 3); text-align: center; }
-.story[hidden], .figures[hidden], .agent-tools[hidden] { display: none; }
+.story[hidden], .figures[hidden], .agent-tools[hidden], .signup-band[hidden], .roadmap[hidden] { display: none; }
 .story-head { font-size: var(--text-h1); font-weight: var(--weight-semibold); line-height: var(--leading-tight); }
 .story-sub { font-size: var(--text-prose); line-height: var(--leading-prose); color: var(--fg-secondary); max-width: 36em; margin: var(--space-3) auto 0; }
 .section-title { font-size: var(--text-h2); font-weight: var(--weight-semibold); line-height: var(--leading-tight); margin-bottom: var(--space-4); }
 .figures, .agent-tools { margin-top: calc(var(--space-8) * 2.5); }
-.figure-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: var(--space-4); }
-.figure { padding: var(--space-5); background: var(--surface); border: var(--border-width) solid var(--border); border-radius: var(--radius-lg); }
-.figure-number { display: block; font-size: var(--text-title); font-weight: var(--weight-semibold); line-height: var(--leading-tight); color: var(--accent); }
-.figure-label { color: var(--fg-secondary); }
 .tool-list { list-style: none; display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: var(--space-4); }
 .tool-list li { display: flex; flex-direction: column; gap: var(--space-3); padding: var(--space-5); background: var(--surface); border: var(--border-width) solid var(--border); border-radius: var(--radius-lg); font-weight: var(--weight-medium); }
 .tool-list .icon { width: var(--space-6); height: var(--space-6); color: var(--accent); fill: none; stroke: currentColor; stroke-width: 1.75; stroke-linecap: round; stroke-linejoin: round; }
@@ -327,3 +320,82 @@ code { font-family: var(--font-mono); font-size: 0.9em; background: var(--code-b
 }
 
 .visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+/* ── speed, as bars (M-016): Notion MCP long, Workspace short, a little flame off the Workspace bar ── */
+.speed { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: var(--space-6); }
+.speed-claim { font-size: var(--text-h3); font-weight: var(--weight-medium); margin-bottom: var(--space-3); }
+.speed-number { font-size: var(--text-h1); font-weight: var(--weight-semibold); color: var(--accent); }
+.speed-bar-row { display: grid; grid-template-columns: 7.5em 1fr; align-items: center; gap: var(--space-3); margin-bottom: var(--space-2); font-size: var(--text-sm); color: var(--fg-secondary); }
+.speed-track { position: relative; height: var(--space-4); background: var(--surface-sunken); border-radius: var(--radius-sm); }
+.speed-bar { position: absolute; inset: 0 auto 0 0; width: 0; border-radius: var(--radius-sm); transition: width 1100ms var(--easing); }
+.speed-bar.slow { background: var(--fg-faint); }
+.speed-bar.fast { background: var(--accent); transition-delay: 250ms; }
+.figures.grown .speed-bar { width: var(--to); }
+.speed-flame {
+  position: absolute; right: calc(var(--space-3) * -1); top: 50%; width: var(--space-4); height: var(--space-5);
+  transform: translateY(-55%) rotate(90deg); transform-origin: center;
+  background: radial-gradient(ellipse at 50% 80%, var(--chart-4) 0 30%, var(--chart-2) 45%, transparent 70%);
+  border-radius: 50% 50% 45% 45%; opacity: 0;
+}
+.figures.grown .speed-flame { opacity: 1; transition: opacity 300ms var(--easing) 1200ms; animation: flicker 600ms steps(3) infinite 1400ms; }
+@keyframes flicker { 0% { transform: translateY(-55%) rotate(90deg) scale(1); } 50% { transform: translateY(-55%) rotate(85deg) scale(1.15, 0.9); } 100% { transform: translateY(-55%) rotate(95deg) scale(0.9, 1.1); } }
+
+/* ── just files on your computer (M-016): a split with a divider ── */
+.files { margin-top: calc(var(--space-8) * 2.5); }
+.files-line { color: var(--fg-secondary); font-size: var(--text-prose); margin: calc(var(--space-3) * -1) 0 var(--space-4); }
+.files-switch { display: inline-flex; gap: var(--space-1); padding: var(--space-1); background: var(--surface-sunken); border-radius: var(--radius-md); margin-bottom: var(--space-3); }
+.files-tab { font: inherit; font-size: var(--text-sm); color: var(--fg-secondary); background: none; border: none; border-radius: var(--radius-sm); padding: var(--space-1) var(--space-3); cursor: pointer; }
+.files-tab.active { background: var(--surface); color: var(--fg); font-weight: var(--weight-medium); box-shadow: 0 0 0 var(--border-width) var(--border); }
+.files-split { display: grid; grid-template-columns: 50fr var(--space-3) 50fr; min-height: 340px; background: var(--surface); border: var(--border-width) solid var(--border); border-radius: var(--radius-lg); overflow: hidden; }
+.files-split.dragging { user-select: none; cursor: col-resize; }
+.files-pane { min-width: 0; padding: var(--space-4) var(--space-5); overflow: auto; }
+.files-saved { background: var(--code-bg); }
+.files-label { font-size: var(--text-xs); font-weight: var(--weight-medium); color: var(--fg-secondary); margin-bottom: var(--space-3); text-transform: uppercase; letter-spacing: 0.04em; }
+.files-title { font-size: var(--text-h2); font-weight: var(--weight-semibold); line-height: var(--leading-tight); margin-bottom: var(--space-3); }
+.files-body { max-width: none; }
+.files-path { font-family: var(--font-mono); font-size: var(--text-xs); color: var(--fg-secondary); margin-bottom: var(--space-2); }
+.files-raw { font-family: var(--font-mono); font-size: var(--text-sm); line-height: var(--leading-ui); white-space: pre-wrap; overflow-wrap: anywhere; color: var(--fg); }
+.files-divider { cursor: col-resize; background: var(--surface-sunken); border-inline: var(--border-width) solid var(--border); display: flex; align-items: center; justify-content: center; touch-action: none; }
+.files-divider::after { content: ''; width: 2px; height: var(--space-6); border-radius: 1px; background: var(--fg-faint); }
+.files-divider:hover::after, .files-divider:focus-visible::after { background: var(--accent); }
+.files-grid { font-size: var(--text-sm); }
+.files-grid .grid-head-cell, .files-grid .grid-cell { flex-basis: 140px; min-height: var(--space-6); }
+
+/* ── the sign-up, the main call to action (M-016): its own band of colour ── */
+.signup-band {
+  margin-top: calc(var(--space-8) * 2.5);
+  width: min(1120px, calc(100vw - var(--space-7)));
+  position: relative; left: 50%; transform: translateX(-50%);
+  padding: var(--space-7) var(--space-6);
+  background: var(--accent-soft);
+  border: var(--border-width) solid var(--accent);
+  border-radius: var(--radius-lg);
+}
+.signup-head { font-size: var(--text-h2); font-weight: var(--weight-semibold); line-height: var(--leading-tight); max-width: 26em; margin-bottom: var(--space-5); }
+.signup-band .reply, .signup-band .taps { margin-top: 0; background: var(--surface); }
+
+/* ── the roadmap (M-016) ── */
+.roadmap { margin-top: calc(var(--space-8) * 2); }
+.roadmap-cols { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: var(--space-4); }
+.roadmap-col { padding: var(--space-5); background: var(--surface); border: var(--border-width) solid var(--border); border-radius: var(--radius-lg); }
+.roadmap-col h3 { font-size: var(--text-base); font-weight: var(--weight-semibold); margin-bottom: var(--space-3); }
+.roadmap-col.done h3 { color: var(--fg-secondary); }
+.roadmap-col.now { border-color: var(--accent); }
+.roadmap-col.now h3 { color: var(--accent); }
+.roadmap-col ul { list-style: none; display: flex; flex-direction: column; gap: var(--space-2); font-size: var(--text-sm); }
+.roadmap-col li { padding-left: var(--space-4); position: relative; }
+.roadmap-col li::before { content: ''; position: absolute; left: 0; top: 0.55em; width: var(--space-2); height: var(--space-2); border-radius: 50%; border: var(--border-width) solid currentColor; }
+.roadmap-col.done li::before { background: var(--fg-secondary); border-color: var(--fg-secondary); }
+.roadmap-col.now li::before { background: var(--accent); border-color: var(--accent); }
+
+@media (max-width: 760px) {
+  .files-split { grid-template-columns: 1fr !important; }
+  .files-divider { display: none; }
+  .signup-band { padding: var(--space-5) var(--space-4); }
+  .signup-head { font-size: var(--text-h3); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .speed-bar { transition: none; width: var(--to); }
+  .speed-flame { opacity: 1; animation: none !important; transition: none !important; }
+}

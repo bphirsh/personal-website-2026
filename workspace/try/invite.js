@@ -64,6 +64,11 @@ function display(written) {
 const KEYS = ['format', 'invite', 'name', 'platform', 'role', ...LIST_KEYS, 'project'];
 const INVITE_RE = /^\d{2}-[a-z0-9]{4}$/;
 
+/** Whether `value` is a template placeholder left unfilled, such as `{{name}}`: a prompt pasted without its code or name. It reads as missing. */
+export function isPlaceholder(value) {
+  return /^\s*\{\{[^{}]*\}\}\s*$/.test(String(value ?? ''));
+}
+
 /** Whether `value` is an invite code, `07-k3f9`. */
 export function isInviteCode(value) {
   return INVITE_RE.test(String(value ?? '').trim().toLowerCase());
@@ -202,7 +207,7 @@ function read(text) {
   const { pages, tasks, databases } = parseSections(lines.slice(close + 1), warnings);
   const properties = normalise(raw, pages);
   if (properties.invite === null) {
-    const written = raw.invite !== undefined ? scalar(raw.invite).trim() : '';
+    const written = raw.invite !== undefined && !isPlaceholder(scalar(raw.invite)) ? scalar(raw.invite).trim() : '';
     warnings.unshift(problem('bad-invite', written ? { found: written.slice(0, 32) } : {}));
   }
 
@@ -281,7 +286,8 @@ function token(s) {
 }
 
 function normalise(raw, pages) {
-  const has = (k) => raw[k] !== undefined && scalar(raw[k]).trim() !== '';
+  // An unfilled placeholder ({{name}}) is no value at all.
+  const has = (k) => raw[k] !== undefined && scalar(raw[k]).trim() !== '' && !isPlaceholder(scalar(raw[k]));
 
   const invite = has('invite') ? scalar(raw.invite).trim().toLowerCase() : null;
   const platform = has('platform') ? token(scalar(raw.platform)) : 'unknown';
@@ -303,7 +309,7 @@ function normalise(raw, pages) {
     const items = v === undefined ? [] : Array.isArray(v) ? v : [v];
     // A known value is stored by its id; anything else is kept as written and
     // counted as other.
-    p[key] = items.map((x) => String(x).trim()).filter(Boolean).slice(0, MAX_LIST).map((x) => {
+    p[key] = items.map((x) => String(x).trim()).filter((x) => x && !isPlaceholder(x)).slice(0, MAX_LIST).map((x) => {
       const id = token(x);
       return KNOWN[key].includes(id) ? { id, label: DISPLAY[id] ?? id, known: true } : { id: 'other', label: display(cut(x, 40)), known: false };
     });

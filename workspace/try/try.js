@@ -14,7 +14,8 @@
  */
 
 import { readInvite, refuseBySize, codeFromHash } from './invite.js';
-import { mountDemo } from './demo.js';
+import { mountDemo, filesSample } from './demo.js';
+import { mountFiles } from './files.js';
 import { mountReplay } from './replay.js';
 import { mountButton } from './button.js';
 import { mountTaps } from './taps.js';
@@ -62,7 +63,9 @@ const phone = document.getElementById('phone');
 const loaded = document.getElementById('loaded');
 const loading = document.getElementById('loading');
 const loadingLine = document.getElementById('loadingLine');
-const storySections = ['story', 'figures', 'agentTools'].map((id) => document.getElementById(id));
+const storySections = ['story', 'figures', 'agentTools', 'signupBand', 'roadmap'].map((id) => document.getElementById(id));
+const filesMount = document.getElementById('files');
+const figures = document.getElementById('figures');
 const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
 
 function el(tag, cls, text) {
@@ -93,11 +96,13 @@ async function take(file) {
 }
 
 function reset() {
+  styles?.undock();
   failed.hidden = true;
   failed.replaceChildren();
   banners.replaceChildren();
   demo.replaceChildren();
   replay.replaceChildren();
+  filesMount.replaceChildren();
   reply.replaceChildren();
   card.replaceChildren();
   loaded.hidden = true;
@@ -129,8 +134,18 @@ function removeIntro() {
   document.getElementById('intro')?.remove();
 }
 
+// The speed bars grow once, the first time most of them are on screen; with reduced motion they are drawn at full length, still (M-016).
+const growBars = new IntersectionObserver((entries) => {
+  if (entries.some((e) => e.intersectionRatio >= 0.5)) {
+    figures.classList.add('grown');
+    growBars.disconnect();
+  }
+}, { threshold: [0, 0.5, 1] });
+growBars.observe(figures);
+
 function revealWorkspace() {
   removeIntro();
+  placeStyles();
   // A section still waiting on its words (the speed figures) stays hidden.
   for (const s of storySections) s.hidden = s.hasAttribute('data-pending');
   const win = demo.querySelector('.win');
@@ -188,6 +203,8 @@ async function showSample() {
   banners.appendChild(b);
   mountDemo(demo, r.invite, SAMPLE_NAME, text, { sample: true, full: true });
   mountReplay(replay, r.invite, SAMPLE_NAME, text);
+  const fs = filesSample(r.invite);
+  mountFiles(filesMount, fs.page, fs.db);
   mountTaps(reply, codeFromHash(location.hash));
   revealWorkspace();
 }
@@ -219,6 +236,8 @@ function showDemo(fileName, text, r) {
   }
   mountDemo(demo, r.invite, fileName, text, { full: true });
   mountReplay(replay, r.invite, fileName, text);
+  const fs = filesSample(r.invite);
+  mountFiles(filesMount, fs.page, fs.db);
   mountButton(reply, { ...r.invite.properties, invite });
   // The card is theirs, so only for their own file, never for the sample.
   mountCard(card, { ...r.invite.properties, invite });
@@ -296,7 +315,15 @@ addEventListener('drop', (e) => {
   take(e.dataTransfer?.files?.[0]);
 });
 
-mountStyleSwitcher(document.getElementById('styleSwitch'));
+const styles = mountStyleSwitcher(document.getElementById('styleSwitch'));
+// Beside the preview only when the window leaves room for a column to its right; otherwise in the top bar, so the preview never moves (M-016).
+const roomBeside = matchMedia('(min-width: 1260px)');
+function placeStyles() {
+  const wrap = demo.querySelector('.demo');
+  if (wrap && roomBeside.matches) styles.dock(wrap);
+  else styles.undock();
+}
+roomBeside.addEventListener('change', placeStyles);
 sampleLink.hidden = false;
 document.getElementById('loadAnother').addEventListener('click', () => pick.click());
 sampleLink.querySelector('button').addEventListener('click', showSample);

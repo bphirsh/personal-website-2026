@@ -17,6 +17,7 @@
  */
 
 import { renderBody } from './markdown.js';
+import { isPlaceholder } from './invite.js';
 
 const WORDS = {
   above: 'Your file, as Workspace shows it. Click around; nothing here is saved.',
@@ -79,26 +80,38 @@ export function buildVault(invite, fileName, fileText) {
     },
   });
 
+  // The left bar holds pages, databases, and folders that hold pages; a database sits in it directly, never in a folder of its own (M-016).
   const root = [];
+  const dbs = [];
   const file = node('file', fileName, { title: fileName.replace(/\.(md|txt)$/i, ''), text: fileText });
   let start;
 
   if (coder) {
-    const project = node('folder', p.project, { children: [...theirPages, theirTasks, ...theirDbs], open: true });
+    const project = node('folder', p.project, { children: [...theirPages, theirTasks], open: true });
     root.push(node('folder', 'Projects', { children: [project], open: true }));
     start = project;
   }
   if (knowledge) {
     const researchItems = coder ? [node('md', `${SAMPLE.research.title}.md`, { ...SAMPLE.research, sample: true })] : [...theirPages, theirTasks];
     const research = node('folder', 'Research', { children: researchItems, open: true });
-    const clientDbs = coder || !theirDbs.length ? [node('db', 'Clients', { db: copyDb(SAMPLE.clients), sample: true })] : theirDbs;
-    root.push(research, node('folder', 'Clients', { children: clientDbs, open: !coder }));
+    root.push(research);
     start ??= research;
+    // Clients: theirs when the file is a knowledge worker's, else the page's own.
+    if (coder || !theirDbs.length) dbs.push(node('db', 'Clients', { db: copyDb(SAMPLE.clients), sample: true }));
   }
-  root.push(people, tools, file);
-
+  root.push(...theirDbs, ...dbs, people, tools, file);
 
   return { root, start, file, owner: p.name, tasks: theirTasks, databases: theirDbs, tools };
+}
+
+/** The page and database "Just files on your computer" shows: the visitor's own first ones, else the same stand-ins the demo uses, with the folder the page sits in. */
+export function filesSample(invite) {
+  const { properties: p, pages, databases } = invite;
+  const knowledgeOnly = p.layout === 'knowledge-worker';
+  const page = pages[0] ? { title: pages[0].title, body: pages[0].body } : { ...SAMPLE.page };
+  page.folder = knowledgeOnly ? 'Research' : `Projects/${p.project}`;
+  const db = copyDb(databases[0] ?? SAMPLE.clients);
+  return { page, db };
 }
 
 function copyDb(d) {
@@ -473,7 +486,8 @@ export function mountDemo(mount, invite, fileName, fileText, options = {}) {
     if (open !== -1 && close !== -1) {
       for (const l of lines.slice(open + 1, close)) {
         const m = l.match(/^\s*([\w-]+)\s*:\s*(.*?)\s*(#.*)?$/);
-        if (m) { props.append(el('dt', null, m[1]), el('dd', null, m[2])); }
+        // A property left as an unfilled placeholder ({{name}}) is missing, so it is not shown.
+        if (m && !isPlaceholder(m[2])) { props.append(el('dt', null, m[1]), el('dd', null, m[2])); }
       }
       rest = lines.slice(close + 1);
     }

@@ -1,5 +1,7 @@
 /**
- * The style switcher (M-014): a button that opens a menu of the app's eight themes. Picking one sets `data-style` on the page's root, and tokens.css does the rest; day or night still follows the visitor's own system setting.
+ * The style picker (M-014, M-016): "Style" and one small square per theme of the app, in its colours, with the theme's name as the square's tooltip. Picking one sets `data-style` on the page's root, and tokens.css does the rest; day or night still follows the visitor's own system setting.
+ *
+ * It is one element that lives in the top bar until there is a preview, then sits in a slim column to the right of the preview window, without moving or shrinking it (`dock`).
  *
  * The choice is not saved anywhere: no storage, no cookie, no address change. A reload is back to Default, which keeps the page's promise of no cookies and nothing stored.
  *
@@ -8,83 +10,67 @@
 
 import { STYLES } from './styles.js';
 
-const WORDS = {
-  button: 'Change style',
-};
+const WORDS = { label: 'Style' };
 
-/** Build the switcher into `mount`. */
-export function mountStyleSwitcher(mount) {
-  const wrap = el('div', 'style-switch');
-  const button = el('button', 'style-button');
-  button.type = 'button';
-  button.setAttribute('aria-haspopup', 'menu');
-  button.setAttribute('aria-expanded', 'false');
-  const current = el('span', 'style-current');
-  button.append(el('span', 'style-swatch'), el('span', null, WORDS.button), current);
-  const menu = el('ul', 'style-menu');
-  menu.setAttribute('role', 'menu');
-  menu.hidden = true;
-
+/** Build the picker into `home`. Returns `dock(into)` and `undock()` to move it beside a preview and back. */
+export function mountStyleSwitcher(home) {
+  const wrap = el('div', 'style-pick');
+  wrap.setAttribute('role', 'radiogroup');
+  wrap.setAttribute('aria-label', WORDS.label);
+  wrap.appendChild(el('span', 'style-label', WORDS.label));
   const night = matchMedia('(prefers-color-scheme: dark)');
 
-  function paintSwatch(node, style) {
-    const s = night.matches ? style.night : style.day;
-    node.style.background = `linear-gradient(135deg, ${s.bg} 0 50%, ${s.accent} 50% 100%)`;
+  const squares = STYLES.map((style) => {
+    const b = el('button', 'style-square');
+    b.type = 'button';
+    b.title = style.name;
+    b.setAttribute('role', 'radio');
+    b.setAttribute('aria-label', style.name);
+    b.addEventListener('click', () => apply(style));
+    b.addEventListener('keydown', (e) => {
+      const i = STYLES.indexOf(style);
+      const step = { ArrowDown: 1, ArrowRight: 1, ArrowUp: -1, ArrowLeft: -1 }[e.key];
+      if (!step) return;
+      e.preventDefault();
+      const next = STYLES[(i + step + STYLES.length) % STYLES.length];
+      apply(next);
+      squares[STYLES.indexOf(next)].focus();
+    });
+    wrap.appendChild(b);
+    return b;
+  });
+
+  function paint() {
+    STYLES.forEach((style, i) => {
+      const s = night.matches ? style.night : style.day;
+      squares[i].style.background = `linear-gradient(135deg, ${s.bg} 0 50%, ${s.accent} 50% 100%)`;
+    });
   }
 
   function apply(style) {
     if (style.id === 'default') delete document.documentElement.dataset.style;
     else document.documentElement.dataset.style = style.id;
-    current.textContent = style.name;
-    paintSwatch(button.querySelector('.style-swatch'), style);
-    for (const li of menu.children) li.firstChild.setAttribute('aria-checked', String(li.dataset.id === style.id));
+    squares.forEach((b, i) => {
+      const on = STYLES[i] === style;
+      b.setAttribute('aria-checked', String(on));
+      b.tabIndex = on ? 0 : -1;
+    });
     // The share card is drawn on a canvas, so it redraws itself on this.
     document.dispatchEvent(new CustomEvent('stylechange', { detail: { id: style.id } }));
   }
 
-  for (const style of STYLES) {
-    const li = el('li');
-    li.dataset.id = style.id;
-    const item = el('button', 'style-item');
-    item.type = 'button';
-    item.setAttribute('role', 'menuitemradio');
-    const sw = el('span', 'style-swatch');
-    paintSwatch(sw, style);
-    item.append(sw, el('span', null, style.name));
-    item.addEventListener('click', () => { apply(style); close(); button.focus(); });
-    li.appendChild(item);
-    menu.appendChild(li);
-  }
-
-  function open() {
-    menu.hidden = false;
-    button.setAttribute('aria-expanded', 'true');
-    (menu.querySelector('[aria-checked="true"]') ?? menu.querySelector('button')).focus();
-  }
-  function close() {
-    menu.hidden = true;
-    button.setAttribute('aria-expanded', 'false');
-  }
-
-  button.addEventListener('click', () => (menu.hidden ? open() : close()));
-  menu.addEventListener('keydown', (e) => {
-    const items = [...menu.querySelectorAll('button')];
-    const i = items.indexOf(document.activeElement);
-    if (e.key === 'Escape') { close(); button.focus(); }
-    else if (e.key === 'ArrowDown') { e.preventDefault(); items[(i + 1) % items.length].focus(); }
-    else if (e.key === 'ArrowUp') { e.preventDefault(); items[(i - 1 + items.length) % items.length].focus(); }
-  });
-  document.addEventListener('click', (e) => { if (!wrap.contains(e.target)) close(); });
-  // The swatches follow day and night too.
-  night.addEventListener('change', () => {
-    for (const li of menu.children) paintSwatch(li.querySelector('.style-swatch'), STYLES.find((s) => s.id === li.dataset.id));
-    paintSwatch(button.querySelector('.style-swatch'), STYLES.find((s) => s.id === (document.documentElement.dataset.style ?? 'default')));
-  });
-
-  wrap.append(button, menu);
-  mount.replaceChildren(wrap);
+  night.addEventListener('change', paint);
+  paint();
+  home.replaceChildren(wrap);
   apply(STYLES[0]);
-  return { apply: (id) => apply(STYLES.find((s) => s.id === id) ?? STYLES[0]) };
+
+  return {
+    apply: (id) => apply(STYLES.find((s) => s.id === id) ?? STYLES[0]),
+    /** Sit in a slim column to the right of `into` (the preview's wrapper). */
+    dock(into) { wrap.classList.add('docked'); into.appendChild(wrap); },
+    /** Back to the top bar, before the preview it sat beside is rebuilt. */
+    undock() { wrap.classList.remove('docked'); home.appendChild(wrap); },
+  };
 }
 
 function el(tag, cls, text) {

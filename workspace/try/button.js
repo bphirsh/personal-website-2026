@@ -139,7 +139,8 @@ export function mountButton(mount, answers, options = {}) {
       status.textContent = WORDS.sending;
       const body = replyBody({ ...answers, platform }, typed);
       let ok = false;
-      try { ok = await send(body); } catch { ok = false; }
+      const report = (why) => { box.dataset.failure = why; console.warn('invite-reply did not send:', why); };
+      try { ok = await send(body, report); } catch { ok = false; }
       if (ok) {
         box.replaceChildren(el('p', 'reply-after', platform === 'mac-intel' ? WORDS.thanks(answers.name) : WORDS.inLine(answers.name)));
       } else {
@@ -165,15 +166,33 @@ export function mountButton(mount, answers, options = {}) {
   return { refresh: () => { if (tells?.isConnected) tells.textContent = tellsLine({ ...answers, platform }); } };
 }
 
-async function post(body) {
-  const res = await fetch(ENDPOINT, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(body),
-    credentials: 'omit',
-    cache: 'no-store',
-  });
-  return res.ok;
+/**
+ * Send the reply. Same-origin credentials, the fetch default: the site sets no cookies of its own, and on a protected Vercel preview the visitor's sign-in cookie is what lets the request reach the function at all. With `credentials: 'omit'` every preview send was answered by Vercel's protection with a 401 and never reached /api/invite-reply (27 Oct 2026).
+ *
+ * Which way a send failed is kept on the section, and in the console, so the next failure names its own cause: `network` (no answer), `protected` (Vercel's 401 page), or `http-<status>` with the endpoint's `upstream` code when Resend refused it. None of it holds anything the person typed.
+ */
+async function post(body, report = () => {}) {
+  let res;
+  try {
+    res = await fetch(ENDPOINT, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+      cache: 'no-store',
+    });
+  } catch {
+    report('network');
+    return false;
+  }
+  if (res.ok) return true;
+  let detail = '';
+  try {
+    const json = await res.json();
+    if (json?.error?.message === 'Protected deployment' || json?.protection) detail = 'protected';
+    else if (json?.upstream) detail = `upstream-${json.upstream}`;
+  } catch { /* not JSON */ }
+  report(detail === 'protected' ? 'protected' : `http-${res.status}${detail ? ` ${detail}` : ''}`);
+  return false;
 }
 
 function el(tag, cls, text) {
