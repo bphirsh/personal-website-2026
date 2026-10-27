@@ -385,33 +385,23 @@ code { font-family: var(--font-mono); font-size: 0.9em; background: var(--code-b
   .speed-flame { opacity: 1; animation: none !important; transition: none !important; }
 }
 
-/* ── the reveal (M-017): one frame, two versions at full size, a handle that wipes between them ── */
+/* ── the comparison (M-018): both sides at once, side by side; on a phone, one above the other ── */
 .files-frame {
-  --reveal: 50%;
-  position: relative; height: 360px; overflow: hidden;
+  display: grid; grid-template-columns: 1fr 1fr; min-height: 340px; overflow: hidden;
   border: var(--border-width) solid var(--border); border-radius: var(--radius-lg);
-  cursor: ew-resize; touch-action: pan-y;
 }
-.files-frame.dragging { user-select: none; }
-.files-layer { position: absolute; inset: 0; padding: var(--space-5) var(--space-6); overflow: hidden; }
-/* Each version's text sits in its own half, so at the midpoint both read whole, and dragging wipes one over the other; the layers themselves always fill the frame. */
-.files-see { background: var(--surface); padding-right: calc(50% + var(--space-5)); }
-.files-agents { background: var(--code-bg); clip-path: inset(0 0 0 var(--reveal)); padding-left: calc(50% + var(--space-5)); }
-.files-handle {
-  position: absolute; top: 0; bottom: 0; left: var(--reveal); width: 0;
-  display: flex; align-items: center; justify-content: center;
-}
-.files-handle::before { content: ''; position: absolute; top: 0; bottom: 0; left: -1px; width: 2px; background: var(--accent); }
-.files-grip {
-  position: relative; flex: none; width: var(--space-6); height: var(--space-6); border-radius: 50%;
-  background: var(--accent); box-shadow: var(--shadow-float);
-}
-.files-grip::before, .files-grip::after { content: ''; position: absolute; top: 50%; width: 0; height: 0; border: 5px solid transparent; transform: translateY(-50%); }
-.files-grip::before { left: 5px; border-right-color: var(--on-accent); }
-.files-grip::after { right: 5px; border-left-color: var(--on-accent); }
-.files-handle:focus-visible .files-grip { outline: 2px solid var(--focus-ring); outline-offset: 3px; }
-.files-labels { display: flex; justify-content: space-between; margin-top: var(--space-2); font-size: var(--text-sm); font-weight: var(--weight-medium); color: var(--fg-secondary); }
+.files-pane { min-width: 0; padding: var(--space-5) var(--space-6); overflow: auto; }
+.files-see { background: var(--surface); }
+.files-agents { background: var(--code-bg); border-left: var(--border-width) solid var(--border); }
+.files-labels { display: grid; grid-template-columns: 1fr 1fr; margin-top: var(--space-2); font-size: var(--text-sm); font-weight: var(--weight-medium); color: var(--fg-secondary); }
+.files-labels span { padding-left: var(--space-6); }
 .files-see .prose { max-width: none; }
+@media (max-width: 760px) {
+  .files-frame { grid-template-columns: 1fr; }
+  .files-agents { border-left: none; border-top: var(--border-width) solid var(--border); }
+  .files-labels { display: none; }
+  .files-pane::before { content: attr(aria-label); display: block; font-size: var(--text-xs); font-weight: var(--weight-medium); color: var(--fg-secondary); margin-bottom: var(--space-2); }
+}
 
 /* ── agent tools (M-017): a bold feature, then its benefit ── */
 .tool-list li strong { display: block; font-size: var(--text-h3); font-weight: var(--weight-semibold); margin-bottom: var(--space-1); }
@@ -422,20 +412,30 @@ code { font-family: var(--font-mono); font-size: 0.9em; background: var(--code-b
 .signup-head { margin-bottom: var(--space-2); }
 .signup-sub { color: var(--fg-secondary); font-size: var(--text-prose); margin-bottom: var(--space-5); }
 
-/* ── the roadmap, one vertical timeline (M-017) ── */
-.timeline { list-style: none; position: relative; max-width: 36em; padding-left: var(--space-6); }
-.timeline::before { content: ''; position: absolute; left: 7px; top: var(--space-2); bottom: var(--space-2); width: 2px; background: var(--border); }
-.stage { position: relative; padding-bottom: var(--space-6); }
-.stage:last-child { padding-bottom: 0; }
-.stage::before {
-  content: ''; position: absolute; left: calc(var(--space-6) * -1); top: 0.3em;
-  width: var(--space-4); height: var(--space-4); border-radius: 50%;
-  background: var(--bg); border: 2px solid var(--fg-faint);
+/* ── the roadmap (M-018): one vertical path; stage names on the left, each item a dot on the path ── */
+.path { --dot: var(--space-3); --rail: 9em; display: flex; flex-direction: column; max-width: 44em; }
+.stage { display: grid; grid-template-columns: var(--rail) 1fr; column-gap: var(--space-5); }
+.stage-name { font-size: var(--text-base); font-weight: var(--weight-semibold); line-height: var(--leading-ui); padding-top: var(--space-2); text-align: right; color: var(--fg-secondary); }
+.stage.now .stage-name { color: var(--accent); }
+.stage.next .stage-name { color: var(--fg-faint); }
+/* The path: one line down the items' left edge, unbroken from stage to stage. */
+.stage-items { list-style: none; position: relative; padding: var(--space-2) 0 var(--space-5) var(--space-6); border-left: 2px solid var(--border); }
+.stage:last-child .stage-items { padding-bottom: var(--space-2); }
+.stage.done .stage-items { border-left-color: var(--fg-secondary); }
+.stage-items li { position: relative; padding: var(--space-1) 0; color: var(--fg-secondary); line-height: var(--leading-ui); }
+.stage.now .stage-items li { color: var(--fg); font-weight: var(--weight-medium); }
+.stage-items li::before {
+  content: ''; position: absolute; top: calc(var(--space-1) + 0.72em - var(--dot) / 2);
+  left: calc(var(--space-6) * -1 - var(--dot) / 2 - 1px);
+  width: var(--dot); height: var(--dot); border-radius: 50%; box-sizing: border-box;
 }
-.stage.done::before { background: var(--fg-secondary); border-color: var(--fg-secondary); }
-.stage.now::before { background: var(--accent); border-color: var(--accent); box-shadow: 0 0 0 4px var(--accent-soft); }
-.stage h3 { font-size: var(--text-h3); font-weight: var(--weight-semibold); margin-bottom: var(--space-2); }
-.stage.now h3 { color: var(--accent); }
-.stage.done h3 { color: var(--fg-secondary); }
-.stage ul { list-style: none; display: flex; flex-direction: column; gap: var(--space-1); color: var(--fg-secondary); }
-.stage.now ul { color: var(--fg); }
+.stage.done li::before { background: var(--fg-secondary); }
+.stage.now li::before { background: var(--accent); box-shadow: 0 0 0 4px var(--accent-soft); }
+.stage.next li::before { background: var(--bg); border: 2px solid var(--fg-faint); }
+@media (max-width: 600px) {
+  .stage { grid-template-columns: 1fr; }
+  /* On a phone each name sits above its items, on the same unbroken path (padding, not margin, so the line has no gap). */
+  .stage-name { text-align: left; padding: var(--space-3) 0 var(--space-1) var(--space-6); border-left: 2px solid var(--border); }
+  .stage.done .stage-name { border-left-color: var(--fg-secondary); }
+  .stage:first-child .stage-name { padding-top: 0; }
+}

@@ -115,27 +115,27 @@
     <div id="reply"></div>
   </section>
 
-  <!-- One vertical timeline, top to bottom: Done, This build, Next (M-017). -->
+  <!-- One vertical path (M-018): Done, This build and Next on the left, each item a dot on the path: filled, highlighted, hollow. -->
   <section class="roadmap" id="roadmap" hidden>
     <h2 class="section-title">Roadmap</h2>
-    <ol class="timeline">
-      <li class="stage done"><h3>Done</h3><ul>
+    <div class="path">
+      <div class="stage done"><h3 class="stage-name">Done</h3><ul class="stage-items">
         <li>Databases from folders, with saved views</li>
         <li>Agent roles, skills and learnings</li>
         <li>Code pages, version history and a record of what changed</li>
-      </ul></li>
-      <li class="stage now"><h3>This build</h3><ul>
+      </ul></div>
+      <div class="stage now"><h3 class="stage-name">This build</h3><ul class="stage-items">
         <li>A signed Mac app that updates itself</li>
         <li>A welcome, with a sample vault to try</li>
         <li>A plain page on what leaves your Mac</li>
         <li>Crash reports and feedback that reach us</li>
-      </ul></li>
-      <li class="stage next"><h3>Next</h3><ul>
+      </ul></div>
+      <div class="stage next"><h3 class="stage-name">Next</h3><ul class="stage-items">
         <li>Agent workflows</li>
         <li>iOS app</li>
         <li>Live syncing</li>
-      </ul></li>
-    </ol>
+      </ul></div>
+    </div>
   </section>
 
   <div id="card"></div>

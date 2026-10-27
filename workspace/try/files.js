@@ -1,5 +1,5 @@
 /**
- * "Easy to read, for both you and agents" (M-016, M-017): one frame holding two versions of the same thing, and a handle that wipes one over the other, a before-and-after reveal. Nothing resizes: both versions always fill the frame; the handle only moves where one stops being shown and the other starts. "What you see" and "What agents see" sit below the frame, one under each side.
+ * "Easy to read, for both you and agents" (M-016, M-017, M-018): two versions of the same thing side by side, each fully visible, "What you see" and "What agents see" below, one under each. M-018 removed the reveal handle ("enough of the page is visible on both sides already").
  *
  * A page shows rendered against its markdown. A database shows its grid against what is really saved: in Workspace every field of every row lives in the database's SQLite file (D-007), so the agents' side is a `sqlite3` query and its rows as an agent reading that file sees them, never an invented markdown table.
  *
@@ -33,16 +33,11 @@ export function mountFiles(mount, db) {
   const tabs = el('div', 'files-switch');
   tabs.setAttribute('role', 'tablist');
   const frame = el('div', 'files-frame');
-  const see = el('div', 'files-layer files-see');
-  const agents = el('div', 'files-layer files-agents');
-  const handle = el('div', 'files-handle');
-  handle.setAttribute('role', 'slider');
-  handle.setAttribute('aria-label', `${WORDS.see} or ${WORDS.agents}`);
-  handle.setAttribute('aria-valuemin', '0');
-  handle.setAttribute('aria-valuemax', '100');
-  handle.tabIndex = 0;
-  handle.appendChild(el('span', 'files-grip'));
-  frame.append(see, agents, handle);
+  const see = el('div', 'files-pane files-see');
+  const agents = el('div', 'files-pane files-agents');
+  see.setAttribute('aria-label', WORDS.see);
+  agents.setAttribute('aria-label', WORDS.agents);
+  frame.append(see, agents);
   const labels = el('div', 'files-labels');
   labels.append(el('span', null, WORDS.see), el('span', null, WORDS.agents));
   section.append(tabs, frame, labels);
@@ -77,39 +72,8 @@ export function mountFiles(mount, db) {
     }
   }
 
-  // The handle: drag it, or use the arrow keys. It only moves the edge of the reveal; both layers keep the frame's full size.
-  let at = 50;
-  function setAt(v) {
-    at = Math.min(100, Math.max(0, v));
-    frame.style.setProperty('--reveal', `${at}%`);
-    handle.setAttribute('aria-valuenow', String(Math.round(at)));
-  }
-  const fromPointer = (ev) => {
-    const r = frame.getBoundingClientRect();
-    setAt(((ev.clientX - r.left) / r.width) * 100);
-  };
-  frame.addEventListener('pointerdown', (e) => {
-    if (e.target.closest('.files-tab')) return;
-    e.preventDefault();
-    frame.setPointerCapture(e.pointerId);
-    frame.classList.add('dragging');
-    fromPointer(e);
-    const up = () => {
-      frame.classList.remove('dragging');
-      frame.removeEventListener('pointermove', fromPointer);
-      frame.removeEventListener('pointerup', up);
-    };
-    frame.addEventListener('pointermove', fromPointer);
-    frame.addEventListener('pointerup', up);
-  });
-  handle.addEventListener('keydown', (e) => {
-    const step = { ArrowLeft: -5, ArrowRight: 5, Home: -100, End: 100 }[e.key];
-    if (step) { e.preventDefault(); setAt(at + step); }
-  });
-
-  setAt(50);
   draw();
-  return { section, setAt, show: (k) => { kind = k; draw(); } };
+  return { section, show: (k) => { kind = k; draw(); } };
 }
 
 // The database as its grid, drawn like the demo's.
