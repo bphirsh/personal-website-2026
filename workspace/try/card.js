@@ -1,43 +1,34 @@
 /**
- * The share card: a founder card drawn in the browser, to download or copy
- * (M-008). Nothing is stored or published, and drawing it makes no request.
+ * The founder card (M-008, M-017): drawn in the browser, to download or copy. Nothing is stored or published, and drawing it makes no request.
  *
- * It carries their founder number, role, what they are building (always, since M-013 changed M-008), their tools, what Workspace is and the public signup page's address. Their name is never on it.
+ * Minimal since M-017: "Workspace", their founder number, and the public sign-up address beside a QR code that opens it. Role, tools and project are no longer on it, and their name never was. The QR code is drawn on the same canvas from vendor/qrcode.js, loaded with the page.
  *
- * Words are from Marketing/Beta Signups/Page copy.md, "The share card". The
- * colours and fonts are the app's tokens, read from the page.
+ * Words are from Marketing/Beta Signups/Page copy.md, "The share card". The colours and fonts are the theme's tokens, read from the page, so the card follows the style picked.
  */
 
 const WORDS = {
   heading: 'Your founder card',
   sub: 'Nothing is posted.',
+  brand: 'Workspace',
   founder: (n) => `Founder #${n}`,
-  roles: { coder: 'Builds with code', 'knowledge-worker': 'Thinks in documents', both: 'Code and documents', other: 'Code and documents' },
-  worksWith: (tools) => `Works with ${tools}`,
-  more: (n) => `+${n}\u00a0more`, // a no-break space: "+2 more" never splits across lines
-  what: 'Workspace — a Mac app for the files you and your agents share',
   address: 'brianhirsh.com/workspace/signup',
-  building: (p) => `Building: ${p}`,
   download: 'Download image',
   copy: 'Copy image',
   copied: 'Copied',
   noCopy: "Can't copy here; use Download.",
 };
 
+// What the QR code opens.
+export const SIGNUP_URL = 'https://www.brianhirsh.com/workspace/signup/';
+
 const W = 1200;
 const H = 630;
 
-/** The lines the card holds, in order, for these answers. */
-export function cardLines({ invite, role, ai_tools, knowledge_tools, project }) {
-  const tools = [...ai_tools, ...knowledge_tools].map((t) => t.label);
-  const shown = tools.slice(0, 5).join(', ') + (tools.length > 5 ? `, ${WORDS.more(tools.length - 5)}` : '');
+/** The lines the card holds: the brand, the founder number (left off without a code) and the address. */
+export function cardLines({ invite }) {
   return {
+    brand: WORDS.brand,
     founder: invite ? WORDS.founder(invite.slice(0, 2)) : null,
-    role: WORDS.roles[role] ?? WORDS.roles.other,
-    // Always on the card since M-013 (Brian: "can't be hidden"), and drawn under the role, before the tools.
-    project: project ? WORDS.building(project) : null,
-    tools: tools.length ? WORDS.worksWith(shown) : null,
-    what: WORDS.what,
     address: WORDS.address,
   };
 }
@@ -112,75 +103,80 @@ function paint(canvas, lines) {
   const font = t('font-ui') || 'system-ui, sans-serif';
   const ctx = canvas.getContext('2d');
 
+  // An ink card: the theme's text colour as the ground, its page ground as the type, the accent for the number.
   ctx.clearRect(0, 0, W, H);
   ctx.save();
   roundRect(ctx, 0, 0, W, H, 40);
   ctx.clip();
-  ctx.fillStyle = t('surface');
+  ctx.fillStyle = t('fg');
   ctx.fillRect(0, 0, W, H);
-  // The app's accent, as a band down the left edge, inside the card.
-  ctx.fillStyle = t('accent');
-  ctx.fillRect(0, 0, 20, H);
+  // A quiet ring of the accent in one corner, for some depth without a picture.
+  ctx.strokeStyle = t('accent');
+  ctx.globalAlpha = 0.35;
+  ctx.lineWidth = 2;
+  for (let r = 180; r <= 540; r += 60) { ctx.beginPath(); ctx.arc(0, H, r, -Math.PI / 2, 0); ctx.stroke(); }
+  ctx.globalAlpha = 1;
   ctx.restore();
-  ctx.strokeStyle = t('border');
-  ctx.lineWidth = 4;
-  roundRect(ctx, 2, 2, W - 4, H - 4, 38);
-  ctx.stroke();
 
-  const x = 96;
-  let y = 120;
+  const x = 88;
   ctx.textBaseline = 'alphabetic';
+  ctx.fillStyle = t('bg');
+  ctx.font = `600 40px ${font}`;
+  ctx.fillText(lines.brand, x, 128);
 
+  // The number as large as fits in the space left of the QR code.
+  const qrLeft = W - 300 - 88 - 20;
   if (lines.founder) {
     ctx.fillStyle = t('accent');
-    ctx.font = `600 34px ${font}`;
-    ctx.fillText(lines.founder, x, y);
-    y += 96;
-  } else {
-    y += 40;
+    let size = 128;
+    do { ctx.font = `700 ${size}px ${font}`; size -= 4; } while (ctx.measureText(lines.founder).width > qrLeft - x - 40 && size > 48);
+    ctx.fillText(lines.founder, x, 360);
   }
 
-  ctx.fillStyle = t('fg');
-  ctx.font = `600 76px ${font}`;
-  y = wrap(ctx, lines.role, x, y, W - x * 2, 88);
+  ctx.fillStyle = t('bg');
+  ctx.globalAlpha = 0.8;
+  ctx.font = `500 30px ${font}`;
+  ctx.fillText(lines.address, x, H - 88);
+  ctx.globalAlpha = 1;
 
-  if (lines.project) {
-    y += 12;
-    ctx.fillStyle = t('fg');
-    ctx.font = `500 36px ${font}`;
-    y = wrap(ctx, lines.project, x, y, W - x * 2, 48);
-  }
-  if (lines.tools) {
-    y += 8;
-    ctx.fillStyle = t('fg-secondary');
-    ctx.font = `400 32px ${font}`;
-    y = wrap(ctx, lines.tools, x, y, W - x * 2, 44);
-  }
-
-  ctx.fillStyle = t('fg-secondary');
-  ctx.font = `400 28px ${font}`;
-  ctx.fillText(lines.what, x, H - 112);
-  ctx.fillStyle = t('accent');
-  ctx.font = `500 28px ${font}`;
-  ctx.fillText(lines.address, x, H - 68);
-}
-
-// Draw `text` wrapped to `width`; returns the baseline after the last line.
-function wrap(ctx, text, x, y, width, lineHeight) {
-  const words = text.split(' ');
-  let line = '';
-  for (const w of words) {
-    const next = line ? `${line} ${w}` : w;
-    if (ctx.measureText(next).width > width && line) {
-      ctx.fillText(line, x, y);
-      line = w;
-      y += lineHeight;
-    } else {
-      line = next;
+  // The QR code, dark on light so any phone reads it, with its quiet zone.
+  const qr = makeQr(SIGNUP_URL);
+  if (qr) {
+    const size = 300;
+    const qx = W - size - 88;
+    const qy = (H - size) / 2;
+    // Dark modules on a light ground in every theme and at night, since not every phone reads an inverted code.
+    const [dark, light] = luminance(t('fg')) < luminance(t('bg')) ? [t('fg'), t('bg')] : [t('bg'), t('fg')];
+    ctx.fillStyle = light;
+    roundRect(ctx, qx - 20, qy - 20, size + 40, size + 40, 24);
+    ctx.fill();
+    const n = qr.getModuleCount();
+    const cell = size / n;
+    ctx.fillStyle = dark;
+    for (let r = 0; r < n; r++) {
+      for (let c = 0; c < n; c++) {
+        if (qr.isDark(r, c)) ctx.fillRect(qx + c * cell, qy + r * cell, Math.ceil(cell), Math.ceil(cell));
+      }
     }
   }
-  if (line) ctx.fillText(line, x, y);
-  return y + lineHeight;
+}
+
+// Relative luminance of a #rrggbb colour (tokens are hex), enough to tell the darker of two.
+function luminance(hex) {
+  const m = String(hex).trim().match(/^#?([0-9a-f]{6})$/i);
+  if (!m) return 0.5;
+  const [r, g, b] = [0, 2, 4].map((i) => parseInt(m[1].slice(i, i + 2), 16) / 255).map((v) => (v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4));
+  return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+}
+
+// The QR library is a plain script that defines `qrcode`; null if it has not loaded.
+function makeQr(text) {
+  const make = globalThis.qrcode;
+  if (typeof make !== 'function') return null;
+  const qr = make(0, 'M');
+  qr.addData(text);
+  qr.make();
+  return qr;
 }
 
 function roundRect(ctx, x, y, w, h, r) {

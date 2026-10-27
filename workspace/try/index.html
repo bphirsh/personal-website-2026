@@ -14,6 +14,8 @@
 <link rel="stylesheet" href="/workspace/try/tokens.css">
 <link rel="stylesheet" href="/workspace/try/try.css">
 <link rel="stylesheet" href="/workspace/try/demo.css">
+<!-- The founder card's QR code: a small MIT library kept in the site (vendor/qrcode.js says where it is from). -->
+<script src="/workspace/try/vendor/qrcode.js" defer></script>
 <script type="module" src="/workspace/try/try.js"></script>
 </head>
 <body>
@@ -39,7 +41,12 @@
     </label>
 
     <p class="privacy">Nothing leaves your computer. This all runs in your browser.</p>
-    <p class="sample-link" id="sampleLink" hidden><button type="button" class="btn btn-quiet">Skip upload, show example data</button></p>
+    <!-- Get my file copies the prompt; Skip goes straight to the demo with the example data (M-017). -->
+    <div class="get-file" id="sampleLink" hidden>
+      <button type="button" class="btn" id="getFile">Get my file</button>
+      <button type="button" class="link skip-demo" id="skipDemo">Skip, use demo data</button>
+    </div>
+    <p class="get-file-status" id="getFileStatus" role="status" aria-live="polite"></p>
   </div>
 
   <!-- On a phone, in place of the drop zone. -->
@@ -95,38 +102,40 @@
   <section class="agent-tools" id="agentTools" hidden>
     <h2 class="section-title">Agent tools, built in</h2>
     <ul class="tool-list">
-      <li><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 8v4l3 2M12 3a9 9 0 109 9"/><path d="M21 3v6h-6"/></svg><span>See what changed while your agents worked, page by page.</span></li>
-      <li><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h10M4 12h16M4 18h7M17 3l3 3-3 3"/></svg><span>Save how an agent should work as a role, and refine it as it learns.</span></li>
-      <li><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h14v16H5zM9 8h6M9 12h6M9 16h3"/></svg><span>Keep skills and agent instructions in one place.</span></li>
+      <li><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 8v4l3 2M12 3a9 9 0 109 9"/><path d="M21 3v6h-6"/></svg><span><strong>Changes</strong> See exactly what changed while agents worked.</span></li>
+      <li><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h10M4 12h16M4 18h7M17 3l3 3-3 3"/></svg><span><strong>Roles</strong> Reuse how agents work, improving as they learn.</span></li>
+      <li><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h14v16H5zM9 8h6M9 12h6M9 16h3"/></svg><span><strong>Skills</strong> Every skill and instruction, kept in one place.</span></li>
     </ul>
   </section>
 
   <!-- The main call to action (M-016): its own band, headed by Brian's line. -->
   <section class="signup-band" id="signupBand" hidden>
-    <h2 class="signup-head">I've been onboarding people at every update, about once every 2–3 weeks.</h2>
+    <h2 class="signup-head">Get in the next build</h2>
+    <p class="signup-sub">Invites go out with builds, roughly every 2 weeks.</p>
     <div id="reply"></div>
   </section>
 
+  <!-- One vertical timeline, top to bottom: Done, This build, Next (M-017). -->
   <section class="roadmap" id="roadmap" hidden>
     <h2 class="section-title">Roadmap</h2>
-    <div class="roadmap-cols">
-      <div class="roadmap-col done"><h3>Done</h3><ul>
+    <ol class="timeline">
+      <li class="stage done"><h3>Done</h3><ul>
         <li>Databases from folders, with saved views</li>
         <li>Agent roles, skills and learnings</li>
         <li>Code pages, version history and a record of what changed</li>
-      </ul></div>
-      <div class="roadmap-col now"><h3>Now</h3><ul>
+      </ul></li>
+      <li class="stage now"><h3>This build</h3><ul>
         <li>A signed Mac app that updates itself</li>
         <li>A welcome, with a sample vault to try</li>
         <li>A plain page on what leaves your Mac</li>
         <li>Crash reports and feedback that reach us</li>
-      </ul></div>
-      <div class="roadmap-col next"><h3>Next</h3><ul>
+      </ul></li>
+      <li class="stage next"><h3>Next</h3><ul>
         <li>Agent workflows</li>
         <li>iOS app</li>
         <li>Live syncing</li>
-      </ul></div>
-    </div>
+      </ul></li>
+    </ol>
   </section>
 
   <div id="card"></div>

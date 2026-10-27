@@ -23,6 +23,9 @@ import { basename, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { readInvite, PROBLEMS } from '../workspace/try/invite.js';
 import { SAMPLE_TEXT } from '../workspace/try/sample-data.js';
+import { PAGE_PROMPT } from '../workspace/try/prompt-data.js';
+import { fillPrompt } from '../workspace/try/getfile.js';
+import { pagePrompt } from './carry-prompt.mjs';
 
 const args = process.argv.slice(2);
 const json = args.includes('--json');
@@ -108,8 +111,28 @@ if (!json) {
   exampleFailed = problems.length > 0;
 }
 
-if (!json) console.log(`\n${files.length} files: ${passed} pass, ${failed} fail, ${files.length - passed - failed} with no expectation; the example data: ${exampleFailed ? 'FAIL' : 'pass'}`);
-process.exit(bad || failed || exampleFailed ? 1 : 0);
+// "Get my file" (M-017): the shipped prompt is Prompt.md's page version, and the copied text holds no placeholder, with a code or without.
+let promptFailed = false;
+if (!json) {
+  console.log('── the Get my file prompt (workspace/try/prompt-data.js)');
+  const problems = [];
+  const promptMd = '/Users/brian/Syncthing/Projects/Agentic Workspace/Marketing/Beta Signups/Prompt.md';
+  try {
+    if (pagePrompt(readFileSync(promptMd, 'utf8')) !== PAGE_PROMPT) problems.push('prompt-data.js differs from Prompt.md: run node tools/carry-prompt.mjs');
+  } catch { console.log('  (Prompt.md not readable here: shipped text not compared)'); }
+  const withCode = fillPrompt('90-test');
+  const without = fillPrompt(null);
+  if (/[{}]/.test(withCode)) problems.push('with a code, a { or } is left');
+  if ((withCode.match(/90-test/g) || []).length !== 3) problems.push('with a code, it is not in all three places');
+  if (/[{}]/.test(without)) problems.push('without a code, a { or } is left');
+  if (/^invite:/m.test(without) || /Copy the invite line/.test(without)) problems.push('without a code, the invite line or its rule is still there');
+  if (/workspace\/try#/.test(without) || !/https:\/\/www\.brianhirsh\.com\/workspace\/try /.test(without)) problems.push('without a code, the link is not the plain address');
+  console.log(problems.length ? problems.map((p) => `  FAIL: ${p}`).join('\n') : '  PASS: matches Prompt.md; with #90-test, the code in all three places; without, no invite line, no rule, a plain link; no { either way');
+  promptFailed = problems.length > 0;
+}
+
+if (!json) console.log(`\n${files.length} files: ${passed} pass, ${failed} fail, ${files.length - passed - failed} with no expectation; the example data: ${exampleFailed ? 'FAIL' : 'pass'}; the prompt: ${promptFailed ? 'FAIL' : 'pass'}`);
+process.exit(bad || failed || exampleFailed || promptFailed ? 1 : 0);
 
 // The problem codes a test file's opening comment names.
 function expectation(text) {

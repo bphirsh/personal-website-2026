@@ -22,6 +22,7 @@ import { mountTaps } from './taps.js';
 import { mountCard } from './card.js';
 import { mountStyleSwitcher } from './style.js';
 import { SAMPLE_TEXT } from './sample-data.js';
+import { wireGetFile } from './getfile.js';
 
 const WORDS = {
   dragging: 'Let go',
@@ -199,8 +200,7 @@ function showSample() {
   banners.appendChild(b);
   mountDemo(demo, r.invite, SAMPLE_NAME, text, { sample: true, full: true });
   mountReplay(replay, r.invite, SAMPLE_NAME, text);
-  const fs = filesSample(r.invite);
-  mountFiles(filesMount, fs.page, fs.db);
+  mountFiles(filesMount, filesSample(r.invite).db);
   mountTaps(reply, codeFromHash(location.hash));
   revealWorkspace();
 }
@@ -232,8 +232,7 @@ function showDemo(fileName, text, r) {
   }
   mountDemo(demo, r.invite, fileName, text, { full: true });
   mountReplay(replay, r.invite, fileName, text);
-  const fs = filesSample(r.invite);
-  mountFiles(filesMount, fs.page, fs.db);
+  mountFiles(filesMount, filesSample(r.invite).db);
   mountButton(reply, { ...r.invite.properties, invite });
   // The card is theirs, so only for their own file, never for the sample.
   mountCard(card, { ...r.invite.properties, invite });
@@ -322,6 +321,7 @@ function placeStyles() {
 roomBeside.addEventListener('change', placeStyles);
 sampleLink.hidden = false;
 document.getElementById('loadAnother').addEventListener('click', () => pick.click());
-sampleLink.querySelector('button').addEventListener('click', showSample);
+document.getElementById('skipDemo').addEventListener('click', showSample);
+wireGetFile(document.getElementById('getFile'), document.getElementById('getFileStatus'), () => codeFromHash(location.hash));
 document.getElementById('phoneSample').addEventListener('click', showSample);
 if (isPhone()) { intake.hidden = true; phone.hidden = false; }

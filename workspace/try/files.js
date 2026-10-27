@@ -1,43 +1,51 @@
 /**
- * "Just files on your computer" (M-016): a split with a draggable divider, "What you see" on the left and "Saved file" on the right, switchable between a page and a database.
+ * "Easy to read, for both you and agents" (M-016, M-017): one frame holding two versions of the same thing, and a handle that wipes one over the other, a before-and-after reveal. Nothing resizes: both versions always fill the frame; the handle only moves where one stops being shown and the other starts. "What you see" and "What agents see" sit below the frame, one under each side.
  *
- * A page shows rendered against its markdown. A database shows its grid against what is really saved: in Workspace every field of every row lives in the database's SQLite file (D-007), so the saved side is a `sqlite3` query and its rows as an agent reading that file sees them, never an invented markdown table.
+ * A page shows rendered against its markdown. A database shows its grid against what is really saved: in Workspace every field of every row lives in the database's SQLite file (D-007), so the agents' side is a `sqlite3` query and its rows as an agent reading that file sees them, never an invented markdown table.
  *
- * It uses the visitor's own first page and first database, else the example data's. Everything from the file reaches the screen as text.
+ * The page is always the one Page copy writes for it (M-017), so its syntax is there to see; the database is the visitor's own first one, else the example data's. Everything from the file reaches the screen as text.
  *
  * Words are from Marketing/Beta Signups/Page copy.md, "Plain files".
  */
 
 import { renderBody } from './markdown.js';
 
+// The page the comparison shows (Page copy, "Plain files"; M-017 clause 6): Sam's, written to have every bit of syntax worth seeing, so "What agents see" always shows #, **, -, [ ] and [text](url) and "What you see" their formatted forms.
+export const COMPARISON_PAGE = { file: 'Interview notes to findings.md', text: "# Interview notes to findings\n\n## This week\n- **Five interviews** gathered in one folder\n- Quotes pulled out and tagged by theme\n- First draft of the findings report\n- [x] Tag every quote by theme\n- [ ] Send the draft for comments\n\nWant this for your own notes? [Get in the next build](https://www.brianhirsh.com/workspace/signup/)" };
+
 const WORDS = {
-  heading: 'Just files on your computer',
-  line: 'Pages are markdown. Databases are SQLite. Both sit in your folders, easy for you and your agents to read.',
+  heading: 'Easy to read, for both you and agents',
+  line: 'Your agents open the same files you do. Nothing to export, nothing to convert.',
   see: 'What you see',
-  saved: 'Saved file',
+  agents: 'What agents see',
   page: 'Page',
   database: 'Database',
 };
 
 /**
- * Build the section into `mount`. `page` is { title, body, folder }; `db` is { name, columns, rows }.
+ * Build the section into `mount`. `db` is { name, columns, rows }, the visitor's own first database or the example's; the page is always COMPARISON_PAGE.
  */
-export function mountFiles(mount, page, db) {
+export function mountFiles(mount, db) {
+  const page = COMPARISON_PAGE;
   const section = el('section', 'files');
   section.append(el('h2', 'section-title', WORDS.heading), el('p', 'files-line', WORDS.line));
 
   const tabs = el('div', 'files-switch');
   tabs.setAttribute('role', 'tablist');
-  const split = el('div', 'files-split');
-  const left = el('div', 'files-pane files-see');
-  const divider = el('div', 'files-divider');
-  divider.setAttribute('role', 'separator');
-  divider.setAttribute('aria-orientation', 'vertical');
-  divider.setAttribute('aria-label', 'Resize');
-  divider.tabIndex = 0;
-  const right = el('div', 'files-pane files-saved');
-  split.append(left, divider, right);
-  section.append(tabs, split);
+  const frame = el('div', 'files-frame');
+  const see = el('div', 'files-layer files-see');
+  const agents = el('div', 'files-layer files-agents');
+  const handle = el('div', 'files-handle');
+  handle.setAttribute('role', 'slider');
+  handle.setAttribute('aria-label', `${WORDS.see} or ${WORDS.agents}`);
+  handle.setAttribute('aria-valuemin', '0');
+  handle.setAttribute('aria-valuemax', '100');
+  handle.tabIndex = 0;
+  handle.appendChild(el('span', 'files-grip'));
+  frame.append(see, agents, handle);
+  const labels = el('div', 'files-labels');
+  labels.append(el('span', null, WORDS.see), el('span', null, WORDS.agents));
+  section.append(tabs, frame, labels);
   mount.replaceChildren(section);
 
   let kind = 'page';
@@ -45,61 +53,63 @@ export function mountFiles(mount, page, db) {
     const t = el('button', 'files-tab', label);
     t.type = 'button';
     t.setAttribute('role', 'tab');
+    t.dataset.kind = id;
     t.addEventListener('click', () => { kind = id; draw(); });
     tabs.appendChild(t);
   }
 
   function draw() {
     for (const t of tabs.children) {
-      const on = t.textContent === (kind === 'page' ? WORDS.page : WORDS.database);
+      const on = t.dataset.kind === kind;
       t.classList.toggle('active', on);
       t.setAttribute('aria-selected', String(on));
     }
-    left.replaceChildren(el('p', 'files-label', WORDS.see));
-    right.replaceChildren(el('p', 'files-label', WORDS.saved));
     if (kind === 'page') {
       const rendered = el('div', 'prose files-body');
-      rendered.append(el('h1', 'files-title', page.title), renderBody(page.body));
-      left.appendChild(rendered);
-      right.append(el('p', 'files-path', `${page.folder ? `${page.folder}/` : ''}${page.title}.md`), el('pre', 'files-raw', page.body));
+      rendered.appendChild(renderBody(page.text));
+      see.replaceChildren(rendered);
+      // Exactly as saved: the syntax is the point, so it is shown, never rendered.
+      agents.replaceChildren(el('p', 'files-path', page.file), el('pre', 'files-raw', page.text));
     } else {
-      left.appendChild(grid(db));
+      see.replaceChildren(el('h1', 'files-title', db.name), grid(db));
       const file = `${db.name}/${db.name}.sqlite`;
-      right.append(el('p', 'files-path', file), el('pre', 'files-raw', sqliteView(db, file)));
+      agents.replaceChildren(el('p', 'files-path', file), el('pre', 'files-raw', sqliteView(db, file)));
     }
   }
 
-  // The divider: drag it, or use the arrow keys; each side keeps at least a fifth.
-  let share = 50;
-  function setShare(v) {
-    share = Math.min(80, Math.max(20, v));
-    split.style.gridTemplateColumns = `${share}fr var(--space-3) ${100 - share}fr`;
-    divider.setAttribute('aria-valuenow', String(Math.round(share)));
+  // The handle: drag it, or use the arrow keys. It only moves the edge of the reveal; both layers keep the frame's full size.
+  let at = 50;
+  function setAt(v) {
+    at = Math.min(100, Math.max(0, v));
+    frame.style.setProperty('--reveal', `${at}%`);
+    handle.setAttribute('aria-valuenow', String(Math.round(at)));
   }
-  divider.addEventListener('pointerdown', (e) => {
+  const fromPointer = (ev) => {
+    const r = frame.getBoundingClientRect();
+    setAt(((ev.clientX - r.left) / r.width) * 100);
+  };
+  frame.addEventListener('pointerdown', (e) => {
+    if (e.target.closest('.files-tab')) return;
     e.preventDefault();
-    divider.setPointerCapture(e.pointerId);
-    split.classList.add('dragging');
-    const move = (ev) => {
-      const r = split.getBoundingClientRect();
-      setShare(((ev.clientX - r.left) / r.width) * 100);
-    };
+    frame.setPointerCapture(e.pointerId);
+    frame.classList.add('dragging');
+    fromPointer(e);
     const up = () => {
-      split.classList.remove('dragging');
-      divider.removeEventListener('pointermove', move);
-      divider.removeEventListener('pointerup', up);
+      frame.classList.remove('dragging');
+      frame.removeEventListener('pointermove', fromPointer);
+      frame.removeEventListener('pointerup', up);
     };
-    divider.addEventListener('pointermove', move);
-    divider.addEventListener('pointerup', up);
+    frame.addEventListener('pointermove', fromPointer);
+    frame.addEventListener('pointerup', up);
   });
-  divider.addEventListener('keydown', (e) => {
-    const step = { ArrowLeft: -5, ArrowRight: 5 }[e.key];
-    if (step) { e.preventDefault(); setShare(share + step); }
+  handle.addEventListener('keydown', (e) => {
+    const step = { ArrowLeft: -5, ArrowRight: 5, Home: -100, End: 100 }[e.key];
+    if (step) { e.preventDefault(); setAt(at + step); }
   });
 
-  setShare(50);
+  setAt(50);
   draw();
-  return { section, setShare, show: (k) => { kind = k; draw(); } };
+  return { section, setAt, show: (k) => { kind = k; draw(); } };
 }
 
 // The database as its grid, drawn like the demo's.
