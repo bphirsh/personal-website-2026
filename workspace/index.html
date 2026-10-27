@@ -122,10 +122,17 @@
      sit through 49 seconds to find it. Smaller, so the card still reads as the
      primary call to action. */
   .intro-cta {
-    margin-top: 28px;
     padding: 12px 26px;
     font-size: 14px;
     gap: 8px;
+  }
+
+  /* Request access and Try it now side by side; on a phone, one above the other. */
+  .intro-ctas { display: flex; justify-content: center; align-items: center; flex-wrap: wrap; gap: 12px; margin-top: 28px; }
+  /* Try it now is the quieter of the two: an outline in the page's own colours. */
+  .btn-quiet { color: var(--text-primary); background: transparent; box-shadow: inset 0 0 0 1px var(--border); }
+  @media (prefers-color-scheme: dark) {
+    .btn-quiet { color: var(--text-primary); background: transparent; }
   }
 
   .eyebrow {
@@ -141,6 +148,10 @@
      password yet — people who do get sent straight to the download page — so
      the download is a quiet line rather than an equal-weight card. */
   .actions { display: block; }
+
+  /* Two cards side by side, Request access and Try it now; one column on a phone. */
+  .action-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; max-width: 980px; margin: 0 auto; }
+  .action-cards .action-card { max-width: none; margin: 0; }
 
   .action-card {
     display: block;
@@ -214,6 +225,8 @@
   }
 
   @media (max-width: 680px) {
+    .intro-ctas { flex-direction: column; }
+    .action-cards { grid-template-columns: 1fr; }
     .action-card { padding: 32px 24px; }
     .action-card h2 { font-size: 25px; }
     .play-ring { width: 68px; height: 68px; }
@@ -241,7 +254,10 @@
     </picture>
     <h1 class="page-title">Workspace</h1>
     <p class="lede">An agentic workspace for your Mac — built so AI can work alongside you with full context, not just answer questions in a side panel.</p>
-    <a class="btn intro-cta" href="/workspace/signup/">Request access <span aria-hidden="true">→</span></a>
+    <div class="intro-ctas">
+      <a class="btn intro-cta" href="/workspace/signup/">Request access <span aria-hidden="true">→</span></a>
+      <a class="btn intro-cta btn-quiet" href="/workspace/try/">Try it now <span aria-hidden="true">→</span></a>
+    </div>
   </div>
 
   <!-- VIDEO -->
@@ -263,10 +279,16 @@
 
   <!-- ACTIONS -->
   <div class="actions fade-up" style="animation-delay:0.24s">
-    <a class="action-card" href="/workspace/signup/">
-      <h2>Request access <span class="arrow">→</span></h2>
-      <p>Early and rough, but useful and powerful.</p>
-    </a>
+    <div class="action-cards">
+      <a class="action-card" href="/workspace/signup/">
+        <h2>Request access <span class="arrow">→</span></h2>
+        <p>Early and rough, but useful and powerful.</p>
+      </a>
+      <a class="action-card" href="/workspace/try/">
+        <h2>Try it now <span class="arrow">→</span></h2>
+        <p>See Workspace with your own work in it, in your browser.</p>
+      </a>
+    </div>
     <p class="secondary-action">
       Already have a password? <a href="/workspace/download/">Download the dev build →</a>
     </p>
