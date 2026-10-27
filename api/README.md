@@ -1,11 +1,12 @@
 # Workspace dev build — backend
 
-Two Vercel serverless functions that power `/workspace/signup/` and `/workspace/download/`. They deploy with `git push`, exactly like the rest of the site.
+Three Vercel serverless functions that power `/workspace/signup/`, `/workspace/download/` and `/workspace/try/`. They deploy with `git push`, exactly like the rest of the site.
 
 | Endpoint | Does |
 |---|---|
 | `POST /api/signup` | Validates a name + email-or-phone, emails it to you |
 | `POST /api/download-auth` | Checks the password, returns the build's URL |
+| `POST /api/invite-reply` | The button on `/workspace/try`: emails you their email, invite code, computer, role and tools. Stores nothing |
 
 ## Why it's built this way
 

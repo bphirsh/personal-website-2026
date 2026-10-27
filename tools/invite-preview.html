@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Invite reader preview</title>
+<meta name="robots" content="noindex">
+<!--
+  A local check of the invite reader, not a page of the site: tools/ is in
+  .vercelignore. Serve the repository root (python3 -m http.server) and open
+  /tools/invite-preview.html, then drop a file, or add ?src=<path> to load one
+  from the same server (serve a folder that holds both this repository and
+  the fixtures). Everything from the file is put on screen with textContent
+  or markdown.js, never as HTML.
+-->
+<style>
+  body { font: 14px/1.5 -apple-system, system-ui, sans-serif; margin: 24px; color: #1F1E1C; background: #FAF9F7; }
+  #drop { border: 1px dashed #807C74; border-radius: 6px; padding: 16px; margin-bottom: 16px; }
+  section { background: #fff; border: 1px solid #E8E5E0; border-radius: 6px; padding: 12px 16px; margin-bottom: 12px; }
+  h2 { font-size: 13px; color: #6B6862; margin: 0 0 8px; font-weight: 500; }
+  table { border-collapse: collapse; } td, th { border: 1px solid #E8E5E0; padding: 4px 8px; text-align: left; }
+  .error { color: #B4453A; } pre { background: #F2F0EC; padding: 8px; white-space: pre-wrap; }
+  dt { color: #6B6862; float: left; width: 130px; } dd { margin: 0 0 2px 130px; }
+</style>
+</head>
+<body>
+<div id="drop">Drop an invite file here, or <input type="file" id="pick" accept=".md,text/markdown,text/plain"></div>
+<div id="out"></div>
+<script type="module">
+  import { readInvite } from '../workspace/try/invite.js';
+  import { renderBody } from '../workspace/try/markdown.js';
+
+  const out = document.getElementById('out');
+  const el = (tag, text) => { const n = document.createElement(tag); if (text !== undefined) n.textContent = text; return n; };
+  const box = (title) => { const s = el('section'); s.appendChild(el('h2', title)); out.appendChild(s); return s; };
+
+  function show(name, text) {
+    out.replaceChildren();
+    box('File').appendChild(el('div', name));
+    const r = readInvite(text);
+    if (!r.ok) {
+      const s = box('Error: ' + r.error.code);
+      s.appendChild(el('p', r.error.message)).className = 'error';
+      s.appendChild(el('pre', r.error.pasteBack));
+      return;
+    }
+    const { properties: p, pages, tasks, databases } = r.invite;
+    const dl = el('dl');
+    for (const [k, v] of Object.entries(p)) {
+      dl.appendChild(el('dt', k));
+      dl.appendChild(el('dd', Array.isArray(v) ? v.map((t) => t.label + (t.known ? '' : ' (other)')).join(', ') || '(none)' : String(v)));
+    }
+    box('Properties').appendChild(dl);
+    for (const pg of pages) box('Page: ' + pg.title).appendChild(renderBody(pg.body));
+    if (tasks.length) {
+      const ul = el('ul');
+      for (const t of tasks) { const li = el('li', (t.done ? '☑ ' : '☐ ') + t.text); ul.appendChild(li); }
+      box('Tasks').appendChild(ul);
+    }
+    for (const d of databases) {
+      const t = el('table');
+      const hr = el('tr'); d.columns.forEach((c) => hr.appendChild(el('th', c))); t.appendChild(hr);
+      for (const row of d.rows) { const tr = el('tr'); row.forEach((c) => tr.appendChild(el('td', c))); t.appendChild(tr); }
+      box('Database: ' + d.name).appendChild(t);
+    }
+    if (r.warnings.length) { const ul = el('ul'); r.warnings.forEach((w) => ul.appendChild(el('li', `${w.code}: ${w.message}`))); box('Warnings').appendChild(ul); }
+  }
+
+  const readFile = (f) => f.text().then((t) => show(f.name, t));
+  document.getElementById('pick').addEventListener('change', (e) => e.target.files[0] && readFile(e.target.files[0]));
+  addEventListener('dragover', (e) => e.preventDefault());
+  addEventListener('drop', (e) => { e.preventDefault(); const f = e.dataTransfer.files[0]; if (f) readFile(f); });
+
+  // Same origin only: a path, never a full URL.
+  const src = new URLSearchParams(location.search).get('src');
+  if (src && src.startsWith('/') && !src.startsWith('//')) fetch(src).then((r) => r.text()).then((t) => show(src.split('/').pop(), t));
+</script>
+</body>
+</html>
