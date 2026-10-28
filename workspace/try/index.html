@@ -71,30 +71,34 @@
   <input type="file" id="pick" class="visually-hidden" accept=".md,.txt,text/markdown,text/plain" tabindex="-1">
   <section class="intro" id="intro">
   <header class="head">
-    <h1 class="title">Your Workspace, from your own file</h1>
-    <p class="lede">Drop the file your agent wrote. See your work in Workspace.</p>
+    <h1 class="title">Your Workspace, made by your AI</h1>
+    <p class="lede">Copy the prompt into your AI. It writes a file; drop it here and see Workspace with your stuff in it.</p>
   </header>
 
   <div id="intake">
-    <!-- The main action (Brian, 27 Oct 2026: the landing fits one screen): the whole zone is the click target. -->
-    <label class="drop" id="drop" for="pick">
-      <svg class="drop-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15V4M7 9l5-5 5 5M4 15v4a1 1 0 001 1h14a1 1 0 001-1v-4"/></svg>
-      <span class="drop-main" id="dropMain">Drop your workspace file here, or click to choose it</span>
-    </label>
+    <!-- The main action (M-020, Brian, 27 Oct 2026): copying the prompt. The card reads as a prompt, not a button: its first lines in monospace, fading out, with a copy mark. -->
+    <div class="start" id="sampleLink" hidden>
+      <button type="button" class="prompt-card prompt-card-main" id="getFile">
+        <span class="prompt-card-label">Click to copy the prompt</span>
+        <span class="prompt-card-peek" id="promptPeek" aria-hidden="true"></span>
+        <svg class="prompt-card-copy" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 9h10v11H9zM5 15H4V4h11v1"/></svg>
+      </button>
+      <p class="get-file-status" id="getFileStatus" role="status" aria-live="polite"></p>
 
-    <p class="privacy">Nothing leaves your computer. This all runs in your browser.</p>
-    <!-- Secondary: the card copies the prompt (it reads as a prompt, not a button); Skip goes straight to the demo with the example data (M-017). -->
-    <div class="no-file" id="sampleLink" hidden>
-      <p class="no-file-lead">No file yet?</p>
-      <div class="no-file-row">
-        <button type="button" class="prompt-card" id="getFile">
-          <span class="prompt-card-label">Click to copy a prompt for your AI. It asks a few questions and writes your file.</span>
-          <span class="prompt-card-peek" id="promptPeek" aria-hidden="true"></span>
-          <svg class="prompt-card-copy" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 9h10v11H9zM5 15H4V4h11v1"/></svg>
-        </button>
+      <!-- After copying, or I have my file: a normal-sized drop zone, the whole of it the click target. -->
+      <div class="drop-wrap" id="dropWrap" hidden>
+        <label class="drop" id="drop" for="pick">
+          <svg class="drop-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15V4M7 9l5-5 5 5M4 15v4a1 1 0 001 1h14a1 1 0 001-1v-4"/></svg>
+          <span class="drop-main" id="dropMain">Drop your .md file here, or click to choose it</span>
+        </label>
+      </div>
+
+      <!-- Secondary: I have my file shows the drop zone; Skip goes straight to the demo with the example data (M-017). -->
+      <div class="start-more">
+        <button type="button" class="btn btn-quiet" id="haveFile">I have my file</button>
         <button type="button" class="link skip-demo" id="skipDemo">Skip, use demo data</button>
       </div>
-      <p class="get-file-status" id="getFileStatus" role="status" aria-live="polite"></p>
+      <p class="privacy">Nothing leaves your computer. This all runs in your browser.</p>
     </div>
   </div>
 
