@@ -89,19 +89,25 @@
       </div>
     </div>
 
-    <!-- Step 2, after copying or I have my file, in the same centred spot: the heading (with a check mark after copying), the drop zone, normal-sized and the whole of it the click target, and the privacy line under it. -->
+    <!-- The copied screen (Brian, 27 Oct 2026), in the same centred spot: it holds about three seconds, then fades into the drop screen; Skip goes there at once. -->
+    <div class="step step2" id="copied" hidden>
+      <h2 class="step2-head"><svg class="step2-check" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg><span>Prompt copied</span></h2>
+      <p class="step2-sub">Paste it in the chat with your favorite agent.</p>
+      <button type="button" class="link step2-back" id="copiedSkip">Skip</button>
+    </div>
+
+    <!-- The drop screen, after the copied screen or straight from I have my file: its heading, the drop zone, normal-sized and the whole of it the click target, the privacy line, then two text links. -->
     <div class="step step2" id="step2" hidden>
-      <h2 class="step2-head"><svg class="step2-check" id="step2Check" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg><span id="step2Title">Prompt copied</span></h2>
-      <div id="step2Copied">
-        <p class="step2-sub">Paste it in a chat with the agent you love the most.</p>
-        <p class="step2-bring">Bring your agent's file back here when it's done.</p>
-      </div>
+      <h2 class="step2-head" id="step2Title">Bring your agent's file back here when it's done.</h2>
       <label class="drop" id="drop" for="pick">
         <svg class="drop-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15V4M7 9l5-5 5 5M4 15v4a1 1 0 001 1h14a1 1 0 001-1v-4"/></svg>
         <span class="drop-main" id="dropMain">Drop your .md file here, or click to choose it</span>
       </label>
       <p class="privacy">Nothing leaves your computer. This all runs in your browser.</p>
-      <button type="button" class="link step2-back" id="backToPrompt">Need the prompt? Copy it here</button>
+      <div class="step2-links">
+        <button type="button" class="link step2-back" id="copyAgain">Copy the prompt again</button>
+        <button type="button" class="link step2-back" id="useDemo">Use demo data</button>
+      </div>
     </div>
   </div>
 

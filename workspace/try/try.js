@@ -292,8 +292,8 @@ pick.addEventListener('change', () => {
 let depth = 0;
 addEventListener('dragenter', (e) => {
   e.preventDefault();
-  // A file dragged over the page moves to step 2, so the zone it is meant for is there.
-  if (depth++ === 0) { if (step2.isConnected && step2.hidden) toStep2(false); drop.classList.add('over'); setDropText(WORDS.dragging); }
+  // A file dragged over the page moves to the drop screen, so the zone it is meant for is there.
+  if (depth++ === 0) { if (step2.isConnected && step2.hidden) toStep2(!copied.hidden); drop.classList.add('over'); setDropText(WORDS.dragging); }
 });
 addEventListener('dragleave', () => {
   if (--depth <= 0) { depth = 0; drop.classList.remove('over'); setDropText(null); }
@@ -319,20 +319,36 @@ roomBeside.addEventListener('change', placeStyles);
 sampleLink.hidden = false;
 document.getElementById('loadAnother').addEventListener('click', () => pick.click());
 document.getElementById('skipDemo').addEventListener('click', showSample);
-// The two steps (Brian, 27 Oct 2026): step 1 copies the prompt; copying, I have my file, or a file dragged over the page moves to step 2, which holds the drop zone. Copying shows "Prompt copied" with a check mark and the paste lines; I have my file shows "Drop your file" and a way back to the prompt.
+// The landing's screens (Brian, 27 Oct 2026): step 1 copies the prompt. A successful copy shows the copied screen, which holds about three seconds and fades into the drop screen; Skip goes there at once. I have my file, or a file dragged over the page, goes straight to the drop screen. From the drop screen, Copy the prompt again copies it and shows the copied screen again; Use demo data opens the example, as Skip does.
+const COPIED_HOLD_MS = 3000;
+const FADE_MS = 240;
 const step1 = sampleLink;
+const copied = document.getElementById('copied');
 const step2 = document.getElementById('step2');
-function toStep2(copied) {
-  document.getElementById('step2Title').textContent = copied ? 'Prompt copied' : 'Drop your file';
-  // An SVG has no hidden property, so the attribute is set directly.
-  document.getElementById('step2Check').toggleAttribute('hidden', !copied);
-  document.getElementById('step2Copied').hidden = !copied;
-  document.getElementById('backToPrompt').hidden = copied;
-  step1.hidden = true;
-  step2.hidden = false;
+let holdTimer = 0;
+function show(screen) {
+  clearTimeout(holdTimer);
+  for (const s of [step1, copied, step2]) s.hidden = s !== screen;
+}
+function toCopied() {
+  show(copied);
+  holdTimer = setTimeout(() => {
+    // The copied screen fades out, then the drop screen fades in (step-in); with reduced motion, neither fades and the timing is the same.
+    if (reducedMotion.matches) return toStep2(true);
+    copied.classList.add('leaving');
+    holdTimer = setTimeout(() => { copied.classList.remove('leaving'); toStep2(true); }, FADE_MS);
+  }, COPIED_HOLD_MS);
+}
+function toStep2(afterCopy) {
+  copied.classList.remove('leaving');
+  document.getElementById('step2Title').textContent = afterCopy ? "Bring your agent's file back here when it's done." : 'Drop your file';
+  show(step2);
 }
 document.getElementById('haveFile').addEventListener('click', () => toStep2(false));
-document.getElementById('backToPrompt').addEventListener('click', () => { step2.hidden = true; step1.hidden = false; });
+document.getElementById('copiedSkip').addEventListener('click', () => toStep2(true));
+// Copies with the same button as step 1, so a refused copy lands in step 1 with the prompt shown for selecting.
+document.getElementById('copyAgain').addEventListener('click', () => document.getElementById('getFile').click());
+document.getElementById('useDemo').addEventListener('click', showSample);
 // A refused copy stays in step 1, with the prompt shown for selecting.
-wireGetFile(document.getElementById('getFile'), document.getElementById('getFileStatus'), () => codeFromHash(location.hash), (ok) => { if (ok) toStep2(true); });
+wireGetFile(document.getElementById('getFile'), document.getElementById('getFileStatus'), () => codeFromHash(location.hash), (ok) => (ok ? toCopied() : show(step1)));
 document.getElementById('promptPeek').textContent = peek(codeFromHash(location.hash));
