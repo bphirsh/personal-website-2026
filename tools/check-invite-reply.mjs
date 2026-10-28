@@ -50,6 +50,10 @@ const page = replyBody({
 
 const cases = [
   ['the page body: six fields, the email among them', null, page, () => Object.keys(page).sort().join() === 'ai_tools,email,invite,knowledge_tools,platform,role'],
+  // Since 27 Oct 2026 the page sends role only when the file said one.
+  ['a file with no role: role is left out of the body', null, null, () => !('role' in replyBody({ ...page, role: null }, 'a@b.test'))],
+  ['no role is accepted, and the email says so', 'POST', (({ role, ...rest }) => rest)(page), (r) => r.status === 201 && r.sent[0].body.html.includes('(not said)')],
+  ['a role that is not ours is refused', 'POST', { ...page, role: 'wizard' }, (r) => r.status === 400 && r.sent.length === 0],
   ['the page body is sent, Reply-To their email', 'POST', page, (r) => r.status === 201 && r.sent.length === 1 && r.sent[0].body.reply_to === 'priya@example.test'],
   ['no email is refused (M-013)', 'POST', (({ email, ...rest }) => rest)(page), (r) => r.status === 400 && r.sent.length === 0],
   ['an empty email is refused', 'POST', { ...page, email: '  ' }, (r) => r.status === 400 && r.sent.length === 0],

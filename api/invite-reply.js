@@ -51,8 +51,9 @@ function readReply(data) {
   const platform = String(data.platform ?? '').trim();
   if (!PLATFORMS.includes(platform)) return { ok: false, error: 'Please choose a computer.' };
 
+  // Optional since 27 Oct 2026: the page sends it only when their file said one. When sent, it must be one of ours.
   const role = String(data.role ?? '').trim();
-  if (!ROLES.includes(role)) return { ok: false, error: 'Please choose what your work is mostly.' };
+  if (role && !ROLES.includes(role)) return { ok: false, error: 'That role is not one of ours.' };
 
   const ai = toolList(data.ai_tools);
   const knowledge = toolList(data.knowledge_tools);
@@ -63,7 +64,7 @@ function readReply(data) {
   if (!email) return { ok: false, error: 'Add your email first.' };
   if (email.length > 160 || !EMAIL_RE.test(email)) return { ok: false, error: "That doesn't look like an email address." };
 
-  return { ok: true, reply: { invite, platform, role, ai_tools: ai, knowledge_tools: knowledge, email } };
+  return { ok: true, reply: { invite, platform, role: role || null, ai_tools: ai, knowledge_tools: knowledge, email } };
 }
 
 module.exports = async (req, res) => {
@@ -102,7 +103,7 @@ module.exports = async (req, res) => {
   const rows = [
     ['Invite', r.invite],
     ['Computer', r.platform],
-    ['Role', r.role],
+    ['Role', r.role ?? '(not said)'],
     ['AI tools', r.ai_tools.join(', ') || '(none)'],
     ['Knowledge tools', r.knowledge_tools.join(', ') || '(none)'],
     ['Email', r.email],

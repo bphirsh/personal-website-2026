@@ -18,7 +18,6 @@ import { mountDemo, filesSample } from './demo.js';
 import { mountFiles } from './files.js';
 import { mountReplay } from './replay.js';
 import { mountButton } from './button.js';
-import { mountTaps } from './taps.js';
 import { mountCard, agentFromLetter } from './card.js';
 import { mountStyleSwitcher } from './style.js';
 import { SAMPLE_TEXT } from './sample-data.js';
@@ -177,10 +176,10 @@ function showError(error) {
 }
 
 /**
- * The sample demo: Sam's file, read like a dropped one, with the sample
- * banner over it and the three taps in place of a button built from the
- * file. No bad-invite banner (Sam has no code on purpose); the send carries
- * the link's code, else none.
+ * The sample demo: the example file, read like a dropped one, with the
+ * sample banner over it and a sign-up that asks the visitor's computer and
+ * tools instead of reading them from the file. No bad-invite banner (the
+ * example has no code on purpose); the send carries the link's code, else none.
  */
 function showSample() {
   const text = SAMPLE_TEXT;
@@ -201,7 +200,8 @@ function showSample() {
   mountDemo(demo, r.invite, SAMPLE_NAME, text, { sample: true, full: true, letter: true });
   mountReplay(replay, r.invite, SAMPLE_NAME, text);
   mountFiles(filesMount, filesSample(r.invite).db);
-  mountTaps(reply, codeFromHash(location.hash));
+  // The example's file is Sam Altman's, not theirs: the sign-up asks their computer and tools, and sends no role.
+  mountButton(reply, { invite: codeFromHash(location.hash), name: 'You', platform: null, role: null, ai_tools: [], knowledge_tools: [] });
   // The example's card says "Example", so it can't pass for a real one; no founder number.
   mountCard(card, { ...r.invite.properties, invite: null, agent: agentFromLetter(r.invite.pages), example: true });
   // The banner and its parody line stay in view above the window, so the example is never seen without them.
@@ -231,7 +231,8 @@ function showDemo(fileName, text, r) {
   mountDemo(demo, r.invite, fileName, text, { full: true, letter: true });
   mountReplay(replay, r.invite, fileName, text);
   mountFiles(filesMount, filesSample(r.invite).db);
-  mountButton(reply, { ...r.invite.properties, invite });
+  // Their role only when their file said one (27 Oct 2026).
+  mountButton(reply, { ...r.invite.properties, invite, role: r.invite.properties.hasRole ? r.invite.properties.role : null });
   // Their card: who made it from the letter, their name, and the founder number only with a code.
   mountCard(card, { ...r.invite.properties, invite, agent: agentFromLetter(r.invite.pages) });
   revealWorkspace();
