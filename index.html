@@ -188,6 +188,53 @@
     display: block;
   }
 
+  /* ── WORKSPACE ── */
+  .workspace-card {
+    display: flex;
+    align-items: center;
+    gap: 36px;
+    text-decoration: none;
+    color: var(--text-primary);
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+  .workspace-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 30px rgba(26, 26, 26, 0.08);
+  }
+  .workspace-card img {
+    width: 88px;
+    height: 88px;
+    flex-shrink: 0;
+  }
+  .workspace-card .section-label { margin-bottom: 12px; }
+  .workspace-card h2 {
+    font-family: 'DM Serif Display', serif;
+    font-size: clamp(30px, 4vw, 40px);
+    font-weight: 400;
+    letter-spacing: -1px;
+    line-height: 1.1;
+    margin-bottom: 12px;
+  }
+  .workspace-card p {
+    font-size: 17px;
+    line-height: 1.6;
+    color: var(--text-secondary);
+    max-width: 560px;
+  }
+  .workspace-card .workspace-cta {
+    display: inline-block;
+    margin-top: 18px;
+    font-weight: 600;
+    color: var(--accent);
+  }
+  .workspace-card .workspace-cta .arrow { display: inline-block; transition: transform 0.2s; }
+  .workspace-card:hover .workspace-cta .arrow { transform: translateX(3px); }
+
+  @media (max-width: 680px) {
+    .workspace-card { flex-direction: column; align-items: flex-start; gap: 20px; padding: 36px 28px; }
+    .workspace-card img { width: 64px; height: 64px; }
+  }
+
   /* ── JOURNEY SECTION ── */
   .section-label {
     font-size: 12px;
@@ -958,6 +1005,17 @@
     </div>
   </div>
 
+  <!-- WORKSPACE -->
+  <a class="card card-white fade-in workspace-card" id="workspace" href="/workspace/">
+    <img src="/workspace/media/workspace-logo-light.svg" alt="" width="88" height="88" decoding="async">
+    <div>
+      <div class="section-label">Now building</div>
+      <h2>Workspace</h2>
+      <p>A Mac app where you and your AI agents work in the same files: pages, databases and code, all plain files on your own computer.</p>
+      <span class="workspace-cta">See Workspace <span class="arrow" aria-hidden="true">→</span></span>
+    </div>
+  </a>
+
   <!-- JOURNEY -->
   <div class="card card-dark fade-in" id="journey">
     <div class="section-label">The Journey</div>
@@ -1093,6 +1151,10 @@
       </a>
       <a href="https://www.linkedin.com/in/bphirsh/" class="connect-link" target="_blank">
         <span>LinkedIn</span>
+        <span class="arrow">→</span>
+      </a>
+      <a href="https://www.instagram.com/briangotinsta/" class="connect-link" target="_blank" rel="noopener">
+        <span>Instagram</span>
         <span class="arrow">→</span>
       </a>
     </div>
