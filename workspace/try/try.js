@@ -35,7 +35,9 @@ const WORDS = {
   sampleInstead: 'Show example data',
   dismiss: 'Dismiss',
   howToFix: 'How to fix it',
-  sampleBanner: 'Example data. Run the prompt from your invite to see your own.',
+  sampleBanner: 'Example data. Copy the prompt above to see your own.',
+  // Shown with the example only, always (M-022: the example is a parody about real people).
+  parody: 'A parody: a made-up rivalry, just for fun. No connection to Elon Musk, Sam Altman or their companies, and nothing here is a real quote or event.',
   loadMine: 'Load my file',
   // After "Reading your file…", one at a time, each replacing the last (M-014).
   loading: ['Working magic…', 'Creating your new Workspace…'],
@@ -144,7 +146,8 @@ const growBars = new IntersectionObserver((entries) => {
 }, { threshold: [0, 0.5, 1] });
 growBars.observe(figures);
 
-function revealWorkspace() {
+// `from`, when given, is scrolled to instead of the window, so it stays in view above it.
+function revealWorkspace(from) {
   removeIntro();
   placeStyles();
   // A section still waiting on its words (the speed figures) stays hidden.
@@ -152,7 +155,7 @@ function revealWorkspace() {
   const win = demo.querySelector('.win');
   if (!win) return;
   // A few pixels of ground above it, and the row above (Load a different file) fully out of view.
-  const top = win.getBoundingClientRect().top + scrollY - Math.min(Math.round(innerHeight * 0.02), 24);
+  const top = (from ?? win).getBoundingClientRect().top + scrollY - Math.min(Math.round(innerHeight * 0.02), 24);
   scrollTo({ top, behavior: reducedMotion.matches ? 'auto' : 'smooth' });
 }
 
@@ -193,13 +196,14 @@ function showSample() {
   // As Load a different file: cancelling the picker leaves the example data where it was.
   load.addEventListener('click', () => pick.click());
   row.appendChild(load);
-  b.appendChild(row);
+  b.append(row, el('p', 'banner-note', WORDS.parody));
   banners.appendChild(b);
   mountDemo(demo, r.invite, SAMPLE_NAME, text, { sample: true, full: true, letter: true });
   mountReplay(replay, r.invite, SAMPLE_NAME, text);
   mountFiles(filesMount, filesSample(r.invite).db);
   mountTaps(reply, codeFromHash(location.hash));
-  revealWorkspace();
+  // The banner and its parody line stay in view above the window, so the example is never seen without them.
+  revealWorkspace(b);
 }
 
 /**
