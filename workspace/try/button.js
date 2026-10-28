@@ -42,32 +42,10 @@ const VARIANTS = {
   'mac-apple-silicon': { after: "when it's ready!" },
   windows: { after: "when there's a Windows version!" },
   linux: { after: "if there's a Linux version!" },
-  'mac-intel': { line: 'The build needs a Mac with Apple silicon (M1 or later).', after: 'if that changes!' },
+  // No line above the box for an Intel Mac any more, and no line under the sign-up (Brian, 28 Oct 2026).
+  'mac-intel': { after: "when it's ready!" },
   other: { after: 'with news!' },
 };
-
-// The line under the sign-up, built from what the button sends and nothing else (Page copy, M-015).
-const COMPUTER_WORDS = { 'mac-apple-silicon': 'a Mac with Apple silicon', 'mac-intel': 'an Intel Mac', mac: 'a Mac', windows: 'Windows', linux: 'Linux', other: 'another computer' };
-const ROLE_WORDS = { coder: 'write code', 'knowledge-worker': 'work in documents and research', both: 'work across code and documents', other: 'work across code and documents' };
-
-/** "A", "A and B", "A, B and C", then "A, B, C and 2 more". */
-function toolWords(labels) {
-  if (labels.length <= 1) return labels.join('');
-  if (labels.length <= 3) return `${labels.slice(0, -1).join(', ')} and ${labels[labels.length - 1]}`;
-  return `${labels.slice(0, 3).join(', ')} and ${labels.length - 3} more`;
-}
-
-/** What the sign-up tells Brian, in words, from the same fields `replyBody` sends. With no role, ", and {role}" is left out. */
-export function tellsLine({ invite, platform, role, ai_tools, knowledge_tools }) {
-  const tools = [...ai_tools, ...knowledge_tools].map((t) => t.label);
-  const computer = COMPUTER_WORDS[platform] ?? COMPUTER_WORDS.other;
-  const along = `Along with your email${invite ? ' and invite code' : ''}`;
-  if (!role) return tools.length ? `${along}, this tells Brian you're on ${computer} and use ${toolWords(tools)}.` : `${along}, this tells Brian you're on ${computer}.`;
-  const does = ROLE_WORDS[role] ?? ROLE_WORDS.other;
-  return tools.length
-    ? `${along}, this tells Brian you're on ${computer}, use ${toolWords(tools)}, and ${does}.`
-    : `${along}, this tells Brian you're on ${computer} and ${does}.`;
-}
 
 /**
  * The body the button sends: exactly these fields, `role` only when their file said one, `email` only when typed.
@@ -107,8 +85,7 @@ export function mountButton(mount, answers, options = {}) {
     ai_tools: askTools ? [...tools].map((id) => (id === 'other' ? { id: 'other', label: 'other', known: false } : { id, label: DISPLAY[id] ?? id, known: true })) : answers.ai_tools,
   });
 
-  // The line above the box (Intel only) and the words after it follow the computer; before it is known, the Apple silicon line.
-  const lineAbove = el('p', 'reply-line');
+  // The words after the box follow the computer; before it is known, the Apple silicon line.
   const form = el('form', 'reply-form');
   form.noValidate = true;
   const email = el('input', 'reply-email');
@@ -131,8 +108,7 @@ export function mountButton(mount, answers, options = {}) {
   if (askTools) more.appendChild(toolsQuestion());
   const status = el('p', 'reply-status');
   status.setAttribute('role', 'status');
-  const tells = el('p', 'reply-tells');
-  box.append(lineAbove, form, more, status, tells);
+  box.append(form, more, status);
   sync();
 
   // An @, then a . after it: enough to show the rest; the full check is at sending.
@@ -143,16 +119,12 @@ export function mountButton(mount, answers, options = {}) {
 
   function sync() {
     const v = VARIANTS[platform ?? 'mac-apple-silicon'];
-    lineAbove.textContent = v.line ?? '';
-    lineAbove.hidden = !v.line;
     after.textContent = v.after;
     button.textContent = platform === 'mac-intel' ? WORDS.keepPosted : WORDS.reserve;
     // The button once there is nothing left that must be answered: with the email alone when nothing is asked, else after the email looks complete and the computer is chosen. The tools are any number, none included.
     const ready = !askComputer && !askTools ? true : !more.hidden && !!platform;
     if (ready && !button.isConnected) (askComputer || askTools ? more : form).appendChild(button);
     if (!ready) button.remove();
-    tells.hidden = !ready;
-    if (ready) tells.textContent = tellsLine(live());
   }
 
   form.addEventListener('submit', (e) => { e.preventDefault(); submit(); });
