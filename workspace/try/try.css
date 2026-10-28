@@ -499,4 +499,5 @@ body.landing .intro, body.landing #intake { flex: 1; display: flex; flex-directi
 body.landing #intake { justify-content: center; }
 body.landing #intake[hidden] { display: none; }
 body.landing .foot { width: 100%; padding-top: var(--space-4); padding-bottom: var(--space-5); }
+.foot-legal { margin-top: var(--space-3); font-size: var(--text-xs); color: var(--fg-faint); }
 .foot-made { margin-top: var(--space-4); text-align: center; font-size: var(--text-xs); color: var(--fg-faint); }
