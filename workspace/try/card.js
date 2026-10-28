@@ -1,7 +1,7 @@
 /**
  * The founder card (M-008, M-017): drawn in the browser, to download or copy. Nothing is stored or published, and drawing it makes no request.
  *
- * Minimal since M-017, fitted to the new flow, and made fun (Brian, 27 Oct 2026): the Workspace logo and "Workspace"; one playful line, picked at random for each card; "Made by <agent>" as text, the agent read from the letter's title ("To Brian, from Claude"), with no company's logo; their name, if the file has one; "Founder #N" only with an invite code; and the try page's address beside a QR code that opens it. The example data's card has only the logo, the playful line, an "Example" label and the QR code: no name and no "Made by", so it can't pass for a real one off the site. The QR code is drawn on the same canvas from vendor/qrcode.js, loaded with the page, and the logo from workspace/media/, the same files the Workspace page shows.
+ * Minimal since M-017, fitted to the new flow, and made fun (Brian, 27 Oct 2026): the Workspace logo and "Workspace"; one playful line, picked at random for each card; "Made by <agent>" as text, the agent read from the letter's title ("To Brian, from Claude"), with no company's logo; their name, if the file has one; "Founder #N" only with an invite code; and the try page's address beside a QR code that opens it. The example data's card has only the logo, the playful line and the QR code: no name and no "Made by", so it never carries a real person's name off the site. "↻ New line" swaps in another playful line, never the one just shown, through all of them before any repeats. The QR code is drawn on the same canvas from vendor/qrcode.js, loaded with the page, and the logo from workspace/media/, the same files the Workspace page shows.
  *
  * Words are from Marketing/Beta Signups/Page copy.md, "The share card". The colours and fonts are the theme's tokens, read from the page, so the card follows the style picked.
  */
@@ -12,7 +12,7 @@ const WORDS = {
   brand: 'Workspace',
   founder: (n) => `Founder #${n}`,
   madeBy: (agent) => `Made by ${agent}`,
-  example: 'Example',
+  newLine: '↻ New line',
   address: 'brianhirsh.com/workspace/try',
   download: 'Download image',
   copy: 'Copy image',
@@ -44,11 +44,25 @@ export function agentFromLetter(pages) {
 const W = 1200;
 const H = 630;
 
+/**
+ * The playful lines in a shuffled order, a fresh shuffle each time round, never starting a round with the line that ended the last: `next()` gives every line once before any repeats, and never the same line twice in a row. `random` is Math.random unless a test passes its own.
+ */
+export function lineCycle(lines = FUN_LINES, random = Math.random) {
+  let order = [];
+  let last = null;
+  const shuffle = () => {
+    const a = [...lines];
+    for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; }
+    if (a.length > 1 && a[0] === last) [a[0], a[1]] = [a[1], a[0]];
+    return a;
+  };
+  return { next() { if (!order.length) order = shuffle(); last = order.shift(); return last; } };
+}
+
 /** The lines the card holds, in order; a line it leaves off is null. `name` "You" is the reader's stand-in for no name, so it is left off. */
 export function cardLines({ invite, name, agent, example, fun }) {
   // The example's card names nobody and no agent, since the PNG can leave the site (27 Oct 2026).
   return {
-    example: example ? WORDS.example : null,
     brand: WORDS.brand,
     fun: fun ?? FUN_LINES[0],
     madeBy: agent && !example ? WORDS.madeBy(agent) : null,
@@ -75,14 +89,18 @@ export function mountCard(mount, answers) {
   download.type = 'button';
   const copy = el('button', 'btn btn-quiet', WORDS.copy);
   copy.type = 'button';
+  const newLine = el('button', 'btn btn-quiet', WORDS.newLine);
+  newLine.type = 'button';
+  newLine.addEventListener('click', () => { fun = cycle.next(); draw(); });
   const status = el('p', 'small');
   status.setAttribute('role', 'status');
-  actions.append(download, copy);
+  actions.append(download, copy, newLine);
   section.append(actions, status);
   mount.replaceChildren(section);
 
-  // One playful line for this card, kept across redraws.
-  const fun = FUN_LINES[Math.floor(Math.random() * FUN_LINES.length)];
+  // One playful line for this card, kept across redraws; "↻ New line" moves to the next in the cycle.
+  const cycle = lineCycle();
+  let fun = cycle.next();
   // The Workspace logo, both appearances, loaded once from the site; the card is drawn again when they arrive.
   const logos = {};
   for (const k of ['light', 'dark']) {
@@ -167,18 +185,6 @@ function paint(canvas, lines, logos = {}) {
   ctx.fillStyle = t('bg');
   ctx.font = `600 40px ${font}`;
   ctx.fillText(lines.brand, bx0, 128);
-  // "Example", on the example data's card only, beside the brand.
-  if (lines.example) {
-    const bx = bx0 + ctx.measureText(lines.brand).width + 24;
-    ctx.font = `600 22px ${font}`;
-    const w = ctx.measureText(lines.example).width + 28;
-    ctx.strokeStyle = t('accent');
-    ctx.lineWidth = 2;
-    roundRect(ctx, bx, 98, w, 38, 19);
-    ctx.stroke();
-    ctx.fillStyle = t('accent');
-    ctx.fillText(lines.example, bx + 14, 125);
-  }
 
   // The playful line: large on the example's card, where it is the whole card; else under the brand, above who made it.
   ctx.fillStyle = t('bg');
