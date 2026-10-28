@@ -18,7 +18,7 @@ import { mountDemo, filesSample } from './demo.js';
 import { mountFiles } from './files.js';
 import { mountReplay } from './replay.js';
 import { mountButton } from './button.js';
-import { mountCard, agentFromLetter } from './card.js';
+import { mountCard } from './card.js';
 import { mountStyleSwitcher } from './style.js';
 import { SAMPLE_TEXT } from './sample-data.js';
 import { wireGetFile, peek } from './getfile.js';
@@ -202,8 +202,8 @@ function showSample() {
   mountFiles(filesMount, filesSample(r.invite).db);
   // The example's file is Sam Altman's, not theirs: the sign-up asks their computer and tools, and sends no role.
   mountButton(reply, { invite: codeFromHash(location.hash), name: 'You', platform: null, role: null, ai_tools: [], knowledge_tools: [] });
-  // The example's card says "Example", so it can't pass for a real one; no founder number.
-  mountCard(card, { ...r.invite.properties, invite: null, agent: agentFromLetter(r.invite.pages), example: true });
+  // The same founder card as for their own file (28 Oct 2026).
+  mountCard(card);
   // The banner and its parody line stay in view above the window, so the example is never seen without them.
   revealWorkspace(b);
 }
@@ -233,8 +233,8 @@ function showDemo(fileName, text, r) {
   mountFiles(filesMount, filesSample(r.invite).db);
   // Their role only when their file said one (27 Oct 2026).
   mountButton(reply, { ...r.invite.properties, invite, role: r.invite.properties.hasRole ? r.invite.properties.role : null });
-  // Their card: who made it from the letter, their name, and the founder number only with a code.
-  mountCard(card, { ...r.invite.properties, invite, agent: agentFromLetter(r.invite.pages) });
+  // The founder card: the same for everyone, nothing from their file on it (28 Oct 2026).
+  mountCard(card);
   revealWorkspace();
 }
 

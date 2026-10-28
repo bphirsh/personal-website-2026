@@ -1,7 +1,7 @@
 /**
  * The founder card (M-008, M-017): drawn in the browser, to download or copy. Nothing is stored or published, and drawing it makes no request.
  *
- * Minimal since M-017, fitted to the new flow, and made fun (Brian, 27 Oct 2026): the Workspace logo and "Workspace"; one playful line, picked at random for each card; "Made by <agent>" as text, the agent read from the letter's title ("To Brian, from Claude"), with no company's logo; their name, if the file has one; "Founder #N" only with an invite code; and the try page's address beside a QR code that opens it. The example data's card has only the logo, the playful line and the QR code: no name and no "Made by", so it never carries a real person's name off the site. "↻ New line" swaps in another playful line, never the one just shown, through all of them before any repeats. The QR code is drawn on the same canvas from vendor/qrcode.js, loaded with the page, and the logo from workspace/media/, the same files the Workspace page shows.
+ * One card for everyone (Brian, 28 Oct 2026), their own file or the example alike: the Workspace logo and "Workspace", "Founding beta tester", one playful line, and the try page's address beside a QR code that opens it. No name, no "Made by" and no founder number, on any card. "↻ New line" swaps in another playful line, never the one just shown, through all of them before any repeats. The QR code is drawn on the same canvas from vendor/qrcode.js, loaded with the page, and the logo from workspace/media/, the same files the Workspace page shows.
  *
  * Words are from Marketing/Beta Signups/Page copy.md, "The share card". The colours and fonts are the theme's tokens, read from the page, so the card follows the style picked.
  */
@@ -10,8 +10,7 @@ const WORDS = {
   heading: 'Your founder card',
   sub: 'Nothing is posted.',
   brand: 'Workspace',
-  founder: (n) => `Founder #${n}`,
-  madeBy: (agent) => `Made by ${agent}`,
+  tag: 'Founding beta tester',
   newLine: '↻ New line',
   address: 'brianhirsh.com/workspace/try',
   download: 'Download image',
@@ -32,14 +31,8 @@ export const FUN_LINES = [
   'Fresh workspace, still warm.',
   'My files finally have a nice home.',
   'Two of us work here: me and my agent.',
-  'Founding member of a very tidy folder.',
+  'Proud keeper of a very tidy folder.',
 ];
-
-/** The agent who wrote the file, from its first page's title ("To Brian, from Claude"), or null. */
-export function agentFromLetter(pages) {
-  const m = pages?.[0]?.title?.match(/^To .+?, from (.+)$/i);
-  return m ? m[1].trim() : null;
-}
 
 const W = 1200;
 const H = 630;
@@ -59,21 +52,13 @@ export function lineCycle(lines = FUN_LINES, random = Math.random) {
   return { next() { if (!order.length) order = shuffle(); last = order.shift(); return last; } };
 }
 
-/** The lines the card holds, in order; a line it leaves off is null. `name` "You" is the reader's stand-in for no name, so it is left off. */
-export function cardLines({ invite, name, agent, example, fun }) {
-  // The example's card names nobody and no agent, since the PNG can leave the site (27 Oct 2026).
-  return {
-    brand: WORDS.brand,
-    fun: fun ?? FUN_LINES[0],
-    madeBy: agent && !example ? WORDS.madeBy(agent) : null,
-    name: !example && name && name !== 'You' ? name : null,
-    founder: invite && !example ? WORDS.founder(invite.slice(0, 2)) : null,
-    address: WORDS.address,
-  };
+/** The lines the card holds, in order: the same for everyone, so nothing about the visitor or their file is on it. */
+export function cardLines({ fun } = {}) {
+  return { brand: WORDS.brand, tag: WORDS.tag, fun: fun ?? FUN_LINES[0], address: WORDS.address };
 }
 
-/** Build the card section into `mount`. `answers` as for the button. */
-export function mountCard(mount, answers) {
+/** Build the card section into `mount`. */
+export function mountCard(mount) {
   const section = el('section', 'card');
   section.append(el('h2', 'card-head', WORDS.heading), el('p', 'card-sub', WORDS.sub));
 
@@ -110,7 +95,7 @@ export function mountCard(mount, answers) {
   }
 
   function draw() {
-    const lines = cardLines({ ...answers, fun });
+    const lines = cardLines({ fun });
     canvas.setAttribute('aria-label', Object.values(lines).filter(Boolean).map((l) => l.replace(/\.$/, '')).join('. '));
     paint(canvas, lines, logos);
     copy.textContent = WORDS.copy;
@@ -156,7 +141,7 @@ function paint(canvas, lines, logos = {}) {
   const font = t('font-ui') || 'system-ui, sans-serif';
   const ctx = canvas.getContext('2d');
 
-  // An ink card: the theme's text colour as the ground, its page ground as the type, the accent for the number.
+  // An ink card: the theme's text colour as the ground, its page ground as the type, the accent for the tag.
   ctx.clearRect(0, 0, W, H);
   ctx.save();
   roundRect(ctx, 0, 0, W, H, 40);
@@ -186,40 +171,13 @@ function paint(canvas, lines, logos = {}) {
   ctx.font = `600 40px ${font}`;
   ctx.fillText(lines.brand, bx0, 128);
 
-  // The playful line: large on the example's card, where it is the whole card; else under the brand, above who made it.
+  // "Founding beta tester" in the accent, then the playful line, large, over up to two lines.
+  ctx.fillStyle = t('accent');
+  fit(lines.tag, 600, 36);
+  ctx.fillText(lines.tag, x, 226);
   ctx.fillStyle = t('bg');
-  if (!lines.name && !lines.founder && !lines.madeBy) {
-    ctx.font = `700 56px ${font}`;
-    wrapText(ctx, lines.fun, x, 290, room, 66);
-  } else {
-    ctx.globalAlpha = 0.9;
-    fit(lines.fun, 500, 32);
-    ctx.fillText(lines.fun, x, 196);
-    ctx.globalAlpha = 1;
-  }
-
-  // Made by <agent>, as text only.
-  if (lines.madeBy) {
-    ctx.fillStyle = t('bg');
-    ctx.globalAlpha = 0.7;
-    ctx.font = `500 26px ${font}`;
-    ctx.fillText(lines.madeBy, x, 244);
-    ctx.globalAlpha = 1;
-  }
-
-  // Their name, large; the founder number under it in the accent, when there is a code.
-  let y = lines.founder ? 350 : 390;
-  if (lines.name) {
-    ctx.fillStyle = t('bg');
-    fit(lines.name, 700, lines.founder ? 72 : 96);
-    ctx.fillText(lines.name, x, y);
-    y += lines.founder ? 104 : 0;
-  }
-  if (lines.founder) {
-    ctx.fillStyle = t('accent');
-    fit(lines.founder, 700, lines.name ? 76 : 112);
-    ctx.fillText(lines.founder, x, lines.name ? y - 10 : 380);
-  }
+  ctx.font = `700 60px ${font}`;
+  wrapText(ctx, lines.fun, x, 330, room, 70);
 
   ctx.fillStyle = t('bg');
   ctx.globalAlpha = 0.8;
