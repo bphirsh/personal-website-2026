@@ -146,6 +146,11 @@ code { font-family: var(--font-mono); font-size: 0.9em; background: var(--code-b
 .copied-head { margin-top: var(--space-3); font-size: var(--text-title); font-weight: var(--weight-semibold); line-height: var(--leading-tight); }
 .agent-chips { list-style: none; display: flex; flex-wrap: wrap; gap: var(--space-3); margin-top: var(--space-5); }
 /* Named agent-chip, not agent: the replay's box is .agent (demo.css), and a .agent here restyled it (c507211, fixed 27 Oct 2026). */
+.agent-mark { display: block; width: calc(var(--icon-size) * 1.25); height: calc(var(--icon-size) * 1.25); flex: none; }
+.agent-chip picture { display: contents; }
+/* The OpenAI and Grok files carry their own clear space, which their terms keep (OpenAI's about half its box, Grok's less): drawn larger, with the extra taken back by negative margins, so each mark reads at Claude's size and every chip is the same height. */
+.agent-mark-spaced { width: calc(var(--icon-size) * 2.5); height: calc(var(--icon-size) * 2.5); margin: calc(var(--icon-size) * -0.625); }
+.agent-mark-grok { width: calc(var(--icon-size) * 1.75); height: calc(var(--icon-size) * 1.75); margin: calc(var(--icon-size) * -0.25); }
 .agent-chip { display: flex; align-items: center; gap: var(--space-2); padding: var(--space-2) var(--space-4); font-size: var(--text-prose); font-weight: var(--weight-medium); color: var(--fg); background: var(--surface); border: var(--border-width) solid var(--border); border-radius: var(--radius-md); }
 .copied .step2-back { margin-top: var(--space-5); }
 .step2 .drop { margin-top: var(--space-4); }
