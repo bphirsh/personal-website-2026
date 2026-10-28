@@ -132,6 +132,11 @@ code { font-family: var(--font-mono); font-size: 0.9em; background: var(--code-b
   -webkit-mask-image: linear-gradient(to bottom, #000 40%, transparent); mask-image: linear-gradient(to bottom, #000 40%, transparent);
 }
 .prompt-card-copy { position: absolute; top: var(--space-4); right: var(--space-4); width: var(--icon-size); height: var(--icon-size); fill: none; stroke: currentColor; stroke-width: 1.75; stroke-linecap: round; stroke-linejoin: round; }
+/* The sign-up's questions and button, sliding in under the email once it looks complete (27 Oct 2026). */
+.reply-more { margin-top: var(--space-5); animation: step-in 240ms var(--easing) both; }
+.reply-more[hidden] { display: none; }
+.reply-more .btn-big { margin-top: var(--space-2); }
+@media (prefers-reduced-motion: reduce) { .reply-more { animation: none; } }
 .start-more { display: flex; align-items: center; gap: var(--space-5); margin-top: var(--space-4); }
 /* Step 2: the same centred spot, arriving with a short fade and rise (still under reduced motion). */
 .step2 { animation: step-in 240ms var(--easing) both; }
@@ -371,13 +376,14 @@ code { font-family: var(--font-mono); font-size: 0.9em; background: var(--code-b
 .speed-bar.fast { background: var(--accent); transition-delay: 250ms; }
 .figures.grown .speed-bar { width: var(--to); }
 .speed-flame {
-  position: absolute; right: calc(var(--space-3) * -1); top: 50%; width: var(--space-4); height: var(--space-5);
-  transform: translateY(-55%) rotate(90deg); transform-origin: center;
+  /* Upright, burning up from the bar's end (Brian, 27 Oct 2026): its base sits on the bar's middle, at its end, and it flickers from the base. */
+  position: absolute; right: calc(var(--space-4) / -2); bottom: 50%; width: var(--space-4); height: var(--space-5);
+  transform: none; transform-origin: 50% 100%;
   background: radial-gradient(ellipse at 50% 80%, var(--chart-4) 0 30%, var(--chart-2) 45%, transparent 70%);
   border-radius: 50% 50% 45% 45%; opacity: 0;
 }
 .figures.grown .speed-flame { opacity: 1; transition: opacity 300ms var(--easing) 1200ms; animation: flicker 600ms steps(3) infinite 1400ms; }
-@keyframes flicker { 0% { transform: translateY(-55%) rotate(90deg) scale(1); } 50% { transform: translateY(-55%) rotate(85deg) scale(1.15, 0.9); } 100% { transform: translateY(-55%) rotate(95deg) scale(0.9, 1.1); } }
+@keyframes flicker { 0% { transform: rotate(0deg) scale(1); } 50% { transform: rotate(-5deg) scale(0.9, 1.15); } 100% { transform: rotate(5deg) scale(1.1, 0.9); } }
 
 /* ── just files on your computer (M-016): a split with a divider ── */
 .files { margin-top: calc(var(--space-8) * 2.5); }

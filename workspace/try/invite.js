@@ -301,6 +301,8 @@ function normalise(raw, pages) {
     role: ROLES.includes(role) ? role : 'other',
     // The starting folder: `other` is laid out as both.
     layout: ROLES.includes(role) ? role : 'both',
+    // Whether the file said a role; the sign-up sends `role` only then (27 Oct 2026).
+    hasRole: has('role'),
   };
   if (p.invite) p.founder = Number(p.invite.slice(0, 2));
 
