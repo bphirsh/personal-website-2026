@@ -341,7 +341,7 @@ function toCopied() {
 }
 function toStep2(afterCopy) {
   copied.classList.remove('leaving');
-  document.getElementById('step2Title').textContent = afterCopy ? "Bring your agent's file back here when it's done." : 'Drop your file';
+  document.getElementById('step2Title').textContent = afterCopy ? "Add your agent's file" : 'Drop your file';
   show(step2);
 }
 document.getElementById('haveFile').addEventListener('click', () => toStep2(false));
