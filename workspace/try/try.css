@@ -144,8 +144,9 @@ code { font-family: var(--font-mono); font-size: 0.9em; background: var(--code-b
 .copied-done { display: flex; align-items: center; gap: var(--space-2); font-size: var(--text-sm); font-weight: var(--weight-medium); color: var(--fg-secondary); }
 .copied-done .step2-check { width: var(--icon-size); height: var(--icon-size); }
 .copied-head { margin-top: var(--space-3); font-size: var(--text-title); font-weight: var(--weight-semibold); line-height: var(--leading-tight); }
-.agents { list-style: none; display: flex; flex-wrap: wrap; gap: var(--space-3); margin-top: var(--space-5); }
-.agent { display: flex; align-items: center; gap: var(--space-2); padding: var(--space-2) var(--space-4); font-size: var(--text-prose); font-weight: var(--weight-medium); color: var(--fg); background: var(--surface); border: var(--border-width) solid var(--border); border-radius: var(--radius-md); }
+.agent-chips { list-style: none; display: flex; flex-wrap: wrap; gap: var(--space-3); margin-top: var(--space-5); }
+/* Named agent-chip, not agent: the replay's box is .agent (demo.css), and a .agent here restyled it (c507211, fixed 27 Oct 2026). */
+.agent-chip { display: flex; align-items: center; gap: var(--space-2); padding: var(--space-2) var(--space-4); font-size: var(--text-prose); font-weight: var(--weight-medium); color: var(--fg); background: var(--surface); border: var(--border-width) solid var(--border); border-radius: var(--radius-md); }
 .copied .step2-back { margin-top: var(--space-5); }
 .step2 .drop { margin-top: var(--space-4); }
 .step2-back { display: block; margin-top: var(--space-4); font-size: var(--text-sm); color: var(--fg-secondary); }
