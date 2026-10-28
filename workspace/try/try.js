@@ -326,11 +326,12 @@ document.getElementById('skipDemo').addEventListener('click', showSample);
 // Brian, 27 Oct 2026: "hold the 'Paste it in a chat...' page a little longer"; with the 240 ms fade, about five seconds in all.
 const COPIED_HOLD_MS = 4800;
 const FADE_MS = 240;
-// "Copied to clipboard" first shows alone, large and centred in the window, for a beat; then it shrinks and rises to its place as the rest fades in (Brian, 28 Oct 2026). The hold above counts from when the rest has come in.
-const INTRO_BEAT_MS = 600;
+// "Copied to clipboard" first pops in alone, large, on its own left edge and around the window's middle, with a small overshoot and a beat of its icon; after a short hold it shrinks and moves straight up to its place as the rest fades in (Brian, 28 Oct 2026). The hold above counts from when the rest has come in.
+const INTRO_POP_MS = 360;
+const INTRO_HOLD_MS = 400;
 const INTRO_MOVE_MS = 450;
 const INTRO_SCALE = 2.2;
-// The rest starts fading in halfway through the move, so the line has mostly cleared the heading by the time it shows.
+// The rest starts fading in three quarters of the way through the move, so the line has cleared the heading by the time it shows.
 const REST_FADE_MS = 300;
 const step1 = sampleLink;
 const copied = document.getElementById('copied');
@@ -350,19 +351,33 @@ function toCopied() {
     holdTimer = setTimeout(() => { copied.classList.remove('leaving'); toStep2(true); }, FADE_MS);
   }, intro + COPIED_HOLD_MS);
 }
-// The large-then-rising entrance, as Web Animations from the line's settled place: it starts moved to the window's centre and scaled up, holds, then settles; the rest of the screen fades in as it does. Returns how long it takes. With reduced motion it isn't called, and the settled layout shows at once.
+// The entrance, as Web Animations from the line's settled place, scaled from its left edge: it starts moved down to the window's middle (never sideways), pops in from a little smaller with an overshoot, holds, then rises and shrinks to its place; the icon tilts and settles as it lands; the rest of the screen fades in during the rise. Returns how long it takes. With reduced motion it isn't called, and the settled layout shows at once.
 function introCopied() {
   const done = document.getElementById('copiedDone');
+  const icon = done.querySelector('.copied-icon');
   const rest = [...copied.children].filter((c) => c !== done);
   for (const a of copied.getAnimations({ subtree: true })) a.cancel();
   const r = done.getBoundingClientRect();
-  const dx = innerWidth / 2 - (r.left + r.width / 2);
   const dy = innerHeight / 2 - (r.top + r.height / 2);
-  const big = `translate(${dx}px, ${dy}px) scale(${INTRO_SCALE})`;
-  done.animate([{ transform: big }, { transform: big, offset: INTRO_BEAT_MS / (INTRO_BEAT_MS + INTRO_MOVE_MS) }, { transform: 'none' }], { duration: INTRO_BEAT_MS + INTRO_MOVE_MS, easing: 'ease-in-out' });
-  const restAt = INTRO_BEAT_MS + INTRO_MOVE_MS / 2;
+  const at = (scale) => `translateY(${dy}px) scale(${scale})`;
+  const total = INTRO_POP_MS + INTRO_HOLD_MS + INTRO_MOVE_MS;
+  const o = (ms) => ms / total;
+  done.animate([
+    { transform: at(INTRO_SCALE * 0.85), opacity: 0, easing: 'cubic-bezier(.2,.8,.3,1.4)' },
+    { transform: at(INTRO_SCALE * 1.06), opacity: 1, offset: o(INTRO_POP_MS * 0.7), easing: 'ease-out' },
+    { transform: at(INTRO_SCALE), opacity: 1, offset: o(INTRO_POP_MS) },
+    { transform: at(INTRO_SCALE), opacity: 1, offset: o(INTRO_POP_MS + INTRO_HOLD_MS), easing: 'ease-in-out' },
+    { transform: 'none', opacity: 1 },
+  ], { duration: total });
+  icon.animate([
+    { transform: 'rotate(0deg) scale(1)' },
+    { transform: 'rotate(-14deg) scale(1.25)', offset: 0.45 },
+    { transform: 'rotate(8deg) scale(0.95)', offset: 0.75 },
+    { transform: 'none' },
+  ], { delay: INTRO_POP_MS * 0.6, duration: 340, easing: 'ease-out' });
+  const restAt = INTRO_POP_MS + INTRO_HOLD_MS + INTRO_MOVE_MS * 0.75;
   for (const el of rest) el.animate([{ opacity: 0 }, { opacity: 1 }], { delay: restAt, duration: REST_FADE_MS, easing: 'ease-out', fill: 'backwards' });
-  return Math.max(INTRO_BEAT_MS + INTRO_MOVE_MS, restAt + REST_FADE_MS);
+  return Math.max(total, restAt + REST_FADE_MS);
 }
 function toStep2(afterCopy) {
   copied.classList.remove('leaving');
