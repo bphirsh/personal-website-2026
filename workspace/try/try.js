@@ -320,7 +320,8 @@ sampleLink.hidden = false;
 document.getElementById('loadAnother').addEventListener('click', () => pick.click());
 document.getElementById('skipDemo').addEventListener('click', showSample);
 // The landing's screens (Brian, 27 Oct 2026): step 1 copies the prompt. A successful copy shows the copied screen, which holds about three seconds and fades into the drop screen; Skip goes there at once. I have my file, or a file dragged over the page, goes straight to the drop screen. From the drop screen, Copy the prompt again copies it and shows the copied screen again; Use demo data opens the example, as Skip does.
-const COPIED_HOLD_MS = 3000;
+// Brian, 27 Oct 2026: "hold the 'Paste it in a chat...' page a little longer"; with the 240 ms fade, about five seconds in all.
+const COPIED_HOLD_MS = 4800;
 const FADE_MS = 240;
 const step1 = sampleLink;
 const copied = document.getElementById('copied');
