@@ -104,10 +104,12 @@ if (!json) {
   else {
     const codes = r.warnings.map((w) => w.code).join();
     if (codes !== 'bad-invite') problems.push(`expected only bad-invite, got ${codes || 'no warnings'}`);
-    if (r.invite.properties.name !== 'Sam' || r.invite.properties.layout !== 'both') problems.push('it is not Sam, laid out as both');
+    // The example's person changes with the demo data (Sam, then Sam Altman, M-023); what stays is the layout and a letter to open on.
+    if (r.invite.properties.layout !== 'both') problems.push('it is not laid out as both');
+    if (!r.invite.pages.length) problems.push('it has no page to open on');
   }
   if (!fixture) console.log('  (fixtures/sample.md not among the files: shipped text not compared)');
-  console.log(problems.length ? problems.map((p) => `  FAIL: ${p}`).join('\n') : '  PASS: imported, not fetched, the fixture\'s text, and reads as Sam with bad-invite only');
+  console.log(problems.length ? problems.map((p) => `  FAIL: ${p}`).join('\n') : '  PASS: imported, not fetched, the fixture\'s text, and reads as both with a page to open on and bad-invite only');
   exampleFailed = problems.length > 0;
 }
 

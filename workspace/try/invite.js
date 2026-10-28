@@ -315,7 +315,8 @@ function normalise(raw, pages) {
     });
   }
 
-  p.project = has('project') ? cut(scalar(raw.project).trim(), MAX_PROJECT) : pages[0]?.title ?? 'My project';
+  // With no project line, "My project" (27 Oct 2026): the first page is now the agent's letter, and a folder named after it repeated it.
+  p.project = has('project') ? cut(scalar(raw.project).trim(), MAX_PROJECT) : 'My project';
   return p;
 }
 
