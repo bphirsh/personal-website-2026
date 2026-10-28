@@ -1,7 +1,7 @@
 /**
  * The founder card (M-008, M-017): drawn in the browser, to download or copy. Nothing is stored or published, and drawing it makes no request.
  *
- * Minimal since M-017, and fitted to the new flow (Brian, 27 Oct 2026): "Workspace"; "Made by <agent>" with that agent's mark from the copied screen, the agent read from the letter's title ("To Brian, from Claude"); their name, if the file has one; "Founder #N" only with an invite code; and the try page's address beside a QR code that opens it. The example data's card says "Example" twice, as a pill and in place of a name, and never carries the parody's name, so it can't pass for a real one off the site. The QR code is drawn on the same canvas from vendor/qrcode.js, loaded with the page, and the marks from workspace/try/brand/, the same files the copied screen shows.
+ * Minimal since M-017, fitted to the new flow, and made fun (Brian, 27 Oct 2026): the Workspace logo and "Workspace"; one playful line, picked at random for each card; "Made by <agent>" as text, the agent read from the letter's title ("To Brian, from Claude"), with no company's logo; their name, if the file has one; "Founder #N" only with an invite code; and the try page's address beside a QR code that opens it. The example data's card has only the logo, the playful line, an "Example" label and the QR code: no name and no "Made by", so it can't pass for a real one off the site. The QR code is drawn on the same canvas from vendor/qrcode.js, loaded with the page, and the logo from workspace/media/, the same files the Workspace page shows.
  *
  * Words are from Marketing/Beta Signups/Page copy.md, "The share card". The colours and fonts are the theme's tokens, read from the page, so the card follows the style picked.
  */
@@ -23,12 +23,16 @@ const WORDS = {
 // What the QR code opens: the try page, where anyone can make their own (Brian, 27 Oct 2026).
 export const TRY_URL = 'https://www.brianhirsh.com/workspace/try/';
 
-// The agents with a mark, as on the copied screen: the agent's name as the letter gives it, matched loosely, to the mark for a dark card and for a light one.
-const MARKS = [
-  [/^claude/i, 'Claude', 'claude-spark-clay.svg', 'claude-spark-clay.svg'],
-  [/^(chat ?gpt|gpt|openai)/i, 'ChatGPT', 'openai-blossom-white.svg', 'openai-blossom-black.svg'],
-  [/^grok/i, 'Grok', 'grok-logomark-light.svg', 'grok-logomark-dark.svg'],
-  [/^muse/i, 'Muse', 'muse-logo.svg', 'muse-logo.svg'],
+// The playful lines, one picked at random for each card (Page copy, "The share card").
+export const FUN_LINES = [
+  'My agent and I share a folder now.',
+  'Plain files. Fancy friends.',
+  'Built by an agent. Approved by me.',
+  'Every note in its place. Mostly.',
+  'Fresh workspace, still warm.',
+  'My files finally have a nice home.',
+  'Two of us work here: me and my agent.',
+  'Founding member of a very tidy folder.',
 ];
 
 /** The agent who wrote the file, from its first page's title ("To Brian, from Claude"), or null. */
@@ -37,24 +41,19 @@ export function agentFromLetter(pages) {
   return m ? m[1].trim() : null;
 }
 
-/** The mark for an agent's name, if the page has one: its file for a dark card and for a light one. */
-export function markFor(agent) {
-  const hit = agent && MARKS.find(([re]) => re.test(agent));
-  return hit ? { dark: hit[2], light: hit[3] } : null;
-}
-
 const W = 1200;
 const H = 630;
 
 /** The lines the card holds, in order; a line it leaves off is null. `name` "You" is the reader's stand-in for no name, so it is left off. */
-export function cardLines({ invite, name, agent, example }) {
+export function cardLines({ invite, name, agent, example, fun }) {
+  // The example's card names nobody and no agent, since the PNG can leave the site (27 Oct 2026).
   return {
     example: example ? WORDS.example : null,
     brand: WORDS.brand,
-    madeBy: agent ? WORDS.madeBy(agent) : null,
-    // The example's card never carries the parody's real name, since the PNG can leave the site (Integrator's catch, 27 Oct 2026): its large line is "Example".
-    name: example ? WORDS.example : name && name !== 'You' ? name : null,
-    founder: invite ? WORDS.founder(invite.slice(0, 2)) : null,
+    fun: fun ?? FUN_LINES[0],
+    madeBy: agent && !example ? WORDS.madeBy(agent) : null,
+    name: !example && name && name !== 'You' ? name : null,
+    founder: invite && !example ? WORDS.founder(invite.slice(0, 2)) : null,
     address: WORDS.address,
   };
 }
@@ -82,19 +81,20 @@ export function mountCard(mount, answers) {
   section.append(actions, status);
   mount.replaceChildren(section);
 
-  // The agent's mark, loaded once from the site (both variants), then the card is drawn again with it.
-  const mark = markFor(answers.agent);
-  const marks = {};
-  if (mark) for (const k of ['dark', 'light']) {
+  // One playful line for this card, kept across redraws.
+  const fun = FUN_LINES[Math.floor(Math.random() * FUN_LINES.length)];
+  // The Workspace logo, both appearances, loaded once from the site; the card is drawn again when they arrive.
+  const logos = {};
+  for (const k of ['light', 'dark']) {
     const img = new Image();
-    img.onload = () => { marks[k] = img; draw(); };
-    img.src = `/workspace/try/brand/${mark[k]}`;
+    img.onload = () => { logos[k] = img; draw(); };
+    img.src = `/workspace/media/workspace-logo-${k}.svg`;
   }
 
   function draw() {
-    const lines = cardLines(answers);
-    canvas.setAttribute('aria-label', Object.values(lines).filter(Boolean).join('. '));
-    paint(canvas, lines, marks);
+    const lines = cardLines({ ...answers, fun });
+    canvas.setAttribute('aria-label', Object.values(lines).filter(Boolean).map((l) => l.replace(/\.$/, '')).join('. '));
+    paint(canvas, lines, logos);
     copy.textContent = WORDS.copy;
   }
 
@@ -132,7 +132,7 @@ export function mountCard(mount, answers) {
   return { canvas, redraw: draw };
 }
 
-function paint(canvas, lines, marks = {}) {
+function paint(canvas, lines, logos = {}) {
   const css = getComputedStyle(document.documentElement);
   const t = (name) => css.getPropertyValue(`--${name}`).trim();
   const font = t('font-ui') || 'system-ui, sans-serif';
@@ -159,12 +159,17 @@ function paint(canvas, lines, marks = {}) {
   // As large as fits in the space left of the QR code, from `size` down.
   const fit = (text, weight, size) => { do { ctx.font = `${weight} ${size}px ${font}`; size -= 2; } while (ctx.measureText(text).width > room && size > 20); };
   ctx.textBaseline = 'alphabetic';
+  // The Workspace logo, in the appearance that reads on the card's ground, then the name beside it.
+  const groundDark = luminance(t('fg')) < 0.5;
+  const logo = logos[groundDark ? 'dark' : 'light'];
+  let bx0 = x;
+  if (logo) { ctx.drawImage(logo, x - 6, 80, 64, 64); bx0 = x + 70; }
   ctx.fillStyle = t('bg');
   ctx.font = `600 40px ${font}`;
-  ctx.fillText(lines.brand, x, 128);
+  ctx.fillText(lines.brand, bx0, 128);
   // "Example", on the example data's card only, beside the brand.
   if (lines.example) {
-    const bx = x + ctx.measureText(lines.brand).width + 24;
+    const bx = bx0 + ctx.measureText(lines.brand).width + 24;
     ctx.font = `600 22px ${font}`;
     const w = ctx.measureText(lines.example).width + 28;
     ctx.strokeStyle = t('accent');
@@ -175,21 +180,29 @@ function paint(canvas, lines, marks = {}) {
     ctx.fillText(lines.example, bx + 14, 125);
   }
 
-  // Made by <agent>, with its mark when the page has one: the variant that reads on the card's ground.
-  if (lines.madeBy) {
-    const groundDark = luminance(t('fg')) < 0.5;
-    const img = marks[groundDark ? 'dark' : 'light'];
-    let tx = x;
-    if (img) { ctx.drawImage(img, x, 168, 36, 36); tx = x + 50; }
-    ctx.fillStyle = t('bg');
+  // The playful line: large on the example's card, where it is the whole card; else under the brand, above who made it.
+  ctx.fillStyle = t('bg');
+  if (!lines.name && !lines.founder && !lines.madeBy) {
+    ctx.font = `700 56px ${font}`;
+    wrapText(ctx, lines.fun, x, 290, room, 66);
+  } else {
     ctx.globalAlpha = 0.9;
-    ctx.font = `500 32px ${font}`;
-    ctx.fillText(lines.madeBy, tx, 198);
+    fit(lines.fun, 500, 32);
+    ctx.fillText(lines.fun, x, 196);
+    ctx.globalAlpha = 1;
+  }
+
+  // Made by <agent>, as text only.
+  if (lines.madeBy) {
+    ctx.fillStyle = t('bg');
+    ctx.globalAlpha = 0.7;
+    ctx.font = `500 26px ${font}`;
+    ctx.fillText(lines.madeBy, x, 244);
     ctx.globalAlpha = 1;
   }
 
   // Their name, large; the founder number under it in the accent, when there is a code.
-  let y = lines.founder ? 330 : 370;
+  let y = lines.founder ? 350 : 390;
   if (lines.name) {
     ctx.fillStyle = t('bg');
     fit(lines.name, 700, lines.founder ? 72 : 96);
@@ -198,8 +211,8 @@ function paint(canvas, lines, marks = {}) {
   }
   if (lines.founder) {
     ctx.fillStyle = t('accent');
-    fit(lines.founder, 700, lines.name ? 84 : 128);
-    ctx.fillText(lines.founder, x, lines.name ? y : 360);
+    fit(lines.founder, 700, lines.name ? 76 : 112);
+    ctx.fillText(lines.founder, x, lines.name ? y - 10 : 380);
   }
 
   ctx.fillStyle = t('bg');
@@ -246,6 +259,19 @@ function makeQr(text) {
   qr.addData(text);
   qr.make();
   return qr;
+}
+
+// Text over up to two lines, broken at a space, in the current font.
+function wrapText(ctx, text, x, y, width, lineHeight) {
+  const words = text.split(' ');
+  let line = '';
+  const lines = [];
+  for (const w of words) {
+    const next = line ? `${line} ${w}` : w;
+    if (ctx.measureText(next).width > width && line) { lines.push(line); line = w; } else line = next;
+  }
+  lines.push(line);
+  lines.slice(0, 2).forEach((l, i) => ctx.fillText(l, x, y + i * lineHeight));
 }
 
 function roundRect(ctx, x, y, w, h, r) {
