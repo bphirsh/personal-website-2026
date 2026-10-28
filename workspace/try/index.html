@@ -3,25 +3,25 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Try Workspace with your own work in it</title>
-<meta name="description" content="A try-it-yourself demo: your AI writes a small file about your work, and you see it as Workspace, right in your browser. Best on a computer.">
+<title>Get your own Workspace, made by your AI</title>
+<meta name="description" content="Paste one prompt into your AI. It makes you a themed workspace from what it knows about you, and you open it here.">
 <!-- Link previews (Marketing/Beta Signups/Link previews.md, 27 Oct 2026); the card is drawn by tools/make-og.mjs. -->
 <link rel="canonical" href="https://www.brianhirsh.com/workspace/try/">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Brian Hirsh">
-<meta property="og:title" content="Try Workspace with your own work in it">
-<meta property="og:description" content="A try-it-yourself demo: your AI writes a small file about your work, and you see it as Workspace, right in your browser. Best on a computer.">
+<meta property="og:title" content="Get your own Workspace, made by your AI">
+<meta property="og:description" content="Paste one prompt into your AI. It makes you a themed workspace from what it knows about you, and you open it here.">
 <meta property="og:url" content="https://www.brianhirsh.com/workspace/try/">
 <meta property="og:image" content="https://www.brianhirsh.com/og/workspace-try.png">
 <meta property="og:image:type" content="image/png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
-<meta property="og:image:alt" content="See your own work in Workspace · Best on a computer">
+<meta property="og:image:alt" content="Your AI makes it. You open it here.">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="Try Workspace with your own work in it">
-<meta name="twitter:description" content="A try-it-yourself demo: your AI writes a small file about your work, and you see it as Workspace, right in your browser. Best on a computer.">
+<meta name="twitter:title" content="Get your own Workspace, made by your AI">
+<meta name="twitter:description" content="Paste one prompt into your AI. It makes you a themed workspace from what it knows about you, and you open it here.">
 <meta name="twitter:image" content="https://www.brianhirsh.com/og/workspace-try.png">
-<meta name="twitter:image:alt" content="See your own work in Workspace · Best on a computer">
+<meta name="twitter:image:alt" content="Your AI makes it. You open it here.">
 <meta name="theme-color" content="#FAF9F7" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#1A1917" media="(prefers-color-scheme: dark)">
 <link rel="icon" type="image/svg+xml" href="/workspace/media/workspace-logo-light.svg">
@@ -71,30 +71,34 @@
   <input type="file" id="pick" class="visually-hidden" accept=".md,.txt,text/markdown,text/plain" tabindex="-1">
   <section class="intro" id="intro">
   <header class="head">
-    <h1 class="title">Your Workspace, from your own file</h1>
-    <p class="lede">Drop the file your agent wrote. See your work in Workspace.</p>
+    <h1 class="title">Get your own Workspace</h1>
+    <p class="lede">Copy this prompt into your AI, then open what it makes here.</p>
   </header>
 
   <div id="intake">
-    <!-- The main action (Brian, 27 Oct 2026: the landing fits one screen): the whole zone is the click target. -->
-    <label class="drop" id="drop" for="pick">
-      <svg class="drop-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15V4M7 9l5-5 5 5M4 15v4a1 1 0 001 1h14a1 1 0 001-1v-4"/></svg>
-      <span class="drop-main" id="dropMain">Drop your workspace file here, or click to choose it</span>
-    </label>
+    <!-- The main action (M-020, Brian, 27 Oct 2026): copying the prompt. The card reads as a prompt, not a button: its first lines in monospace, fading out, with a copy mark. -->
+    <div class="start" id="sampleLink" hidden>
+      <button type="button" class="prompt-card prompt-card-main" id="getFile">
+        <span class="prompt-card-label">Click to copy the prompt</span>
+        <span class="prompt-card-peek" id="promptPeek" aria-hidden="true"></span>
+        <svg class="prompt-card-copy" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 9h10v11H9zM5 15H4V4h11v1"/></svg>
+      </button>
+      <p class="get-file-status" id="getFileStatus" role="status" aria-live="polite"></p>
 
-    <p class="privacy">Nothing leaves your computer. This all runs in your browser.</p>
-    <!-- Secondary: the card copies the prompt (it reads as a prompt, not a button); Skip goes straight to the demo with the example data (M-017). -->
-    <div class="no-file" id="sampleLink" hidden>
-      <p class="no-file-lead">No file yet?</p>
-      <div class="no-file-row">
-        <button type="button" class="prompt-card" id="getFile">
-          <span class="prompt-card-label">Click to copy a prompt for your AI. It asks a few questions and writes your file.</span>
-          <span class="prompt-card-peek" id="promptPeek" aria-hidden="true"></span>
-          <svg class="prompt-card-copy" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 9h10v11H9zM5 15H4V4h11v1"/></svg>
-        </button>
+      <!-- After copying, or I have my file: a normal-sized drop zone, the whole of it the click target. -->
+      <div class="drop-wrap" id="dropWrap" hidden>
+        <label class="drop" id="drop" for="pick">
+          <svg class="drop-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15V4M7 9l5-5 5 5M4 15v4a1 1 0 001 1h14a1 1 0 001-1v-4"/></svg>
+          <span class="drop-main" id="dropMain">Drop your .md file here, or click to choose it</span>
+        </label>
+      </div>
+
+      <!-- Secondary: I have my file shows the drop zone; Skip goes straight to the demo with the example data (M-017). -->
+      <div class="start-more">
+        <button type="button" class="btn btn-quiet" id="haveFile">I have my file</button>
         <button type="button" class="link skip-demo" id="skipDemo">Skip, use demo data</button>
       </div>
-      <p class="get-file-status" id="getFileStatus" role="status" aria-live="polite"></p>
+      <p class="privacy">Nothing leaves your computer. This all runs in your browser.</p>
     </div>
   </div>
 

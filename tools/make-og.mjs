@@ -23,7 +23,7 @@ export const CARDS = [
   { file: 'home.png', mark: 'brian', text: 'Brian Hirsh · Founder · Builder · Explorer', foot: 'brianhirsh.com' },
   { file: 'resume.png', mark: 'brian', text: 'Brian Hirsh · Founder · Product Leader · AI-Native Builder', foot: 'brianhirsh.com/resume' },
   { file: 'workspace.png', mark: 'workspace', text: 'A place for you + agents to collaborate', foot: 'brianhirsh.com/workspace' },
-  { file: 'workspace-try.png', mark: 'workspace', text: 'See your own work in Workspace · Best on a computer', foot: 'brianhirsh.com/workspace/try' },
+  { file: 'workspace-try.png', mark: 'workspace', text: 'Your AI makes it. You open it here.', foot: 'brianhirsh.com/workspace/try' },
   { file: 'workspace-signup.png', mark: 'workspace', text: 'Request early access to Workspace', foot: 'brianhirsh.com/workspace/signup' },
   { file: 'workspace-download.png', mark: 'workspace', text: 'Workspace beta · For invited testers', foot: 'brianhirsh.com/workspace/download' },
 ];

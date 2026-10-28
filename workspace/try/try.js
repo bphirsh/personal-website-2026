@@ -195,7 +195,7 @@ function showSample() {
   row.appendChild(load);
   b.appendChild(row);
   banners.appendChild(b);
-  mountDemo(demo, r.invite, SAMPLE_NAME, text, { sample: true, full: true });
+  mountDemo(demo, r.invite, SAMPLE_NAME, text, { sample: true, full: true, letter: true });
   mountReplay(replay, r.invite, SAMPLE_NAME, text);
   mountFiles(filesMount, filesSample(r.invite).db);
   mountTaps(reply, codeFromHash(location.hash));
@@ -288,7 +288,8 @@ pick.addEventListener('change', () => {
 let depth = 0;
 addEventListener('dragenter', (e) => {
   e.preventDefault();
-  if (depth++ === 0) { drop.classList.add('over'); setDropText(WORDS.dragging); }
+  // A file dragged over the page brings the drop zone out, if copying or I have my file hasn't yet.
+  if (depth++ === 0) { if (document.getElementById('dropWrap')) showDrop(); drop.classList.add('over'); setDropText(WORDS.dragging); }
 });
 addEventListener('dragleave', () => {
   if (--depth <= 0) { depth = 0; drop.classList.remove('over'); setDropText(null); }
@@ -314,5 +315,13 @@ roomBeside.addEventListener('change', placeStyles);
 sampleLink.hidden = false;
 document.getElementById('loadAnother').addEventListener('click', () => pick.click());
 document.getElementById('skipDemo').addEventListener('click', showSample);
-wireGetFile(document.getElementById('getFile'), document.getElementById('getFileStatus'), () => codeFromHash(location.hash));
+// The drop zone appears once the prompt is copied, or on I have my file (M-020); a drop on the window works before that too.
+const dropWrap = document.getElementById('dropWrap');
+const haveFile = document.getElementById('haveFile');
+function showDrop() {
+  dropWrap.hidden = false;
+  haveFile.hidden = true;
+}
+haveFile.addEventListener('click', showDrop);
+wireGetFile(document.getElementById('getFile'), document.getElementById('getFileStatus'), () => codeFromHash(location.hash), showDrop);
 document.getElementById('promptPeek').textContent = peek(codeFromHash(location.hash));

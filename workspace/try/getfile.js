@@ -11,7 +11,7 @@
 import { PAGE_PROMPT } from './prompt-data.js';
 
 const WORDS = {
-  copied: 'Copied! Paste it into Claude, ChatGPT or any agent, then drop the file it makes above.',
+  copied: 'Copied! Paste it into Claude, ChatGPT or any agent, then drop the file it makes here.',
   failed: "Couldn't copy. Select the prompt and copy it yourself.",
 };
 
@@ -20,7 +20,8 @@ export function fillPrompt(code, prompt = PAGE_PROMPT) {
   if (code) return prompt.replaceAll('{code}', code);
   return prompt
     .split('\n')
-    .filter((line) => line.trim() !== 'invite: {code}' && !line.includes('Copy the invite line exactly as written: invite: {code}'))
+    // The rule line has read "Copy the invite line exactly as written: …" and, since M-020, "Copy the invite line exactly: …"; either goes.
+    .filter((line) => line.trim() !== 'invite: {code}' && !/Copy the invite line exactly( as written)?: invite: \{code\}/.test(line))
     .join('\n')
     .replaceAll('https://www.brianhirsh.com/workspace/try#{code}', 'https://www.brianhirsh.com/workspace/try');
 }
@@ -31,9 +32,9 @@ export function peek(code, lines = 4) {
 }
 
 /**
- * Wire the button: `button` copies, `status` says what happened, and a box for the prompt is added after `status` when copying is refused. `code()` gives the code at the moment of pressing.
+ * Wire the button: `button` copies, `status` says what happened, and a box for the prompt is added after `status` when copying is refused. `code()` gives the code at the moment of pressing, and `after()`, when given, runs once either way (the page shows its drop zone then).
  */
-export function wireGetFile(button, status, code) {
+export function wireGetFile(button, status, code, after) {
   let box = null;
   button.addEventListener('click', async () => {
     const text = fillPrompt(code());
@@ -55,5 +56,6 @@ export function wireGetFile(button, status, code) {
       box.focus();
       box.select();
     }
+    after?.();
   });
 }
