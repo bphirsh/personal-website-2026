@@ -146,7 +146,6 @@ code { font-family: var(--font-mono); font-size: 0.9em; background: var(--code-b
 .copied-head { margin-top: var(--space-3); font-size: var(--text-title); font-weight: var(--weight-semibold); line-height: var(--leading-tight); }
 .agents { list-style: none; display: flex; flex-wrap: wrap; gap: var(--space-3); margin-top: var(--space-5); }
 .agent { display: flex; align-items: center; gap: var(--space-2); padding: var(--space-2) var(--space-4); font-size: var(--text-prose); font-weight: var(--weight-medium); color: var(--fg); background: var(--surface); border: var(--border-width) solid var(--border); border-radius: var(--radius-md); }
-.agent-mark { width: calc(var(--icon-size) * 1.25); height: calc(var(--icon-size) * 1.25); flex: none; }
 .copied .step2-back { margin-top: var(--space-5); }
 .step2 .drop { margin-top: var(--space-4); }
 .step2-back { display: block; margin-top: var(--space-4); font-size: var(--text-sm); color: var(--fg-secondary); }
