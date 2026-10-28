@@ -326,6 +326,12 @@ document.getElementById('skipDemo').addEventListener('click', showSample);
 // Brian, 27 Oct 2026: "hold the 'Paste it in a chat...' page a little longer"; with the 240 ms fade, about five seconds in all.
 const COPIED_HOLD_MS = 4800;
 const FADE_MS = 240;
+// "Copied to clipboard" first shows alone, large and centred in the window, for a beat; then it shrinks and rises to its place as the rest fades in (Brian, 28 Oct 2026). The hold above counts from when the rest has come in.
+const INTRO_BEAT_MS = 600;
+const INTRO_MOVE_MS = 450;
+const INTRO_SCALE = 2.2;
+// The rest starts fading in halfway through the move, so the line has mostly cleared the heading by the time it shows.
+const REST_FADE_MS = 300;
 const step1 = sampleLink;
 const copied = document.getElementById('copied');
 const step2 = document.getElementById('step2');
@@ -336,12 +342,27 @@ function show(screen) {
 }
 function toCopied() {
   show(copied);
+  const intro = reducedMotion.matches ? 0 : introCopied();
   holdTimer = setTimeout(() => {
     // The copied screen fades out, then the drop screen fades in (step-in); with reduced motion, neither fades and the timing is the same.
     if (reducedMotion.matches) return toStep2(true);
     copied.classList.add('leaving');
     holdTimer = setTimeout(() => { copied.classList.remove('leaving'); toStep2(true); }, FADE_MS);
-  }, COPIED_HOLD_MS);
+  }, intro + COPIED_HOLD_MS);
+}
+// The large-then-rising entrance, as Web Animations from the line's settled place: it starts moved to the window's centre and scaled up, holds, then settles; the rest of the screen fades in as it does. Returns how long it takes. With reduced motion it isn't called, and the settled layout shows at once.
+function introCopied() {
+  const done = document.getElementById('copiedDone');
+  const rest = [...copied.children].filter((c) => c !== done);
+  for (const a of copied.getAnimations({ subtree: true })) a.cancel();
+  const r = done.getBoundingClientRect();
+  const dx = innerWidth / 2 - (r.left + r.width / 2);
+  const dy = innerHeight / 2 - (r.top + r.height / 2);
+  const big = `translate(${dx}px, ${dy}px) scale(${INTRO_SCALE})`;
+  done.animate([{ transform: big }, { transform: big, offset: INTRO_BEAT_MS / (INTRO_BEAT_MS + INTRO_MOVE_MS) }, { transform: 'none' }], { duration: INTRO_BEAT_MS + INTRO_MOVE_MS, easing: 'ease-in-out' });
+  const restAt = INTRO_BEAT_MS + INTRO_MOVE_MS / 2;
+  for (const el of rest) el.animate([{ opacity: 0 }, { opacity: 1 }], { delay: restAt, duration: REST_FADE_MS, easing: 'ease-out', fill: 'backwards' });
+  return Math.max(INTRO_BEAT_MS + INTRO_MOVE_MS, restAt + REST_FADE_MS);
 }
 function toStep2(afterCopy) {
   copied.classList.remove('leaving');
