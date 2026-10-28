@@ -51,6 +51,18 @@
   }
   .form-head { margin-bottom: 32px; }
   .form-head .lede { font-size: 16px; }
+  /* The two questions (28 Oct 2026): one computer, any number of agents, as chips. */
+  .field .choice-label { text-transform: none; letter-spacing: 0; font-size: 15px; color: var(--text-primary); }
+  .choices { display: flex; flex-wrap: wrap; gap: 8px; }
+  .choice {
+    font: inherit; font-size: 15px; color: var(--text-primary); cursor: pointer;
+    padding: 9px 14px; background: var(--field-bg); border: 1px solid var(--border); border-radius: 999px;
+    transition: border-color 0.2s, background 0.2s;
+  }
+  .choice:hover { border-color: var(--text-muted); }
+  .choice[aria-pressed="true"] { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 12%, var(--field-bg)); }
+  .choice:focus-visible { outline: none; box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 18%, transparent); }
+  .choices[aria-invalid="true"] .choice { border-color: #d14343; }
 </style>
 </head>
 <body>
@@ -82,6 +94,34 @@
         <div class="error" id="contactError" aria-live="polite"></div>
       </div>
 
+      <!-- Which computer (required, one) and which agents (optional, any number): Marketing/Beta Signups/Signup copy.md, 28 Oct 2026. -->
+      <div class="field" role="group" aria-labelledby="computerLabel">
+        <label class="choice-label" id="computerLabel">Which computer would you use Workspace on?</label>
+        <div class="choices" id="computer">
+          <button type="button" class="choice" data-value="mac-apple-silicon" aria-pressed="false">Mac with Apple silicon</button>
+          <button type="button" class="choice" data-value="mac-intel" aria-pressed="false">Mac with Intel</button>
+          <button type="button" class="choice" data-value="windows" aria-pressed="false">Windows PC</button>
+          <button type="button" class="choice" data-value="linux" aria-pressed="false">Linux</button>
+          <button type="button" class="choice" data-value="other" aria-pressed="false">Something else</button>
+        </div>
+        <div class="hint">Not sure? Apple menu → About This Mac: "Chip: Apple M…" is Apple silicon.</div>
+        <div class="error" id="computerError" aria-live="polite"></div>
+      </div>
+
+      <div class="field" role="group" aria-labelledby="agentsLabel">
+        <label class="choice-label" id="agentsLabel">Which agents do you use? (optional)</label>
+        <div class="choices" id="agents">
+          <button type="button" class="choice" data-value="claude" aria-pressed="false">Claude</button>
+          <button type="button" class="choice" data-value="chatgpt" aria-pressed="false">ChatGPT</button>
+          <button type="button" class="choice" data-value="grok" aria-pressed="false">Grok</button>
+          <button type="button" class="choice" data-value="muse" aria-pressed="false">Muse</button>
+          <button type="button" class="choice" data-value="gemini" aria-pressed="false">Gemini</button>
+          <button type="button" class="choice" data-value="codex" aria-pressed="false">Codex</button>
+          <button type="button" class="choice" data-value="cursor" aria-pressed="false">Cursor</button>
+          <button type="button" class="choice" data-value="other" aria-pressed="false">Something else</button>
+        </div>
+      </div>
+
       <!-- Honeypot: real people never see or fill this. -->
       <div class="hp" aria-hidden="true">
         <label for="website">Leave this blank</label>
@@ -96,7 +136,7 @@
 
     <div class="status" id="status" role="status" aria-live="polite"></div>
 
-    <p class="privacy">Your name and contact are emailed straight to me and nothing else is stored. I won't share them or add you to any list. No analytics, no cookies, no tracking on this page.</p>
+    <p class="privacy">Your name, contact, computer and agents are emailed straight to me and nothing else is stored. I won't share them or add you to any list. No analytics, no cookies, no tracking on this page.</p>
   </div>
 
   <div class="footer">
@@ -117,6 +157,25 @@
   var btn      = document.getElementById('submitBtn');
   var label    = document.getElementById('submitLabel');
   var statusEl = document.getElementById('status');
+  var computerEl = document.getElementById('computer');
+  var agentsEl = document.getElementById('agents');
+
+  // One computer: pressing a choice unpresses the others. Agents: any number, each a toggle.
+  computerEl.addEventListener('click', function (e) {
+    var b = e.target.closest('.choice');
+    if (!b) return;
+    Array.prototype.forEach.call(computerEl.children, function (c) { c.setAttribute('aria-pressed', String(c === b)); });
+    computerEl.removeAttribute('aria-invalid');
+    document.getElementById('computerError').textContent = '';
+  });
+  agentsEl.addEventListener('click', function (e) {
+    var b = e.target.closest('.choice');
+    if (b) b.setAttribute('aria-pressed', String(b.getAttribute('aria-pressed') !== 'true'));
+  });
+  function pressed(group) {
+    return Array.prototype.filter.call(group.children, function (c) { return c.getAttribute('aria-pressed') === 'true'; })
+      .map(function (c) { return c.getAttribute('data-value'); });
+  }
 
   function show(kind, html) {
     statusEl.className = 'status ' + kind;
@@ -173,6 +232,12 @@
       setFieldError(contact, document.getElementById('contactError'), '');
     }
 
+    if (!pressed(computerEl).length) {
+      computerEl.setAttribute('aria-invalid', 'true');
+      document.getElementById('computerError').textContent = 'Please choose a computer.';
+      ok = false;
+    }
+
     return ok ? kind : null;
   }
 
@@ -214,7 +279,9 @@
       body: JSON.stringify({
         name: nameEl.value.trim(),
         contact: contact.value.trim(),
-        contact_kind: kind
+        contact_kind: kind,
+        computer: pressed(computerEl)[0],
+        agents: pressed(agentsEl)
       }),
       signal: controller.signal
     })
