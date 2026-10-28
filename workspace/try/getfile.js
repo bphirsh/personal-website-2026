@@ -11,7 +11,7 @@
 import { PAGE_PROMPT } from './prompt-data.js';
 
 const WORDS = {
-  copied: 'Copied! Paste it into Claude, ChatGPT or whatever AI you use, then drop the file it makes below.',
+  copied: 'Copied! Paste it into Claude, ChatGPT or any agent, then drop the file it makes here.',
   failed: "Couldn't copy. Select the prompt and copy it yourself.",
 };
 
