@@ -829,40 +829,21 @@
     font-weight: 300;
   }
 
-  .connect-links {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-  }
-
-  .connect-link {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 16px 20px;
+  /* Say hello as a row of icon buttons, evenly sized (28 Oct 2026). */
+  /* Four in one row at any width: 64px each where there's room, narrower on a phone. */
+  .connect-icons { display: grid; grid-template-columns: repeat(4, minmax(0, 64px)); gap: 12px; }
+  .connect-icon {
+    aspect-ratio: 1;
+    display: grid; place-items: center;
     background: var(--bg);
     border-radius: 16px;
-    text-decoration: none;
     color: var(--text-primary);
-    font-size: 15px;
-    font-weight: 500;
     transition: transform 0.2s, background 0.2s;
   }
-
-  .connect-link:hover {
-    transform: translateX(4px);
-    background: #EBE6DF;
-  }
-
-  .connect-link .arrow {
-    font-size: 18px;
-    color: var(--text-muted);
-    transition: transform 0.2s;
-  }
-
-  .connect-link:hover .arrow {
-    transform: translateX(3px);
-  }
+  .connect-icon:hover { transform: translateY(-2px); background: #EBE6DF; }
+  .connect-icon:focus-visible { outline: 2px solid var(--text-primary); outline-offset: 2px; }
+  .connect-icon svg { width: 24px; height: 24px; }
+  .connect-icon img { display: block; }
 
   /* ── CURRENT STACK ── */
   .stack-card-label {
@@ -1144,18 +1125,19 @@
   <div class="card card-white fade-in" id="connect">
     <div class="connect-heading">Say hello</div>
     <p class="connect-sub">I'm always happy to connect — especially if you're building something.</p>
-    <div class="connect-links">
-      <a href="mailto:brian@brianhirsh.com" class="connect-link">
-        <span>Email</span>
-        <span class="arrow">→</span>
+    <!-- A row of icons (Brian, 28 Oct 2026). Each mark is used unaltered and served from this site, so no service is contacted until you click: the envelope is drawn here; LinkedIn's [in] logo (black) from brand.linkedin.com's own download, used as a link to the profile in a row of social icons, as its guidelines allow; Instagram's glyph (black) from Meta's brand resource center (IG brand asset pack 2023), used to link to the profile without implying partnership; Substack's mark from Simple Icons 16.36.0, CC0. -->
+    <div class="connect-icons">
+      <a href="mailto:brian@brianhirsh.com" class="connect-icon" aria-label="Email" title="Email">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18v12H3zM3 6l9 7 9-7" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linejoin="round"/></svg>
       </a>
-      <a href="https://www.linkedin.com/in/bphirsh/" class="connect-link" target="_blank">
-        <span>LinkedIn</span>
-        <span class="arrow">→</span>
+      <a href="https://www.linkedin.com/in/bphirsh/" class="connect-icon" aria-label="LinkedIn" title="LinkedIn" target="_blank" rel="noopener">
+        <img src="/icons/linkedin-in-black.png" alt="" width="24" height="22">
       </a>
-      <a href="https://www.instagram.com/briangotinsta/" class="connect-link" target="_blank" rel="noopener">
-        <span>Instagram</span>
-        <span class="arrow">→</span>
+      <a href="https://www.instagram.com/briangotinsta/" class="connect-icon" aria-label="Instagram" title="Instagram" target="_blank" rel="noopener">
+        <img src="/icons/instagram-glyph-black.svg" alt="" width="24" height="24">
+      </a>
+      <a href="https://brianhirsh.substack.com/" class="connect-icon" aria-label="Substack" title="Substack" target="_blank" rel="noopener">
+        <img src="/icons/substack.svg" alt="" width="22" height="22">
       </a>
     </div>
   </div>
