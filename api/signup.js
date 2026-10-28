@@ -1,7 +1,11 @@
 /**
  * POST /api/signup — dev build access request form.
  *
- * Validates a name plus an email-or-phone, then emails it to me. There is no
+ * Validates a name plus an email-or-phone, and since 28 Oct 2026 the computer
+ * they'd use and the agents they use, then emails it to me. The page requires
+ * the computer and leaves the agents optional; here both are optional, so a
+ * request from the old page still works, but anything sent must be one of
+ * the known values. There is no
  * database on purpose: this is a handful of friends trying a dev build for a
  * couple of months, and an inbox is a perfectly good record for that. The
  * real system gets built separately at launch.
@@ -17,6 +21,10 @@
  */
 
 const EMAIL_RE = /^[^\s@]+@[^\s@.]+\.[^\s@]{2,}$/;
+
+// The page's choices, by the values it sends, and how the email shows them.
+const COMPUTERS = { 'mac-apple-silicon': 'Mac with Apple silicon', 'mac-intel': 'Mac with Intel', windows: 'Windows PC', linux: 'Linux', other: 'Something else' };
+const AGENTS = { claude: 'Claude', chatgpt: 'ChatGPT', grok: 'Grok', muse: 'Muse', gemini: 'Gemini', codex: 'Codex', cursor: 'Cursor', other: 'Something else' };
 const PHONE_CHARS_RE = /^[\d\s+().-]+$/;
 
 /**
@@ -84,6 +92,22 @@ module.exports = async (req, res) => {
     return;
   }
 
+  // The computer and agents: optional, but only known values, each at most once.
+  const computer = data.computer == null || data.computer === '' ? null : String(data.computer);
+  if (computer !== null && !Object.prototype.hasOwnProperty.call(COMPUTERS, computer)) {
+    res.status(400).json({ error: 'Please choose a computer.' });
+    return;
+  }
+  const agentList = data.agents == null ? [] : data.agents;
+  if (!Array.isArray(agentList) || agentList.length > Object.keys(AGENTS).length
+      || agentList.some((a) => typeof a !== 'string' || !Object.prototype.hasOwnProperty.call(AGENTS, a))) {
+    res.status(400).json({ error: "Those agents couldn't be read." });
+    return;
+  }
+  const agents = [...new Set(agentList)];
+  const computerText = computer ? COMPUTERS[computer] : '(not said)';
+  const agentsText = agents.length ? agents.map((a) => AGENTS[a]).join(', ') : '(none)';
+
   const apiKey = process.env.RESEND_API_KEY;
   const to = process.env.NOTIFY_EMAIL;
   if (!apiKey || !to) {
@@ -115,9 +139,11 @@ module.exports = async (req, res) => {
           `<table style="font-family:system-ui,sans-serif;font-size:15px;border-collapse:collapse">` +
           `<tr><td style="padding:4px 14px 4px 0"><strong>Name</strong></td><td>${safeName}</td></tr>` +
           `<tr><td style="padding:4px 14px 4px 0"><strong>${kind === 'email' ? 'Email' : 'Phone'}</strong></td><td>${safeContact}</td></tr>` +
+          `<tr><td style="padding:4px 14px 4px 0"><strong>Computer</strong></td><td>${escapeHtml(computerText)}</td></tr>` +
+          `<tr><td style="padding:4px 14px 4px 0"><strong>Agents</strong></td><td>${escapeHtml(agentsText)}</td></tr>` +
           `<tr><td style="padding:4px 14px 4px 0"><strong>When</strong></td><td>${when}</td></tr>` +
           `</table>`,
-        text: `New Workspace access request\n\nName: ${name}\n${kind === 'email' ? 'Email' : 'Phone'}: ${contact}\nWhen: ${when}\n`,
+        text: `New Workspace access request\n\nName: ${name}\n${kind === 'email' ? 'Email' : 'Phone'}: ${contact}\nComputer: ${computerText}\nAgents: ${agentsText}\nWhen: ${when}\n`,
       }),
     });
 
