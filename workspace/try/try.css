@@ -217,6 +217,7 @@ code { font-family: var(--font-mono); font-size: 0.9em; background: var(--code-b
 
 .btn-quiet { color: var(--fg); background: var(--surface); border: var(--border-width) solid var(--border); }
 .banner-sample { background: var(--accent-soft); }
+.banner-note { margin-top: var(--space-1); font-size: var(--text-xs); color: var(--fg-secondary); }
 
 /* ── on a phone ── */
 
