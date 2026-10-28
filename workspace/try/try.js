@@ -292,8 +292,8 @@ pick.addEventListener('change', () => {
 let depth = 0;
 addEventListener('dragenter', (e) => {
   e.preventDefault();
-  // A file dragged over the page brings the drop zone out, if copying or I have my file hasn't yet.
-  if (depth++ === 0) { if (document.getElementById('dropWrap')) showDrop(); drop.classList.add('over'); setDropText(WORDS.dragging); }
+  // A file dragged over the page moves to step 2, so the zone it is meant for is there.
+  if (depth++ === 0) { if (step2.isConnected && step2.hidden) toStep2(false); drop.classList.add('over'); setDropText(WORDS.dragging); }
 });
 addEventListener('dragleave', () => {
   if (--depth <= 0) { depth = 0; drop.classList.remove('over'); setDropText(null); }
@@ -319,13 +319,20 @@ roomBeside.addEventListener('change', placeStyles);
 sampleLink.hidden = false;
 document.getElementById('loadAnother').addEventListener('click', () => pick.click());
 document.getElementById('skipDemo').addEventListener('click', showSample);
-// The drop zone appears once the prompt is copied, or on I have my file (M-020); a drop on the window works before that too.
-const dropWrap = document.getElementById('dropWrap');
-const haveFile = document.getElementById('haveFile');
-function showDrop() {
-  dropWrap.hidden = false;
-  haveFile.hidden = true;
+// The two steps (Brian, 27 Oct 2026): step 1 copies the prompt; copying, I have my file, or a file dragged over the page moves to step 2, which holds the drop zone. Copying shows "Prompt copied" with a check mark and the paste lines; I have my file shows "Drop your file" and a way back to the prompt.
+const step1 = sampleLink;
+const step2 = document.getElementById('step2');
+function toStep2(copied) {
+  document.getElementById('step2Title').textContent = copied ? 'Prompt copied' : 'Drop your file';
+  // An SVG has no hidden property, so the attribute is set directly.
+  document.getElementById('step2Check').toggleAttribute('hidden', !copied);
+  document.getElementById('step2Copied').hidden = !copied;
+  document.getElementById('backToPrompt').hidden = copied;
+  step1.hidden = true;
+  step2.hidden = false;
 }
-haveFile.addEventListener('click', showDrop);
-wireGetFile(document.getElementById('getFile'), document.getElementById('getFileStatus'), () => codeFromHash(location.hash), showDrop);
+document.getElementById('haveFile').addEventListener('click', () => toStep2(false));
+document.getElementById('backToPrompt').addEventListener('click', () => { step2.hidden = true; step1.hidden = false; });
+// A refused copy stays in step 1, with the prompt shown for selecting.
+wireGetFile(document.getElementById('getFile'), document.getElementById('getFileStatus'), () => codeFromHash(location.hash), (ok) => { if (ok) toStep2(true); });
 document.getElementById('promptPeek').textContent = peek(codeFromHash(location.hash));
