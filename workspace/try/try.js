@@ -36,8 +36,8 @@ const WORDS = {
   dismiss: 'Dismiss',
   howToFix: 'How to fix it',
   sampleBanner: 'Example data. Copy the prompt above to see your own.',
-  // Shown with the example only, always (M-022: the example is a parody about real people).
-  parody: 'A parody: a made-up rivalry, just for fun. No connection to Elon Musk, Sam Altman or their companies, and nothing here is a real quote or event.',
+  // Shown with the example only, always (M-022, M-023: the example is a parody about real people and companies).
+  parody: 'A parody, just for fun: ChatGPT playing a dramatic royal adviser. No connection to Sam Altman, OpenAI or any company named, and nothing here is a real quote, event or claim.',
   loadMine: 'Load my file',
   // After "Reading your file…", one at a time, each replacing the last (M-014).
   loading: ['Working magic…', 'Creating your new Workspace…'],
