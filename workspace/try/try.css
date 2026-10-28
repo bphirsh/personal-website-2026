@@ -145,8 +145,8 @@ code { font-family: var(--font-mono); font-size: 0.9em; background: var(--code-b
 .step2-head { display: flex; align-items: center; gap: var(--space-3); font-size: var(--text-title); font-weight: var(--weight-semibold); line-height: var(--leading-tight); }
 .step2-sub { margin-top: var(--space-2); font-size: var(--text-sm); color: var(--fg-secondary); }
 /* The copied screen (Brian, 27 and 28 Oct 2026): "Copied to clipboard" with its clipboard icon, small once settled (try.js scales it up first), the instruction large, then the agents it works with, each a mark (where licensed) and its name. */
-.copied-done { display: flex; width: fit-content; align-items: center; gap: var(--space-2); font-size: var(--text-sm); font-weight: var(--weight-medium); color: var(--fg-secondary); transform-origin: center; }
-.copied-icon { width: var(--icon-size); height: var(--icon-size); flex: none; fill: none; stroke: var(--accent); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.copied-done { display: flex; width: fit-content; align-items: center; gap: var(--space-2); font-size: var(--text-sm); font-weight: var(--weight-medium); color: var(--fg-secondary); transform-origin: left center; }
+.copied-icon { transform-origin: 50% 60%; width: var(--icon-size); height: var(--icon-size); flex: none; fill: none; stroke: var(--accent); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 .copied-head { margin-top: var(--space-3); font-size: var(--text-title); font-weight: var(--weight-semibold); line-height: var(--leading-tight); }
 .agent-chips { list-style: none; display: flex; flex-wrap: wrap; gap: var(--space-3); margin-top: var(--space-5); }
 /* Named agent-chip, not agent: the replay's box is .agent (demo.css), and a .agent here restyled it (c507211, fixed 27 Oct 2026). */
