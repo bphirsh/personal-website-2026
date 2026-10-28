@@ -47,7 +47,7 @@
     <a href="/workspace/" class="back">← Workspace</a>
     <div class="cover-body">
       <p class="cover-emoji" aria-hidden="true">🥺</p>
-      <h1 class="cover-head">Please use a computer to check it out</h1>
+      <h1 class="cover-head">Please use a computer to check this out</h1>
     </div>
     <button type="button" class="link cover-link" id="coverInsist">Pfff, just show me the page</button>
   </section>
@@ -70,35 +70,38 @@
   <!-- The intro: removed from the page once a file or the example data is shown (M-015), so the page starts at the workspace. The file input lives outside it, so "Load a different file" still works. -->
   <input type="file" id="pick" class="visually-hidden" accept=".md,.txt,text/markdown,text/plain" tabindex="-1">
   <section class="intro" id="intro">
-  <header class="head">
-    <h1 class="title">Get your own Workspace</h1>
-    <p class="lede">Copy this prompt into your AI, then open what it makes here.</p>
-  </header>
-
   <div id="intake">
-    <!-- The main action (M-020, Brian, 27 Oct 2026): copying the prompt. The card reads as a prompt, not a button: its first lines in monospace, fading out, with a copy mark. -->
-    <div class="start" id="sampleLink" hidden>
+    <!-- Step 1 (M-020; Brian, 27 Oct 2026: "the header and text should go with the copy box … in the middle of the screen area"): the title, its line and the prompt card as one centred group, then I have my file and Skip. No privacy line yet: there is nothing to upload. The card reads as a prompt, not a button: its first lines in monospace, fading out, with a copy mark. -->
+    <div class="step" id="sampleLink" hidden>
+      <header class="head">
+        <h1 class="title">Get your own Workspace</h1>
+        <p class="lede">Copy this prompt into your AI, then open what it makes here.</p>
+      </header>
       <button type="button" class="prompt-card prompt-card-main" id="getFile">
         <span class="prompt-card-label">Click to copy the prompt</span>
         <span class="prompt-card-peek" id="promptPeek" aria-hidden="true"></span>
         <svg class="prompt-card-copy" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 9h10v11H9zM5 15H4V4h11v1"/></svg>
       </button>
       <p class="get-file-status" id="getFileStatus" role="status" aria-live="polite"></p>
-
-      <!-- After copying, or I have my file: a normal-sized drop zone, the whole of it the click target. -->
-      <div class="drop-wrap" id="dropWrap" hidden>
-        <label class="drop" id="drop" for="pick">
-          <svg class="drop-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15V4M7 9l5-5 5 5M4 15v4a1 1 0 001 1h14a1 1 0 001-1v-4"/></svg>
-          <span class="drop-main" id="dropMain">Drop your .md file here, or click to choose it</span>
-        </label>
-      </div>
-
-      <!-- Secondary: I have my file shows the drop zone; Skip goes straight to the demo with the example data (M-017). -->
       <div class="start-more">
         <button type="button" class="btn btn-quiet" id="haveFile">I have my file</button>
         <button type="button" class="link skip-demo" id="skipDemo">Skip, use demo data</button>
       </div>
+    </div>
+
+    <!-- Step 2, after copying or I have my file, in the same centred spot: the heading (with a check mark after copying), the drop zone, normal-sized and the whole of it the click target, and the privacy line under it. -->
+    <div class="step step2" id="step2" hidden>
+      <h2 class="step2-head"><svg class="step2-check" id="step2Check" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg><span id="step2Title">Prompt copied</span></h2>
+      <div id="step2Copied">
+        <p class="step2-sub">Paste it in a chat with the agent you love the most.</p>
+        <p class="step2-bring">Bring your agent's file back here when it's done.</p>
+      </div>
+      <label class="drop" id="drop" for="pick">
+        <svg class="drop-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15V4M7 9l5-5 5 5M4 15v4a1 1 0 001 1h14a1 1 0 001-1v-4"/></svg>
+        <span class="drop-main" id="dropMain">Drop your .md file here, or click to choose it</span>
+      </label>
       <p class="privacy">Nothing leaves your computer. This all runs in your browser.</p>
+      <button type="button" class="link step2-back" id="backToPrompt">Need the prompt? Copy it here</button>
     </div>
   </div>
 

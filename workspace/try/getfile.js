@@ -11,7 +11,6 @@
 import { PAGE_PROMPT } from './prompt-data.js';
 
 const WORDS = {
-  copied: 'Copied! Paste it into Claude, ChatGPT or any agent, then drop the file it makes here.',
   failed: "Couldn't copy. Select the prompt and copy it yourself.",
 };
 
@@ -32,18 +31,20 @@ export function peek(code, lines = 4) {
 }
 
 /**
- * Wire the button: `button` copies, `status` says what happened, and a box for the prompt is added after `status` when copying is refused. `code()` gives the code at the moment of pressing, and `after()`, when given, runs once either way (the page shows its drop zone then).
+ * Wire the button: `button` copies, `status` says what happened, and a box for the prompt is added after `status` when copying is refused. `code()` gives the code at the moment of pressing, and `after(ok)`, when given, runs once either way, `ok` saying whether it copied (the page moves to its second step only then).
  */
 export function wireGetFile(button, status, code, after) {
   let box = null;
   button.addEventListener('click', async () => {
     const text = fillPrompt(code());
+    let ok = false;
     box?.remove();
     box = null;
     try {
       if (!navigator.clipboard?.writeText) throw new Error('no clipboard');
       await navigator.clipboard.writeText(text);
-      status.textContent = WORDS.copied;
+      status.textContent = '';
+      ok = true;
     } catch {
       status.textContent = WORDS.failed;
       box = document.createElement('textarea');
@@ -56,6 +57,6 @@ export function wireGetFile(button, status, code, after) {
       box.focus();
       box.select();
     }
-    after?.();
+    after?.(ok);
   });
 }
