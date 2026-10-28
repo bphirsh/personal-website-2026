@@ -1,7 +1,7 @@
 /**
  * The founder card (M-008, M-017): drawn in the browser, to download or copy. Nothing is stored or published, and drawing it makes no request.
  *
- * Minimal since M-017, and fitted to the new flow (Brian, 27 Oct 2026): "Workspace"; "Made by <agent>" with that agent's mark from the copied screen, the agent read from the letter's title ("To Brian, from Claude"); their name, if the file has one; "Founder #N" only with an invite code; and the try page's address beside a QR code that opens it. The example data's card says "Example", so it can't pass for a real one. The QR code is drawn on the same canvas from vendor/qrcode.js, loaded with the page, and the marks from workspace/try/brand/, the same files the copied screen shows.
+ * Minimal since M-017, and fitted to the new flow (Brian, 27 Oct 2026): "Workspace"; "Made by <agent>" with that agent's mark from the copied screen, the agent read from the letter's title ("To Brian, from Claude"); their name, if the file has one; "Founder #N" only with an invite code; and the try page's address beside a QR code that opens it. The example data's card says "Example" twice, as a pill and in place of a name, and never carries the parody's name, so it can't pass for a real one off the site. The QR code is drawn on the same canvas from vendor/qrcode.js, loaded with the page, and the marks from workspace/try/brand/, the same files the copied screen shows.
  *
  * Words are from Marketing/Beta Signups/Page copy.md, "The share card". The colours and fonts are the theme's tokens, read from the page, so the card follows the style picked.
  */
@@ -52,7 +52,8 @@ export function cardLines({ invite, name, agent, example }) {
     example: example ? WORDS.example : null,
     brand: WORDS.brand,
     madeBy: agent ? WORDS.madeBy(agent) : null,
-    name: name && name !== 'You' ? name : null,
+    // The example's card never carries the parody's real name, since the PNG can leave the site (Integrator's catch, 27 Oct 2026): its large line is "Example".
+    name: example ? WORDS.example : name && name !== 'You' ? name : null,
     founder: invite ? WORDS.founder(invite.slice(0, 2)) : null,
     address: WORDS.address,
   };
