@@ -19,7 +19,7 @@ import { mountFiles } from './files.js';
 import { mountReplay } from './replay.js';
 import { mountButton } from './button.js';
 import { mountTaps } from './taps.js';
-import { mountCard } from './card.js';
+import { mountCard, agentFromLetter } from './card.js';
 import { mountStyleSwitcher } from './style.js';
 import { SAMPLE_TEXT } from './sample-data.js';
 import { wireGetFile, peek } from './getfile.js';
@@ -202,6 +202,8 @@ function showSample() {
   mountReplay(replay, r.invite, SAMPLE_NAME, text);
   mountFiles(filesMount, filesSample(r.invite).db);
   mountTaps(reply, codeFromHash(location.hash));
+  // The example's card says "Example", so it can't pass for a real one; no founder number.
+  mountCard(card, { ...r.invite.properties, invite: null, agent: agentFromLetter(r.invite.pages), example: true });
   // The banner and its parody line stay in view above the window, so the example is never seen without them.
   revealWorkspace(b);
 }
@@ -230,8 +232,8 @@ function showDemo(fileName, text, r) {
   mountReplay(replay, r.invite, fileName, text);
   mountFiles(filesMount, filesSample(r.invite).db);
   mountButton(reply, { ...r.invite.properties, invite });
-  // The card is theirs, so only for their own file, never for the sample.
-  mountCard(card, { ...r.invite.properties, invite });
+  // Their card: who made it from the letter, their name, and the founder number only with a code.
+  mountCard(card, { ...r.invite.properties, invite, agent: agentFromLetter(r.invite.pages) });
   revealWorkspace();
 }
 
