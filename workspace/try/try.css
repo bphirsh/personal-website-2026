@@ -139,11 +139,14 @@ code { font-family: var(--font-mono); font-size: 0.9em; background: var(--code-b
 @media (prefers-reduced-motion: reduce) { .step2 { animation: none; } }
 .step2-head { display: flex; align-items: center; gap: var(--space-3); font-size: var(--text-title); font-weight: var(--weight-semibold); line-height: var(--leading-tight); }
 .step2-check { width: 1em; height: 1em; flex: none; fill: none; stroke: var(--accent); stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
-.step2-check[hidden], #step2Copied[hidden], .step2-back[hidden] { display: none; }
 .step2-sub { margin-top: var(--space-2); font-size: var(--text-sm); color: var(--fg-secondary); }
-.step2-bring { margin-top: var(--space-5); font-size: var(--text-prose); color: var(--fg); }
 .step2 .drop { margin-top: var(--space-4); }
 .step2-back { display: block; margin-top: var(--space-4); font-size: var(--text-sm); color: var(--fg-secondary); }
+.step2-links { display: flex; gap: var(--space-5); }
+.step2-links .step2-back { margin-top: var(--space-4); }
+/* The copied screen fading out before the drop screen fades in. */
+.step2.leaving { opacity: 0; transition: opacity 240ms var(--easing); }
+@media (prefers-reduced-motion: reduce) { .step2.leaving { transition: none; } }
 .skip-demo { font-size: var(--text-sm); color: var(--fg-secondary); text-decoration-color: var(--fg-faint); }
 .skip-demo:hover { color: var(--fg); }
 .get-file-status { margin-top: var(--space-2); font-size: var(--text-sm); color: var(--fg); min-height: 1em; }
