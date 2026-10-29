@@ -11,7 +11,7 @@
 import { renderBody } from './markdown.js';
 
 // The page the comparison shows (Page copy, "Plain files"; M-017 clause 6): Sam's, written to have every bit of syntax worth seeing, so "What agents see" always shows #, **, -, [ ] and [text](url) and "What you see" their formatted forms.
-export const COMPARISON_PAGE = { file: 'Interview notes to findings.md', text: "# Interview notes to findings\n\n## This week\n- **Five interviews** gathered in one folder\n- Quotes pulled out and tagged by theme\n- First draft of the findings report\n- [x] Tag every quote by theme\n- [ ] Send the draft for comments\n\nWant this for your own notes? [Get in the next build](https://www.brianhirsh.com/workspace/signup/)" };
+export const COMPARISON_PAGE = { file: 'Interview notes to findings.md', text: "# Interview notes to findings\n\n## This week\n- **Five interviews** gathered in one folder\n- Quotes pulled out and tagged by theme\n- First draft of the findings report\n- [x] Tag every quote by theme\n- [ ] Send the draft for comments\n\nWant this for your own notes? [Get invited to v1.1](https://www.brianhirsh.com/workspace/signup/)" };
 
 const WORDS = {
   heading: 'Easy to read, for both you and agents',

@@ -447,36 +447,53 @@ code { font-family: var(--font-mono); font-size: 0.9em; background: var(--code-b
 .signup-head { margin-bottom: var(--space-2); }
 .signup-sub { color: var(--fg-secondary); font-size: var(--text-prose); margin-bottom: var(--space-5); }
 
-/* ── the roadmap (M-018): one vertical path; stage names on the left, each item a dot on the path ── */
-.path { --dot: var(--space-3); --rail: 9em; display: flex; flex-direction: column; max-width: 44em; }
-.stage { display: grid; grid-template-columns: var(--rail) 1fr; column-gap: var(--space-5); }
-.stage-name { font-size: var(--text-base); font-weight: var(--weight-semibold); line-height: var(--leading-ui); padding-top: var(--space-2); text-align: right; color: var(--fg-secondary); }
-.stage.now .stage-name { color: var(--accent); }
-.stage.next .stage-name { color: var(--fg-faint); }
-.stage.soon .stage-name { color: var(--fg-faint); opacity: 0.7; }
-.stage.soon .stage-items li { color: var(--fg-faint); }
-/* The path: one line down the items' left edge, unbroken from stage to stage. */
-.stage-items { list-style: none; position: relative; padding: var(--space-2) 0 var(--space-5) var(--space-6); border-left: 2px solid var(--border); }
-.stage:last-child .stage-items { padding-bottom: var(--space-2); }
-.stage.done .stage-items { border-left-color: var(--fg-secondary); }
-.stage-items li { position: relative; padding: var(--space-1) 0; color: var(--fg-secondary); line-height: var(--leading-ui); }
-.stage.now .stage-items li { color: var(--fg); font-weight: var(--weight-medium); }
-.stage-items li::before {
-  content: ''; position: absolute; top: calc(var(--space-1) + 0.72em - var(--dot) / 2);
-  left: calc(var(--space-6) * -1 - var(--dot) / 2 - 1px);
-  width: var(--dot); height: var(--dot); border-radius: 50%; box-sizing: border-box;
+/* ── the roadmap (M-018), redesigned (Brian, 29 Oct 2026): one vertical journey down a rail. Shipped stages solid, each with a checked dot and a Shipped tag; "You are here" the accent peak; planned stages on a dashed rail, fainter with distance. Each item a row, its emoji first as the icon. ── */
+.journey { --rail-x: 15px; --dot: 30px; list-style: none; position: relative; max-width: 44em; padding-left: calc(var(--rail-x) * 2 + var(--space-5)); }
+.leg, .here { position: relative; }
+/* The rail: solid under shipped stages, dashed from "You are here" on. Each stage draws its own piece, so there is no gap. */
+.leg::before, .here::before { content: ''; position: absolute; left: calc(var(--rail-x) * -2 - var(--space-5) + var(--rail-x) - 1px); top: 0; bottom: 0; width: 0; border-left: 2px solid var(--fg-secondary); }
+.leg.shipped:first-child::before { top: calc(var(--dot) / 2); }
+.leg.next::before, .leg.soon::before, .leg.future::before { border-left-style: dashed; border-left-color: var(--fg-faint); }
+.leg.future::before { bottom: auto; height: calc(var(--dot) / 2 + var(--space-1)); }
+.leg-head { position: relative; display: flex; align-items: baseline; gap: var(--space-3); min-height: var(--dot); padding-top: 2px; }
+.leg-dot { position: absolute; left: calc(var(--rail-x) * -2 - var(--space-5)); top: 0; width: var(--dot); height: var(--dot); border-radius: 50%; display: grid; place-items: center; box-sizing: border-box; background: var(--bg); border: 2px solid var(--fg-faint); }
+.leg.shipped .leg-dot { background: var(--fg); border-color: var(--fg); }
+.leg-dot svg { width: 16px; height: 16px; fill: none; stroke: var(--bg); stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
+.leg-name { font-size: var(--text-h3); font-weight: var(--weight-semibold); line-height: var(--leading-tight); color: var(--fg); }
+.leg-tag { font-size: var(--text-xs); font-weight: var(--weight-medium); color: var(--fg-secondary); background: var(--surface-sunken); border: var(--border-width) solid var(--border); border-radius: 999px; padding: 1px var(--space-2); }
+/* The space after each stage is padding on the stage, not a margin on its list, so the rail beside it runs on unbroken. */
+.leg { padding-bottom: var(--space-7); }
+.leg-items { list-style: none; display: grid; gap: var(--space-1); margin-top: var(--space-3); }
+.leg-items li { display: flex; align-items: center; gap: var(--space-3); padding: var(--space-2) var(--space-3); border-radius: var(--radius-md); color: var(--fg); line-height: var(--leading-ui); }
+.leg.shipped .leg-items li { background: var(--surface); border: var(--border-width) solid var(--border); }
+.item-emoji { flex: none; width: 1.6em; font-size: 1.25em; line-height: 1; text-align: center; }
+/* Planned stages fade with distance: Next brightest, Soon quieter, Future faintest. */
+.leg.next .leg-items li { color: var(--fg); }
+.leg.soon .leg-name, .leg.soon .leg-items li { color: var(--fg-secondary); }
+.leg.soon .item-emoji { opacity: 0.8; }
+.leg.future .leg-name, .leg.future .leg-items li { color: var(--fg-faint); }
+.leg.future .item-emoji { opacity: 0.55; }
+.leg.future { padding-bottom: 0; }
+/* You are here: an accent pill on the rail with a pulsing dot, where shipped ends and planned begins. */
+.here { display: flex; align-items: center; min-height: calc(var(--dot) + var(--space-2)); margin-top: calc(var(--space-3) * -1); padding-bottom: var(--space-6); }
+.here-pill { align-self: flex-start; margin-top: calc((var(--dot) + var(--space-2)) / 2 - 0.85em); }
+.here::before { border-left-style: dashed; border-left-color: var(--fg-faint); }
+.here-dot { position: absolute; left: calc(var(--rail-x) * -2 - var(--space-5) + var(--rail-x) - 7px); top: calc((var(--dot) + var(--space-2)) / 2); width: 14px; height: 14px; margin-top: -7px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 0 5px var(--accent-soft); animation: here-pulse 2s var(--easing) infinite; }
+@keyframes here-pulse { 0%, 100% { box-shadow: 0 0 0 4px var(--accent-soft); } 50% { box-shadow: 0 0 0 9px var(--accent-soft); } }
+.here-pill { font-size: var(--text-sm); font-weight: var(--weight-semibold); color: var(--on-accent); background: var(--accent); border-radius: 999px; padding: var(--space-1) var(--space-3); }
+/* The reveal: items stagger in once the section is on screen (try.js adds .shown); none under reduced motion. */
+@media (prefers-reduced-motion: no-preference) {
+  .roadmap:not(.shown) .leg-items li, .roadmap:not(.shown) .here { opacity: 0; transform: translateY(var(--space-2)); }
+  .roadmap.shown .leg-items li, .roadmap.shown .here { transition: opacity 360ms var(--easing), transform 360ms var(--easing); transition-delay: calc(var(--i, 7) * 45ms); }
+  .roadmap.shown .here { --i: 7; }
 }
-.stage.done li::before { background: var(--fg-secondary); }
-.stage.now li::before { background: var(--accent); box-shadow: 0 0 0 4px var(--accent-soft); }
-.stage.next li::before { background: var(--bg); border: 2px solid var(--fg-faint); }
-/* Soon: hollow like Next, and lighter (M-019). */
-.stage.soon li::before { background: var(--bg); border: 2px solid var(--border); }
+@media (prefers-reduced-motion: reduce) { .here-dot { animation: none; } }
 @media (max-width: 600px) {
-  .stage { grid-template-columns: 1fr; }
-  /* On a phone each name sits above its items, on the same unbroken path (padding, not margin, so the line has no gap). */
-  .stage-name { text-align: left; padding: var(--space-3) 0 var(--space-1) var(--space-6); border-left: 2px solid var(--border); }
-  .stage.done .stage-name { border-left-color: var(--fg-secondary); }
-  .stage:first-child .stage-name { padding-top: 0; }
+  .journey { --dot: 26px; --rail-x: 13px; padding-left: calc(var(--rail-x) * 2 + var(--space-3)); }
+  .leg::before, .here::before { left: calc(var(--rail-x) * -2 - var(--space-3) + var(--rail-x) - 1px); }
+  .leg-dot { left: calc(var(--rail-x) * -2 - var(--space-3)); }
+  .here-dot { left: calc(var(--rail-x) * -2 - var(--space-3) + var(--rail-x) - 7px); }
+  .leg-items li { padding: var(--space-2); }
 }
 
 /* ── touch-only devices (a phone or an iPad): two covers in place of the page (Brian, 27 Oct 2026) ── */

@@ -174,36 +174,60 @@
 
   <!-- The main call to action (M-016): its own band, headed by Brian's line. -->
   <section class="signup-band" id="signupBand" hidden>
-    <h2 class="signup-head">🤩 Get in the next build</h2>
+    <h2 class="signup-head">🤩 Get invited to v1.1</h2>
     <p class="signup-sub">Invites go out with builds, roughly every 2 weeks.</p>
     <div id="reply"></div>
   </section>
 
-  <!-- One vertical path (M-018): Done, This build, Next and Soon on the left, each item a dot on the path: filled, highlighted, hollow, lighter. Brian's own list, word for word (M-019). -->
+  <!-- One vertical journey (M-018), redesigned (Brian, 29 Oct 2026: "it's a bit mid"): the shipped stages solid, each with a check and a Shipped tag; "You are here" the accent peak where shipped ends; the planned stages fainter with distance on a dashed path. Each item is a row with its emoji first, as the icon. Brian's own list, word for word, with his emoji. Items stagger in when the section scrolls into view (try.js), not under reduced motion. -->
   <section class="roadmap" id="roadmap" hidden>
     <h2 class="section-title">Roadmap</h2>
-    <div class="path">
-      <div class="stage done"><h3 class="stage-name">Done</h3><ul class="stage-items">
-        <li>Powerful relational databases 💪</li>
-        <li>Beautiful markdown writing experience 🦋</li>
-        <li>Open code, html, photos, documents, and more in app 💻</li>
-      </ul></div>
-      <div class="stage now"><h3 class="stage-name">This build</h3><ul class="stage-items">
-        <li>Version history ↩️</li>
-        <li>Agent roles, skills, and learnings 🤖</li>
-        <li>What agents changed here 🤖</li>
-        <li>Automatic updating (yay) 🏗️</li>
-      </ul></div>
-      <div class="stage next"><h3 class="stage-name">Next</h3><ul class="stage-items">
-        <li>Agent workflows 🤖</li>
-        <li>iOS app 📱</li>
-        <li>Live Syncing 🔄</li>
-      </ul></div>
-      <div class="stage soon"><h3 class="stage-name">Soon</h3><ul class="stage-items">
-        <li>Windows app 💻</li>
-        <li>Android 📱</li>
-      </ul></div>
-    </div>
+    <ol class="journey">
+      <li class="leg shipped">
+        <div class="leg-head"><span class="leg-dot" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span><h3 class="leg-name">v1.0</h3><span class="leg-tag">Shipped</span></div>
+        <ul class="leg-items">
+          <li style="--i: 0"><span class="item-emoji" aria-hidden="true">💪</span><span class="item-text">Powerful relational databases</span><span class="visually-hidden"> 💪</span></li>
+          <li style="--i: 1"><span class="item-emoji" aria-hidden="true">🦋</span><span class="item-text">Beautiful markdown writing experience</span><span class="visually-hidden"> 🦋</span></li>
+          <li style="--i: 2"><span class="item-emoji" aria-hidden="true">💻</span><span class="item-text">Open code, html, photos, documents, and more in app</span><span class="visually-hidden"> 💻</span></li>
+        </ul>
+      </li>
+      <li class="leg shipped">
+        <div class="leg-head"><span class="leg-dot" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span><h3 class="leg-name">v1.1</h3><span class="leg-tag">Shipped</span></div>
+        <ul class="leg-items">
+          <li style="--i: 3"><span class="item-emoji" aria-hidden="true">↩️</span><span class="item-text">Version history</span><span class="visually-hidden"> ↩️</span></li>
+          <li style="--i: 4"><span class="item-emoji" aria-hidden="true">🤖</span><span class="item-text">Agent roles, skills, and learnings</span><span class="visually-hidden"> 🤖</span></li>
+          <li style="--i: 5"><span class="item-emoji" aria-hidden="true">🤖</span><span class="item-text">What agents changed here</span><span class="visually-hidden"> 🤖</span></li>
+          <li style="--i: 6"><span class="item-emoji" aria-hidden="true">🏗️</span><span class="item-text">Automatic updating (yay)</span><span class="visually-hidden"> 🏗️</span></li>
+        </ul>
+      </li>
+      <li class="here" aria-label="You are here"><span class="here-dot" aria-hidden="true"></span><span class="here-pill">You are here</span></li>
+      <li class="leg next">
+        <div class="leg-head"><span class="leg-dot" aria-hidden="true"></span><h3 class="leg-name">Next</h3></div>
+        <ul class="leg-items">
+          <li style="--i: 7"><span class="item-emoji" aria-hidden="true">📥</span><span class="item-text">Import from Obsidian, Notion and Airtable</span><span class="visually-hidden"> 📥</span></li>
+          <li style="--i: 8"><span class="item-emoji" aria-hidden="true">📊</span><span class="item-text">Import CSV, Excel, Google Docs and Google Sheets</span><span class="visually-hidden"> 📊</span></li>
+          <li style="--i: 9"><span class="item-emoji" aria-hidden="true">📋</span><span class="item-text">Templates for pages and databases</span><span class="visually-hidden"> 📋</span></li>
+          <li style="--i: 10"><span class="item-emoji" aria-hidden="true">🎬</span><span class="item-text">Video and audio play in the app</span><span class="visually-hidden"> 🎬</span></li>
+        </ul>
+      </li>
+      <li class="leg soon">
+        <div class="leg-head"><span class="leg-dot" aria-hidden="true"></span><h3 class="leg-name">Soon</h3></div>
+        <ul class="leg-items">
+          <li style="--i: 11"><span class="item-emoji" aria-hidden="true">🤖</span><span class="item-text">Agent workflows, with a visual editor</span><span class="visually-hidden"> 🤖</span></li>
+          <li style="--i: 12"><span class="item-emoji" aria-hidden="true">📱</span><span class="item-text">iOS app</span><span class="visually-hidden"> 📱</span></li>
+          <li style="--i: 13"><span class="item-emoji" aria-hidden="true">🔄</span><span class="item-text">Live syncing</span><span class="visually-hidden"> 🔄</span></li>
+          <li style="--i: 14"><span class="item-emoji" aria-hidden="true">🔍</span><span class="item-text">Better search (⌘K) experience</span><span class="visually-hidden"> 🔍</span></li>
+          <li style="--i: 15"><span class="item-emoji" aria-hidden="true">📅</span><span class="item-text">Calendar and timeline views for databases</span><span class="visually-hidden"> 📅</span></li>
+        </ul>
+      </li>
+      <li class="leg future">
+        <div class="leg-head"><span class="leg-dot" aria-hidden="true"></span><h3 class="leg-name">Future</h3></div>
+        <ul class="leg-items">
+          <li style="--i: 16"><span class="item-emoji" aria-hidden="true">💻</span><span class="item-text">Windows app</span><span class="visually-hidden"> 💻</span></li>
+          <li style="--i: 17"><span class="item-emoji" aria-hidden="true">📱</span><span class="item-text">Android</span><span class="visually-hidden"> 📱</span></li>
+        </ul>
+      </li>
+    </ol>
   </section>
 
   <div id="card"></div>

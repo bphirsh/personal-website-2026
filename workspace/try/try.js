@@ -145,6 +145,16 @@ const growBars = new IntersectionObserver((entries) => {
 }, { threshold: [0, 0.5, 1] });
 growBars.observe(figures);
 
+// The roadmap's items stagger in the first time the section comes on screen (any part of it past the bottom tenth, so a tall section on a short screen still triggers) (Brian, 29 Oct 2026); under reduced motion the CSS shows them at once.
+const roadmap = document.getElementById('roadmap');
+const showRoadmap = new IntersectionObserver((entries) => {
+  if (entries.some((e) => e.isIntersecting)) {
+    roadmap.classList.add('shown');
+    showRoadmap.disconnect();
+  }
+}, { rootMargin: '0px 0px -10% 0px' });
+showRoadmap.observe(roadmap);
+
 // `from`, when given, is scrolled to instead of the window, so it stays in view above it.
 function revealWorkspace(from) {
   removeIntro();
