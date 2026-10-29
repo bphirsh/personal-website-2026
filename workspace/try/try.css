@@ -372,15 +372,26 @@ code { font-family: var(--font-mono); font-size: 0.9em; background: var(--code-b
 .speed-bar.slow { background: var(--fg-faint); }
 .speed-bar.fast { background: var(--accent); transition-delay: 250ms; }
 .figures.grown .speed-bar { width: var(--to); }
+/* The flame (Brian, 29 Oct 2026: "janky"): an inline SVG of layers, a soft glow, an outer flame in the warm chart colours, a brighter inner flame and a pale core near the base, and two embers. It stands upright on the bar's end and burns upward. Each layer moves on its own eased loop, with durations that aren't multiples of each other, so it never visibly repeats; only transform and opacity animate. */
 .speed-flame {
-  /* Upright, burning up from the bar's end (Brian, 27 Oct 2026): its base sits on the bar's middle, at its end, and it flickers from the base. */
-  position: absolute; right: calc(var(--space-4) / -2); bottom: 50%; width: var(--space-4); height: var(--space-5);
-  transform: none; transform-origin: 50% 100%;
-  background: radial-gradient(ellipse at 50% 80%, var(--chart-4) 0 30%, var(--chart-2) 45%, transparent 70%);
-  border-radius: 50% 50% 45% 45%; opacity: 0;
+  /* 11×16: the room between the bar's middle and the bar above it is about 20px, so even at its tallest stretch the tip stays a couple of pixels clear of the row above. */
+  position: absolute; right: -5.5px; bottom: 50%; width: 11px; height: 16px; opacity: 0; pointer-events: none;
 }
-.figures.grown .speed-flame { opacity: 1; transition: opacity 300ms var(--easing) 1200ms; animation: flicker 600ms steps(3) infinite 1400ms; }
-@keyframes flicker { 0% { transform: rotate(0deg) scale(1); } 50% { transform: rotate(-5deg) scale(0.9, 1.15); } 100% { transform: rotate(5deg) scale(1.1, 0.9); } }
+.speed-flame svg { display: block; width: 100%; height: 100%; overflow: visible; }
+.speed-flame svg > * { transform-box: fill-box; transform-origin: 50% 100%; }
+.figures.grown .speed-flame { opacity: 1; transition: opacity 300ms var(--easing) 1200ms; }
+.figures.grown .flame-outer { animation: flame-sway 1.3s ease-in-out infinite alternate 1.4s; }
+.figures.grown .flame-inner { animation: flame-stretch 0.9s ease-in-out infinite alternate 1.4s; }
+.figures.grown .flame-core { animation: flame-pulse 0.7s ease-in-out infinite alternate 1.4s; }
+.figures.grown .flame-glow { transform-origin: 50% 50%; animation: flame-glow 1.7s ease-in-out infinite alternate 1.4s; }
+.flame-ember { opacity: 0; }
+.figures.grown .flame-ember.e1 { animation: flame-ember 1.9s ease-out infinite 1.6s; }
+.figures.grown .flame-ember.e2 { animation: flame-ember 2.3s ease-out infinite 2.4s; }
+@keyframes flame-sway { 0% { transform: rotate(-4deg) scale(1, 0.96); } 100% { transform: rotate(4deg) scale(0.96, 1.06); } }
+@keyframes flame-stretch { 0% { transform: rotate(3deg) scale(1.04, 0.92); } 100% { transform: rotate(-3deg) scale(0.94, 1.08); } }
+@keyframes flame-pulse { 0% { transform: scale(0.9); opacity: 0.85; } 100% { transform: scale(1.08); opacity: 1; } }
+@keyframes flame-glow { 0% { transform: scale(0.9); opacity: 0.7; } 100% { transform: scale(1.1); opacity: 1; } }
+@keyframes flame-ember { 0% { transform: translateY(0); opacity: 0; } 15% { opacity: 1; } 100% { transform: translateY(-10px); opacity: 0; } }
 
 /* ── just files on your computer (M-016): a split with a divider ── */
 .files { margin-top: calc(var(--space-8) * 2.5); }
@@ -417,7 +428,10 @@ code { font-family: var(--font-mono); font-size: 0.9em; background: var(--code-b
 
 @media (prefers-reduced-motion: reduce) {
   .speed-bar { transition: none; width: var(--to); }
-  .speed-flame { opacity: 1; animation: none !important; transition: none !important; }
+  /* A still flame: no flicker and no embers. */
+  .speed-flame { opacity: 1; transition: none !important; }
+  .speed-flame svg > * { animation: none !important; }
+  .flame-ember { display: none; }
 }
 
 /* ── the comparison (M-018): both sides at once, side by side; on a phone, one above the other ── */
