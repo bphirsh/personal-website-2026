@@ -2,10 +2,10 @@
  * POST /api/signup — the beta access request form.
  *
  * Validates a name plus an email, and since 28 Oct 2026 the computer
- * they'd use and the agents they use. The page requires
- * the computer and leaves the agents optional; here both are optional, so a
- * request from the old page still works, but anything sent must be one of
- * the known values.
+ * they'd use and the agents they use. The computer is required, here as on
+ * the page (since 30 Oct 2026, so no sign-up reaches the list without it;
+ * "Something else" counts as an answer); the agents are optional. Anything
+ * sent must be one of the known values.
  *
  * Since M-027 (30 Oct 2026) the email is required (a phone alone is no
  * longer accepted), the person joins the Resend beta list and gets the
@@ -85,9 +85,9 @@ module.exports = async (req, res) => {
     return;
   }
 
-  // The computer and agents: optional, but only known values, each at most once.
-  const computer = data.computer == null || data.computer === '' ? null : String(data.computer);
-  if (computer !== null && !Object.prototype.hasOwnProperty.call(COMPUTERS, computer)) {
+  // The computer is required; the agents are optional. Only known values, each at most once.
+  const computer = data.computer == null ? '' : String(data.computer);
+  if (!Object.prototype.hasOwnProperty.call(COMPUTERS, computer)) {
     res.status(400).json({ error: 'Please choose a computer.' });
     return;
   }
@@ -98,7 +98,7 @@ module.exports = async (req, res) => {
     return;
   }
   const agents = [...new Set(agentList)];
-  const computerText = computer ? COMPUTERS[computer] : '(not said)';
+  const computerText = COMPUTERS[computer];
   const agentsText = agents.length ? agents.map((a) => AGENTS[a]).join(', ') : '(none)';
 
   const apiKey = process.env.RESEND_API_KEY;
