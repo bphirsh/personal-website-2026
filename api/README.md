@@ -4,15 +4,15 @@ Three Vercel serverless functions that power `/workspace/signup/`, `/workspace/d
 
 | Endpoint | Does |
 |---|---|
-| `POST /api/signup` | Validates a name + email-or-phone, emails it to you |
+| `POST /api/signup` | Validates a name, email, computer and agents; adds them to the Resend beta list and sends them the confirmation; emails it all to you |
 | `POST /api/download-auth` | Checks the password, returns the build's URL |
-| `POST /api/invite-reply` | The button on `/workspace/try`: emails you their email, invite code, computer, role and tools. Stores nothing |
+| `POST /api/invite-reply` | The button on `/workspace/try`: adds their email to the beta list with the confirmation, and emails you their email, invite code, computer, role and tools |
 
 ## Why it's built this way
 
 This is deliberately throwaway infrastructure — a handful of friends, a month or two, then a separate system at launch. Every choice below optimises for *least setup*, not for scale or elegance.
 
-- **No database.** Signups are emailed, not stored. For a list this size an inbox is a perfectly good record, and it removes a whole service from the stack.
+- **The list is Resend's** (M-027, 30 Oct 2026). Each sign-up becomes a contact in the "Beta" segment, with `computer` and `agents` properties, and gets the confirmation email (`_beta-list.js`, `_confirmation.js`; files starting with `_` are not endpoints). `tools/sync-signups.sh` copies the list into the Signups database on Brian's Mac once a day. If Resend fails at the list or the confirmation, your email still goes and says what failed.
 - **No npm dependencies.** Resend is called over its REST API with plain `fetch`, so there's no `package.json` in the repo and the site stays a zero-config static deploy. Nothing about the existing build changed.
 - **Same origin.** The pages call `/api/...` on their own domain, so there is no CORS configuration anywhere.
 - **The build is not streamed through a function.** At ~119MB that risks the function timeout on a slow connection and bills the bandwidth twice (Blob → function → browser). `download-auth` hands back Blob's CDN URL instead and the browser downloads directly.
@@ -48,7 +48,8 @@ Vercel dashboard → your project → **Settings → Environment Variables**:
 | `NOTIFY_EMAIL` | Where signups go. **Must be your Resend account's own address** unless you verified a domain — see step 2. | yes |
 | `DMG_VERSION` | e.g. `0.1.5`. Keep it matching the `Current build` line hard-coded on the download page. | no |
 | `DMG_ARCH` | defaults to `Apple Silicon (arm64)` | no |
-| `RESEND_FROM` | only if you verified a domain | no |
+| `RESEND_FROM` | The sender on the verified domain, `Brian Hirsh <brian@brianhirsh.com>`. The confirmation can't reach anyone else without it | yes, since M-027 |
+| `RESEND_AUDIENCE_ID` | The "Beta" segment's id (Resend's audiences are now segments) | yes, since M-027 |
 
 Redeploy after adding them — Vercel only picks up new variables on the next build.
 

@@ -4,13 +4,13 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Request access to Workspace</title>
-<meta name="description" content="Get the early Workspace beta for your Mac. Leave a name and an email or phone; it goes straight to Brian and nothing else is stored.">
+<meta name="description" content="Get the early Workspace beta for your Mac. Leave your name and email, and Brian will write when there's a new build to try.">
 <!-- Link previews (Marketing/Beta Signups/Link previews.md, 27 Oct 2026); the card is drawn by tools/make-og.mjs. -->
 <link rel="canonical" href="https://www.brianhirsh.com/workspace/signup/">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Brian Hirsh">
 <meta property="og:title" content="Request access to Workspace">
-<meta property="og:description" content="Get the early Workspace beta for your Mac. Leave a name and an email or phone; it goes straight to Brian and nothing else is stored.">
+<meta property="og:description" content="Get the early Workspace beta for your Mac. Leave your name and email, and Brian will write when there's a new build to try.">
 <meta property="og:url" content="https://www.brianhirsh.com/workspace/signup/">
 <meta property="og:image" content="https://www.brianhirsh.com/og/workspace-signup.png">
 <meta property="og:image:type" content="image/png">
@@ -19,7 +19,7 @@
 <meta property="og:image:alt" content="Request early access to Workspace">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Request access to Workspace">
-<meta name="twitter:description" content="Get the early Workspace beta for your Mac. Leave a name and an email or phone; it goes straight to Brian and nothing else is stored.">
+<meta name="twitter:description" content="Get the early Workspace beta for your Mac. Leave your name and email, and Brian will write when there's a new build to try.">
 <meta name="twitter:image" content="https://www.brianhirsh.com/og/workspace-signup.png">
 <meta name="twitter:image:alt" content="Request early access to Workspace">
 <meta name="theme-color" content="#F4F1EC" media="(prefers-color-scheme: light)">
@@ -87,11 +87,10 @@
       </div>
 
       <div class="field">
-        <label for="contact">Email or phone</label>
-        <input type="text" id="contact" name="contact" autocomplete="email"
-               maxlength="160" required placeholder="you@example.com or +1 555 123 4567">
-        <div class="hint">Either one works — whichever you'd rather be reached on.</div>
-        <div class="error" id="contactError" aria-live="polite"></div>
+        <label for="email">Email</label>
+        <input type="email" id="email" name="email" autocomplete="email"
+               maxlength="160" required placeholder="you@example.com">
+        <div class="error" id="emailError" aria-live="polite"></div>
       </div>
 
       <!-- Which computer (required, one) and which agents (optional, any number): Marketing/Beta Signups/Signup copy.md, 28 Oct 2026. -->
@@ -136,7 +135,7 @@
 
     <div class="status" id="status" role="status" aria-live="polite"></div>
 
-    <p class="privacy">Your name, contact, computer and agents are emailed straight to me and nothing else is stored. I won't share them or add you to any list. No analytics, no cookies, no tracking on this page.</p>
+    <p class="privacy">Your name, email, computer and agents come straight to me. I won't share them. No analytics, no cookies on this page.</p>
   </div>
 
   <div class="footer">
@@ -152,7 +151,7 @@
   var CONTACT_EMAIL = 'brian@brianhirsh.com';
   var form     = document.getElementById('signupForm');
   var nameEl   = document.getElementById('name');
-  var contact  = document.getElementById('contact');
+  var emailEl  = document.getElementById('email');
   var honey    = document.getElementById('website');
   var btn      = document.getElementById('submitBtn');
   var label    = document.getElementById('submitLabel');
@@ -195,19 +194,11 @@
     else { input.removeAttribute('aria-invalid'); }
   }
 
-  // Accept an email OR a phone number. Deliberately loose: the cost of
-  // rejecting a real person's valid-but-unusual contact is much higher than
-  // the cost of letting a typo through, which I'd spot by hand anyway.
-  function classifyContact(value) {
-    var v = value.trim();
-    if (v.indexOf('@') !== -1) {
-      return /^[^\s@]+@[^\s@.]+\.[^\s@]{2,}$/.test(v) ? 'email' : null;
-    }
-    var digits = v.replace(/[^\d]/g, '');
-    if (digits.length >= 7 && digits.length <= 15 && /^[\d\s+().-]+$/.test(v)) {
-      return 'phone';
-    }
-    return null;
+  // An email is required since 30 Oct 2026 (M-027). Deliberately loose: the
+  // cost of rejecting a real person's valid-but-unusual address is much
+  // higher than the cost of letting a typo through.
+  function looksLikeEmail(value) {
+    return /^[^\s@]+@[^\s@.]+\.[^\s@]{2,}$/.test(value.trim());
   }
 
   function validate() {
@@ -220,16 +211,15 @@
       setFieldError(nameEl, document.getElementById('nameError'), '');
     }
 
-    var kind = classifyContact(contact.value);
-    if (!contact.value.trim()) {
-      setFieldError(contact, document.getElementById('contactError'), 'Please add an email or phone number.');
+    if (!emailEl.value.trim()) {
+      setFieldError(emailEl, document.getElementById('emailError'), 'Please add your email.');
       ok = false;
-    } else if (!kind) {
-      setFieldError(contact, document.getElementById('contactError'),
-        "That doesn't look like an email or a phone number — mind checking it?");
+    } else if (!looksLikeEmail(emailEl.value)) {
+      setFieldError(emailEl, document.getElementById('emailError'),
+        "That doesn't look like an email address — mind checking it?");
       ok = false;
     } else {
-      setFieldError(contact, document.getElementById('contactError'), '');
+      setFieldError(emailEl, document.getElementById('emailError'), '');
     }
 
     if (!pressed(computerEl).length) {
@@ -238,11 +228,11 @@
       ok = false;
     }
 
-    return ok ? kind : null;
+    return ok;
   }
 
   // Clear a field's error as soon as the visitor starts fixing it.
-  [nameEl, contact].forEach(function (el) {
+  [nameEl, emailEl].forEach(function (el) {
     el.addEventListener('input', function () {
       if (el.getAttribute('aria-invalid')) {
         setFieldError(el, document.getElementById(el.id + 'Error'), '');
@@ -260,8 +250,7 @@
       return;
     }
 
-    var kind = validate();
-    if (!kind) return;
+    if (!validate()) return;
 
     btn.disabled = true;
     btn.setAttribute('data-busy', 'true');
@@ -278,8 +267,7 @@
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         name: nameEl.value.trim(),
-        contact: contact.value.trim(),
-        contact_kind: kind,
+        email: emailEl.value.trim(),
         computer: pressed(computerEl)[0],
         agents: pressed(agentsEl)
       }),
@@ -293,8 +281,8 @@
       .then(function (r) {
         if (r.ok) {
           form.style.display = 'none';
-          show('ok', "<strong>You're on the list.</strong><br>I'll reach out at " +
-                     escapeHtml(contact.value.trim()) + ' when a spot opens up.');
+          show('ok', "<strong>You're on the list.</strong><br>I'll email you at " +
+                     escapeHtml(emailEl.value.trim()) + " when there's a new build to try.");
         } else if (r.status === 429) {
           show('bad', 'That\'s a lot of requests in a short window — give it a minute and try again.');
         } else {

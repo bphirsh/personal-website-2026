@@ -21,15 +21,22 @@ const handler = require('../api/invite-reply.js');
 
 process.env.RESEND_API_KEY = 'test-key-not-real';
 process.env.NOTIFY_EMAIL = 'brian@example.test';
+process.env.RESEND_FROM = 'Brian Hirsh <brian@example.test>';
+process.env.RESEND_AUDIENCE_ID = 'seg-test';
 
+// Every call to Resend is recorded in `calls`; `sent` is the notification to Brian alone, as before the beta list (M-027).
+let calls = [];
 let sent = [];
 globalThis.fetch = async (url, init) => {
-  sent.push({ url, body: JSON.parse(init.body) });
-  return { ok: true, text: async () => '' };
+  const call = { url, method: init.method, body: init.body ? JSON.parse(init.body) : null };
+  calls.push(call);
+  if (url.endsWith('/emails') && call.body.to[0] === 'brian@example.test') sent.push(call);
+  return { ok: true, status: 200, text: async () => '' };
 };
 
 async function call(method, body) {
   sent = [];
+  calls = [];
   let status = 0;
   let json = null;
   const res = {
@@ -38,7 +45,7 @@ async function call(method, body) {
     json(j) { json = j; return this; },
   };
   await handler({ method, body }, res);
-  return { status, json, sent };
+  return { status, json, sent, calls };
 }
 
 const tool = (id, known = true) => ({ id: known ? id : 'other', label: id, known });
@@ -66,6 +73,18 @@ const cases = [
   ['too many tools are refused', 'POST', { ...page, ai_tools: Array(21).fill('x') }, (r) => r.status === 400 && r.sent.length === 0],
   ['a string body is parsed', 'POST', JSON.stringify(page), (r) => r.status === 201],
   ['GET is refused', 'GET', null, (r) => r.status === 405 && r.sent.length === 0],
+  // The beta list (M-027, 30 Oct 2026).
+  ['they join the Beta segment with computer and agents as properties', 'POST', page, (r) => {
+    const c = r.calls.find((x) => x.url.endsWith('/contacts') && x.method === 'POST');
+    return c && c.body.email === 'priya@example.test' && c.body.segments[0].id === 'seg-test'
+      && c.body.properties.computer === 'mac-apple-silicon' && c.body.properties.agents === 'claude-code,cursor,Zed assistant';
+  }],
+  ['they get the confirmation, "Hi there" since no name is asked', 'POST', page, (r) => {
+    const c = r.calls.find((x) => x.url.endsWith('/emails') && x.body.to[0] === 'priya@example.test');
+    return c && c.body.subject === "You're on the Workspace beta list" && c.body.text.startsWith('Hi there,') && !c.body.html.includes('{{name}}');
+  }],
+  ["Brian's email says both worked", 'POST', page, (r) => r.sent[0].body.text.includes('Beta list: on the list (added)') && r.sent[0].body.text.includes('Confirmation: sent')],
+  ['a refused body touches no contact', 'POST', { ...page, email: 'nope' }, (r) => r.calls.length === 0],
   // The code from the link (M-010): a bad # is no code, never an error.
   ...[['#07-k3f9', '07-k3f9'], ['#07-K3F9', '07-k3f9'], ['#07%2Dk3f9', '07-k3f9'], ['', null], ['#junk', null],
     ['#100%', null], ['#%E0%A4%A', null], ['#%', null], ['#07-k3f9%', null]]
