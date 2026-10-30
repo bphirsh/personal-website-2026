@@ -4,11 +4,11 @@
 #   tools/install-sync-agent.sh             # install (or reinstall) and run it once now
 #   tools/install-sync-agent.sh --remove    # take it off again
 #
-# It runs the copy of sync-signups.sh in the main checkout of the site, so it keeps working when worktrees come and go. The Keychain item "resend-beta-sync" must exist first (tools/sync-signups.sh says how); macOS may ask once whether `security` may read it, and "Always Allow" keeps it quiet afterwards.
+# It runs the copy of sync-signups.sh in the main checkout of the site under this account's home (~/Syncthing/…, so the Mac mini's `assistant` account works as well as Brian's), so it keeps working when worktrees come and go. The Keychain item "resend-beta-sync" must exist first (tools/sync-signups.sh says how); macOS may ask once whether `security` may read it, and "Always Allow" keeps it quiet afterwards.
 set -e
 label=com.brianhirsh.sync-signups
 plist="$HOME/Library/LaunchAgents/$label.plist"
-script="/Users/brian/Syncthing/Areas/Personal Website/site/tools/sync-signups.sh"
+script="$HOME/Syncthing/Areas/Personal Website/site/tools/sync-signups.sh"
 log="$HOME/Library/Logs/sync-signups.log"
 
 launchctl bootout "gui/$(id -u)/$label" 2>/dev/null || true

@@ -2,7 +2,7 @@
 /**
  * check-sync-signups — run the beta-list sync against a made-up base, so no real sign-up is read or written.
  *
- *   "/Users/brian/Syncthing/Projects/Agentic Workspace/v0/code/node_modules/.bin/tsx" tools/check-sync-signups.mts
+ *   "$HOME/Syncthing/Projects/Agentic Workspace/v0/code/node_modules/.bin/tsx" tools/check-sync-signups.mts
  *
  * It makes a fresh base in a temporary folder with the Signups table's fields as Marketing/Beta Signups/Signups/README.md lists them (not a copy of the real file, which holds real people), adds one made-up person, and runs syncContacts from tools/sync-signups.mts twice with made-up contacts in place of Resend. Each case says PASS or FAIL; exit 1 on any FAIL. What it cannot see: Resend's own API, which a run with the real key shows.
  */
@@ -14,7 +14,7 @@ import { pathToFileURL } from 'node:url'
 import { syncContacts, type Contact } from './sync-signups.mts'
 import { planImport } from './import-signups.mts'
 
-const CODE = process.env.WORKSPACE_CODE || '/Users/brian/Syncthing/Projects/Agentic Workspace/v0/code'
+const CODE = process.env.WORKSPACE_CODE || path.join(os.homedir(), 'Syncthing/Projects/Agentic Workspace/v0/code')
 const { Base, setAppDataRoot } = await import(pathToFileURL(path.join(CODE, 'src/shared/db.ts')).href)
 
 const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'check-sync-signups-'))

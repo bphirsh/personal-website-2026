@@ -17,7 +17,8 @@ import { pathToFileURL } from 'node:url'
 const require = createRequire(import.meta.url)
 const { joinBetaList } = require('../api/_beta-list.js')
 
-const WORKSPACE = '/Users/brian/Syncthing/Projects/Agentic Workspace'
+// Home-relative, so it runs under any account with the same ~/Syncthing layout (the Mac mini's is `assistant`).
+const WORKSPACE = path.join(os.homedir(), 'Syncthing/Projects/Agentic Workspace')
 const CODE = process.env.WORKSPACE_CODE || path.join(WORKSPACE, 'v0/code')
 const DEFAULT_BASE = path.join(WORKSPACE, 'Marketing/Beta Signups/Signups')
 const EMAIL_RE = /^[^\s@]+@[^\s@.]+\.[^\s@]{2,}$/
