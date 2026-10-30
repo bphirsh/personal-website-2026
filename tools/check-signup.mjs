@@ -48,7 +48,10 @@ const page = { name: 'Sam Q. Test', email: 'sam@example.test', computer: 'mac-ap
 const cases = [
   ['the page body is sent, with computer and agents in the email', page, (r) => r.status === 201 && r.sent.length === 1 && r.sent[0].body.text.includes('Computer: Mac with Apple silicon') && r.sent[0].body.text.includes('Agents: Claude, Cursor')],
   ['no agents is fine (optional)', { ...page, agents: [] }, (r) => r.status === 201 && r.sent[0].body.text.includes('Agents: (none)')],
-  ['an old-style request, without either field, still works', { name: 'Sam Test', contact: 'sam@example.test', contact_kind: 'email' }, (r) => r.status === 201 && r.sent[0].body.text.includes('Computer: (not said)')],
+  ['an old-style request, with contact for the email, still works', { name: 'Sam Test', contact: 'sam@example.test', contact_kind: 'email', computer: 'linux' }, (r) => r.status === 201 && r.sent[0].body.text.includes('Computer: Linux')],
+  ['no computer is refused: nothing sent, nobody added', { ...page, computer: undefined }, (r) => r.status === 400 && r.calls.length === 0],
+  ['an empty computer is refused', { ...page, computer: '' }, (r) => r.status === 400 && r.calls.length === 0],
+  ['"Something else" counts as a computer', { ...page, computer: 'other' }, (r) => r.status === 201 && r.sent[0].body.text.includes('Computer: Something else')],
   ['a phone alone is refused now (M-027)', { ...page, email: undefined, contact: '+1 555 123 4567', contact_kind: 'phone' }, (r) => r.status === 400 && r.calls.length === 0],
   ['no email is refused', { ...page, email: '' }, (r) => r.status === 400 && r.calls.length === 0],
   // The beta list (M-027, 30 Oct 2026).
