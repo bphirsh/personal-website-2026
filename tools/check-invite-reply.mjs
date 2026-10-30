@@ -81,7 +81,7 @@ const cases = [
   }],
   ['they get the confirmation, "Hi there" since no name is asked', 'POST', page, (r) => {
     const c = r.calls.find((x) => x.url.endsWith('/emails') && x.body.to[0] === 'priya@example.test');
-    return c && c.body.subject === "You're on the Workspace beta list" && c.body.text.startsWith('Hi there,') && !c.body.html.includes('{{name}}');
+    return c && c.body.subject === "You're on the list for the Workspace beta" && c.body.text.startsWith('Hi there,') && !c.body.html.includes('{{name}}');
   }],
   ["Brian's email says both worked", 'POST', page, (r) => r.sent[0].body.text.includes('Beta list: on the list (added)') && r.sent[0].body.text.includes('Confirmation: sent')],
   ['a refused body touches no contact', 'POST', { ...page, email: 'nope' }, (r) => r.calls.length === 0],
