@@ -16,6 +16,7 @@ import { pathToFileURL } from 'node:url'
 
 const require = createRequire(import.meta.url)
 const { joinBetaList } = require('../api/_beta-list.js')
+import { isExcluded } from './sync-signups.mts'
 
 // Home-relative, so it runs under any account with the same ~/Syncthing layout (the Mac mini's is `assistant`).
 const WORKSPACE = path.join(os.homedir(), 'Syncthing/Projects/Agentic Workspace')
@@ -25,14 +26,16 @@ const EMAIL_RE = /^[^\s@]+@[^\s@.]+\.[^\s@]{2,}$/
 
 export interface Planned { name: string; email: string; computer: string | null; agents: string[] }
 
-/** Who would be added: every row with a plausible email, once per email. Exported for tools/check-sync-signups.mts. */
-export function planImport(base: { db: { prepare(sql: string): { all(): unknown[] } } }): { add: Planned[]; skipped: string[] } {
+/** Who would be added: every row with a plausible email, once per email, leaving out Brian's own and test addresses (isExcluded, in sync-signups.mts). Exported for tools/check-sync-signups.mts. */
+export function planImport(base: { db: { prepare(sql: string): { all(): unknown[] } } }): { add: Planned[]; skipped: string[]; excluded: number } {
   const rows = base.db.prepare("SELECT name, email, platform, ai_tools FROM signups WHERE email IS NOT NULL AND trim(email) != '' ORDER BY pos").all() as Array<{ name: string | null; email: string; platform: string | null; ai_tools: string | null }>
   const seen = new Set<string>()
   const add: Planned[] = []
   const skipped: string[] = []
+  let excluded = 0
   for (const r of rows) {
     const email = r.email.trim()
+    if (isExcluded(email)) { excluded++; continue }
     if (!EMAIL_RE.test(email)) { skipped.push(`${email} (not an email)`); continue }
     if (seen.has(email.toLowerCase())) { skipped.push(`${email} (a second row)`); continue }
     seen.add(email.toLowerCase())
@@ -40,7 +43,7 @@ export function planImport(base: { db: { prepare(sql: string): { all(): unknown[
     try { agents = r.ai_tools ? JSON.parse(r.ai_tools).map(String) : [] } catch { /* an unreadable cell is no agents */ }
     add.push({ name: (r.name ?? '').trim(), email, computer: r.platform || null, agents })
   }
-  return { add, skipped }
+  return { add, skipped, excluded }
 }
 
 async function main(): Promise<void> {
@@ -57,6 +60,7 @@ async function main(): Promise<void> {
   console.log(`${go ? 'Adding' : 'Dry run: would add'} ${plan.add.length} to the Beta list, with no confirmation email:`)
   for (const p of plan.add) console.log(`  ${p.name || '(no name)'} <${p.email}>  ${p.computer ?? '-'}  ${p.agents.join(',') || '-'}`)
   for (const s of plan.skipped) console.log(`  skipped ${s}`)
+  if (plan.excluded) console.log(`  ${plan.excluded} skipped (Brian or test)`)
   if (!go) { console.log('Nothing changed. Run again with --go to add them.'); return }
 
   const { apiKey, segmentId } = await import('./sync-signups.mts')

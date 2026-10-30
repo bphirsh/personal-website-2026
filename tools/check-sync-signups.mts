@@ -11,7 +11,7 @@ import * as fs from 'node:fs'
 import * as os from 'node:os'
 import * as path from 'node:path'
 import { pathToFileURL } from 'node:url'
-import { syncContacts, type Contact } from './sync-signups.mts'
+import { syncContacts, isExcluded, type Contact } from './sync-signups.mts'
 import { planImport } from './import-signups.mts'
 
 const CODE = process.env.WORKSPACE_CODE || path.join(os.homedir(), 'Syncthing/Projects/Agentic Workspace/v0/code')
@@ -81,6 +81,30 @@ cases.push(
   ['the import plans each email once, with OS and agents', plan.add.map((p) => p.email).join() === 'Morgan@Example.test,sam@example.test,riley@example.test' && plan.add[1].computer === 'mac-apple-silicon' && plan.add[1].agents.join() === 'claude,grok'],
   ['it skips the repeat and the non-email, and leaves the phone-only row out', plan.skipped.length === 2 && plan.skipped.some((s) => s.includes('second row')) && plan.skipped.some((s) => s.includes('not an email'))],
 )
+
+// Brian's own and test addresses (row "The Signups sync skips Brian's and test addresses").
+const mine: Contact[] = [
+  { email: '2brianhirsh@gmail.com', first_name: 'Brian', computer: 'mac-apple-silicon', agents: ['claude'] },
+  { email: '2BrianHirsh+beta-test@Gmail.com', computer: 'mac-apple-silicon', agents: [] },
+  { email: 'delivered@resend.dev', computer: 'windows', agents: ['muse'] },
+  { email: 'Bounced@RESEND.DEV', computer: null, agents: [] },
+]
+const nearMisses = ['2brianhirsh2@gmail.com', 'x@resend.dev.example', 'a2brianhirsh@gmail.com', '2brianhirsh@gmail.com.example', 'x@notresend.dev']
+const before = rows().length
+const skip = syncContacts(base, [...mine, { email: 'jordan@example.test', computer: 'linux', agents: [] }])
+const mineIn = rows().filter((r) => isExcluded(String(r.email ?? '')))
+cases.push(
+  ['2brianhirsh@gmail.com, any case, is skipped', isExcluded('2brianhirsh@gmail.com') && isExcluded(' 2BrianHirsh@GMAIL.com ')],
+  ['2brianhirsh+anything@gmail.com is skipped', isExcluded('2brianhirsh+beta@gmail.com') && isExcluded('2brianhirsh+@gmail.com') && isExcluded('2BrianHirsh+A.b-1@Gmail.com')],
+  ['any address at resend.dev is skipped', isExcluded('delivered@resend.dev') && isExcluded('Bounced@RESEND.DEV')],
+  ['near misses are not skipped', nearMisses.every((e) => !isExcluded(e))],
+  ['the sync leaves them out, adds the rest, and only counts them', skip.skipped === 4 && skip.added.join() === 'jordan@example.test' && rows().length === before + 1 && mineIn.length === 0],
+  ['an excluded contact adds no option (windows is there; muse is not added)', !opts('ai_tools').includes('muse')],
+)
+base.insertRow('signups', { name: 'Brian', email: '2BrianHirsh+old@gmail.com' }, { actor: 'check' })
+base.insertRow('signups', { name: 'Test', email: 'delivered@resend.dev' }, { actor: 'check' })
+const plan2 = planImport(base)
+cases.push(['the import leaves them out too, counted, not listed', plan2.excluded === 2 && !plan2.add.some((p) => isExcluded(p.email)) && !plan2.skipped.some((s) => /brianhirsh|resend\.dev/i.test(s)) && plan2.add.some((p) => p.email === 'jordan@example.test')])
 
 let failed = 0
 for (const [name, ok] of cases) {
