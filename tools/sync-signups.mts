@@ -8,7 +8,7 @@
  *
  * Reads every contact in the "Beta" segment through Resend's API, with its `computer` and `agents` properties (api/_beta-list.js writes them), and writes the Signups table through the Workspace engine (Base.open, insertRow, setCell, updateField), with every change stamped as the actor "sync-signups". It matches people on email, case-insensitively: a new email becomes a new row; a known one has its platform and AI tools brought up to date when they changed, and its name filled only when the row has none. It never deletes a row and never writes the same person twice. A select option the base doesn't have yet (grok, muse, a tool typed on the try page) is added to the field first, so no value lands outside its options.
  *
- * The Resend key comes from RESEND_API_KEY, or else from Brian's login Keychain (`security add-generic-password -s resend-beta-sync -a brian -w`, typed by him; the key is never in a file). The segment is the one named "Beta", or RESEND_AUDIENCE_ID when set. Resend allows a few requests a second, so calls are spaced.
+ * The Resend key comes from RESEND_API_KEY, or else from the login Keychain of the account it runs under (`security add-generic-password -s resend-beta-sync -a "$USER" -w`, typed by him; the key is never in a file). The segment is the one named "Beta", or RESEND_AUDIENCE_ID when set. Resend allows a few requests a second, so calls are spaced.
  *
  * tools/ is excluded from deploy by .vercelignore. The engine is imported from the Agentic Workspace code (WORKSPACE_CODE overrides where), so this runs with that project's tsx; tools/sync-signups.sh says how.
  */
@@ -18,7 +18,8 @@ import * as os from 'node:os'
 import * as path from 'node:path'
 import { pathToFileURL } from 'node:url'
 
-const WORKSPACE = '/Users/brian/Syncthing/Projects/Agentic Workspace'
+// Home-relative, so it runs under any account with the same ~/Syncthing layout (the Mac mini's is `assistant`).
+const WORKSPACE = path.join(os.homedir(), 'Syncthing/Projects/Agentic Workspace')
 const CODE = process.env.WORKSPACE_CODE || path.join(WORKSPACE, 'v0/code')
 const DEFAULT_BASE = path.join(WORKSPACE, 'Marketing/Beta Signups/Signups')
 const TABLE = 'signups'
