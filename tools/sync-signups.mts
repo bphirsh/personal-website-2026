@@ -6,7 +6,7 @@
  *   tools/sync-signups.sh --base <folder>      # into another base, such as a test copy
  *   tools/sync-signups.sh --dry-run            # say what would change, write nothing
  *
- * Reads every contact in the "Beta" segment through Resend's API, with its `computer` and `agents` properties (api/_beta-list.js writes them), and writes the Signups table through the Workspace engine (Base.open, insertRow, setCell, updateField), with every change stamped as the actor "sync-signups". It matches people on email, case-insensitively: a new email becomes a new row; a known one has its platform and AI tools brought up to date when they changed, and its name filled only when the row has none. It never deletes a row and never writes the same person twice. A select option the base doesn't have yet (grok, muse, a tool typed on the try page) is added to the field first, so no value lands outside its options.
+ * Reads every contact in the "Beta" segment through Resend's API, with its `computer` and `agents` properties (api/_beta-list.js writes them), and writes the Signups table through the Workspace engine (Base.open, insertRow, setCell, updateField), with every change stamped as the actor "sync-signups". It matches people on email, case-insensitively: a new email becomes a new row; a known one has its platform and AI tools brought up to date when they changed, and its name filled only when the row has none. It never deletes a row and never writes the same person twice. Brian's own and test addresses (EXCLUDED, below) are left out and only counted in the log. A select option the base doesn't have yet (grok, muse, a tool typed on the try page) is added to the field first, so no value lands outside its options.
  *
  * The Resend key comes from RESEND_API_KEY, or else from the login Keychain of the account it runs under (`security add-generic-password -s resend-beta-sync -a "$USER" -w`, typed by him; the key is never in a file). The segment is the one named "Beta", or RESEND_AUDIENCE_ID when set. Resend allows a few requests a second, so calls are spaced.
  *
@@ -27,6 +27,19 @@ const ACTOR = 'sync-signups'
 const RESEND = 'https://api.resend.com'
 const SPACING_MS = 600
 
+// Brian's own and test addresses (Brian, 30 Oct 2026): they stay in Resend but never land in Signups. Whole address, any case.
+const EXCLUDED = [
+  /^2brianhirsh@gmail\.com$/i,
+  /^2brianhirsh\+[^@]*@gmail\.com$/i,
+  /@resend\.dev$/i,
+]
+
+/** Whether this address is Brian's or a test one, which the sync and the import leave out. */
+export function isExcluded(email: string): boolean {
+  const e = email.trim()
+  return EXCLUDED.some((re) => re.test(e))
+}
+
 /** A beta-list contact as the sync needs it. */
 export interface Contact {
   email: string
@@ -43,6 +56,8 @@ export interface SyncResult {
   updated: string[]
   unchanged: string[]
   optionsAdded: string[]
+  /** How many contacts were Brian's or test addresses, left out; counted, never listed. */
+  skipped: number
 }
 
 /** The engine's Base, as far as this script uses it. */
@@ -87,9 +102,10 @@ function ensureOptions(base: BaseLike, field: string, values: readonly string[],
 }
 
 /** Write `contacts` into the Signups table of `base`. Exported so tools/check-sync-signups.mts can run it against a made-up base. */
-export function syncContacts(base: BaseLike, contacts: readonly Contact[], opts: { dryRun?: boolean } = {}): SyncResult {
+export function syncContacts(base: BaseLike, all: readonly Contact[], opts: { dryRun?: boolean } = {}): SyncResult {
   const dryRun = opts.dryRun === true
-  const result: SyncResult = { added: [], updated: [], unchanged: [], optionsAdded: [] }
+  const contacts = all.filter((c) => !isExcluded(c.email))
+  const result: SyncResult = { added: [], updated: [], unchanged: [], optionsAdded: [], skipped: all.length - contacts.length }
 
   // Options first, so every value written below is one the field offers.
   result.optionsAdded.push(...ensureOptions(base, 'platform', contacts.map((c) => c.computer ?? '').filter(Boolean), dryRun))
@@ -213,7 +229,7 @@ async function main(): Promise<void> {
   const base = Base.open(dir)
   try {
     const r = syncContacts(base, contacts, { dryRun })
-    console.log(`${stamp()} sync-signups${dryRun ? ' (dry run, nothing written)' : ''}: ${contacts.length} on the beta list; ${r.added.length} added, ${r.updated.length} updated, ${r.unchanged.length} unchanged, into ${dir}`)
+    console.log(`${stamp()} sync-signups${dryRun ? ' (dry run, nothing written)' : ''}: ${contacts.length} on the beta list; ${r.added.length} added, ${r.updated.length} updated, ${r.unchanged.length} unchanged, ${r.skipped} skipped (Brian or test), into ${dir}`)
     for (const e of r.added) console.log(`  added ${e}`)
     for (const e of r.updated) console.log(`  updated ${e}`)
     for (const o of r.optionsAdded) console.log(`  new option ${o}`)
