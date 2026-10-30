@@ -1,14 +1,17 @@
 /**
- * POST /api/signup — dev build access request form.
+ * POST /api/signup — the beta access request form.
  *
- * Validates a name plus an email-or-phone, and since 28 Oct 2026 the computer
- * they'd use and the agents they use, then emails it to me. The page requires
+ * Validates a name plus an email, and since 28 Oct 2026 the computer
+ * they'd use and the agents they use. The page requires
  * the computer and leaves the agents optional; here both are optional, so a
  * request from the old page still works, but anything sent must be one of
- * the known values. There is no
- * database on purpose: this is a handful of friends trying a dev build for a
- * couple of months, and an inbox is a perfectly good record for that. The
- * real system gets built separately at launch.
+ * the known values.
+ *
+ * Since M-027 (30 Oct 2026) the email is required (a phone alone is no
+ * longer accepted), the person joins the Resend beta list and gets the
+ * confirmation email (api/_beta-list.js), and then the request is emailed to
+ * me as before, saying whether the list and the confirmation worked. A
+ * failure there never loses the sign-up: my email still goes.
  *
  * Deliberately dependency-free — Resend's REST API is called with plain fetch
  * rather than its SDK, so no package.json is needed and the repo stays a
@@ -17,28 +20,17 @@
  * Environment variables (Vercel → Settings → Environment Variables):
  *   RESEND_API_KEY   from resend.com
  *   NOTIFY_EMAIL     where signups are sent
- *   RESEND_FROM      optional; defaults to Resend's shared onboarding sender
+ *   RESEND_FROM      the sender; the confirmation needs it on the verified domain
+ *   RESEND_AUDIENCE_ID  the Beta segment's id
  */
+
+const { joinBetaList, sendConfirmation } = require('./_beta-list.js');
 
 const EMAIL_RE = /^[^\s@]+@[^\s@.]+\.[^\s@]{2,}$/;
 
 // The page's choices, by the values it sends, and how the email shows them.
 const COMPUTERS = { 'mac-apple-silicon': 'Mac with Apple silicon', 'mac-intel': 'Mac with Intel', windows: 'Windows PC', linux: 'Linux', other: 'Something else' };
 const AGENTS = { claude: 'Claude', chatgpt: 'ChatGPT', grok: 'Grok', muse: 'Muse', gemini: 'Gemini', codex: 'Codex', cursor: 'Cursor', other: 'Something else' };
-const PHONE_CHARS_RE = /^[\d\s+().-]+$/;
-
-/**
- * Accept an email OR a phone number. Deliberately loose: wrongly rejecting a
- * real person's unusual-but-valid contact costs far more than letting a typo
- * through, which I'd spot by hand anyway.
- */
-function classifyContact(value) {
-  const v = (value || '').trim();
-  if (v.includes('@')) return EMAIL_RE.test(v) ? 'email' : null;
-  const digits = v.replace(/\D/g, '');
-  if (digits.length >= 7 && digits.length <= 15 && PHONE_CHARS_RE.test(v)) return 'phone';
-  return null;
-}
 
 function escapeHtml(s) {
   return String(s).replace(/[&<>"']/g, (c) => (
@@ -73,22 +65,23 @@ module.exports = async (req, res) => {
   }
 
   const name = String(data.name || '').trim();
-  const contact = String(data.contact || '').trim();
+  // `email` from the page since 30 Oct 2026; `contact` from a page loaded before then.
+  const email = String(data.email ?? data.contact ?? '').trim();
 
   if (!name || name.length > 120) {
     res.status(400).json({ error: 'Please provide a name.' });
     return;
   }
-  if (!contact || contact.length > 160) {
-    res.status(400).json({ error: 'Please provide an email or phone number.' });
+  if (!email) {
+    res.status(400).json({ error: 'Please provide an email address.' });
     return;
   }
 
   // Re-validated here because anything arriving over the network is untrusted,
-  // whatever the page checked before sending it.
-  const kind = classifyContact(contact);
-  if (!kind) {
-    res.status(400).json({ error: "That doesn't look like an email or phone number." });
+  // whatever the page checked before sending it. Loose on purpose: a typo
+  // getting through costs less than turning away a real address.
+  if (email.length > 160 || !EMAIL_RE.test(email)) {
+    res.status(400).json({ error: "That doesn't look like an email address." });
     return;
   }
 
@@ -116,11 +109,21 @@ module.exports = async (req, res) => {
     return;
   }
 
+  const from = process.env.RESEND_FROM || 'Workspace Dev <onboarding@resend.dev>';
+
+  // The list first, then the confirmation only if they are on it, so the email never says something untrue.
+  const list = await joinBetaList({ apiKey, segmentId: process.env.RESEND_AUDIENCE_ID, email, name, computer, agents });
+  const confirm = list.ok
+    ? await sendConfirmation({ apiKey, from, email, name })
+    : { ok: false, detail: 'not sent, since they are not on the list' };
+  if (!list.ok) console.error('signup: beta list failed', list.detail);
+  if (!confirm.ok) console.error('signup: confirmation failed', confirm.detail);
+  const listText = list.ok ? `on the list (${list.detail})` : `FAILED: ${list.detail}`;
+  const confirmText = confirm.ok ? 'sent' : `FAILED: ${confirm.detail}`;
+
   const when = new Date().toISOString();
   const safeName = escapeHtml(name);
-  const safeContact = escapeHtml(contact);
-  // Reply-To only when it's an email, so replying goes straight to them.
-  const replyTo = kind === 'email' ? contact : undefined;
+  const safeEmail = escapeHtml(email);
 
   try {
     const resendRes = await fetch('https://api.resend.com/emails', {
@@ -130,20 +133,23 @@ module.exports = async (req, res) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        from: process.env.RESEND_FROM || 'Workspace Dev <onboarding@resend.dev>',
+        from,
         to: [to],
-        ...(replyTo ? { reply_to: replyTo } : {}),
-        subject: `Workspace access request — ${name}`,
+        // Reply-To them, so replying goes straight to them.
+        reply_to: email,
+        subject: `Workspace access request — ${name}${list.ok && confirm.ok ? '' : ' (check the list)'}`,
         html:
           `<h2 style="font-family:system-ui,sans-serif">New Workspace access request</h2>` +
           `<table style="font-family:system-ui,sans-serif;font-size:15px;border-collapse:collapse">` +
           `<tr><td style="padding:4px 14px 4px 0"><strong>Name</strong></td><td>${safeName}</td></tr>` +
-          `<tr><td style="padding:4px 14px 4px 0"><strong>${kind === 'email' ? 'Email' : 'Phone'}</strong></td><td>${safeContact}</td></tr>` +
+          `<tr><td style="padding:4px 14px 4px 0"><strong>Email</strong></td><td>${safeEmail}</td></tr>` +
           `<tr><td style="padding:4px 14px 4px 0"><strong>Computer</strong></td><td>${escapeHtml(computerText)}</td></tr>` +
           `<tr><td style="padding:4px 14px 4px 0"><strong>Agents</strong></td><td>${escapeHtml(agentsText)}</td></tr>` +
+          `<tr><td style="padding:4px 14px 4px 0"><strong>Beta list</strong></td><td>${escapeHtml(listText)}</td></tr>` +
+          `<tr><td style="padding:4px 14px 4px 0"><strong>Confirmation</strong></td><td>${escapeHtml(confirmText)}</td></tr>` +
           `<tr><td style="padding:4px 14px 4px 0"><strong>When</strong></td><td>${when}</td></tr>` +
           `</table>`,
-        text: `New Workspace access request\n\nName: ${name}\n${kind === 'email' ? 'Email' : 'Phone'}: ${contact}\nComputer: ${computerText}\nAgents: ${agentsText}\nWhen: ${when}\n`,
+        text: `New Workspace access request\n\nName: ${name}\nEmail: ${email}\nComputer: ${computerText}\nAgents: ${agentsText}\nBeta list: ${listText}\nConfirmation: ${confirmText}\nWhen: ${when}\n`,
       }),
     });
 
@@ -157,6 +163,8 @@ module.exports = async (req, res) => {
       //   403 -> NOTIFY_EMAIL isn't this Resend account's own address
       //          (the shared onboarding@resend.dev sender only delivers there)
       console.error('signup: resend failed', resendRes.status, detail.slice(0, 500));
+      // On the list, they are recorded even though my email failed: no error for them.
+      if (list.ok) { res.status(201).json({ ok: true }); return; }
       res.status(502).json({
         error: "I couldn't record that just now — please try again shortly.",
         upstream: resendRes.status,
@@ -165,6 +173,7 @@ module.exports = async (req, res) => {
     }
   } catch (err) {
     console.error('signup: resend threw', err);
+    if (list.ok) { res.status(201).json({ ok: true }); return; }
     res.status(502).json({ error: "I couldn't record that just now — please try again shortly." });
     return;
   }

@@ -3,15 +3,18 @@
  *
  * Emails me what the person chose to send after seeing the demo: their email address (required since M-013, so I can write back), invite code, computer, role and tools.
  * Nothing from their file is sent or seen here; the file is read in their
- * browser and stays there. Like /api/signup, there is no database on purpose:
- * the reply is one email to me, and nothing is stored.
+ * browser and stays there. Since M-027 (30 Oct 2026) their email also joins
+ * the Resend beta list and gets the confirmation, like /api/signup
+ * (api/_beta-list.js); my email says whether both worked.
  *
  * Deliberately dependency-free, like /api/signup — Resend's REST API is called
  * with plain fetch, so the repo stays a zero-config static deploy.
  *
  * Environment variables: the same as /api/signup (RESEND_API_KEY,
- * NOTIFY_EMAIL, optional RESEND_FROM). See api/README.md.
+ * NOTIFY_EMAIL, RESEND_FROM, RESEND_AUDIENCE_ID). See api/README.md.
  */
+
+const { joinBetaList, sendConfirmation } = require('./_beta-list.js');
 
 const EMAIL_RE = /^[^\s@]+@[^\s@.]+\.[^\s@]{2,}$/;
 const INVITE_RE = /^\d{2}-[a-z0-9]{4}$/;
@@ -99,6 +102,15 @@ module.exports = async (req, res) => {
     return;
   }
 
+  // The list first, then the confirmation only if they are on it. No name is asked on the try page, so the greeting is "Hi there".
+  const from = process.env.RESEND_FROM || 'Workspace Dev <onboarding@resend.dev>';
+  const list = await joinBetaList({ apiKey, segmentId: process.env.RESEND_AUDIENCE_ID, email: r.email, name: '', computer: r.platform, agents: r.ai_tools });
+  const confirm = list.ok
+    ? await sendConfirmation({ apiKey, from, email: r.email, name: '' })
+    : { ok: false, detail: 'not sent, since they are not on the list' };
+  if (!list.ok) console.error('invite-reply: beta list failed', list.detail);
+  if (!confirm.ok) console.error('invite-reply: confirmation failed', confirm.detail);
+
   const when = new Date().toISOString();
   const rows = [
     ['Invite', r.invite],
@@ -107,6 +119,8 @@ module.exports = async (req, res) => {
     ['AI tools', r.ai_tools.join(', ') || '(none)'],
     ['Knowledge tools', r.knowledge_tools.join(', ') || '(none)'],
     ['Email', r.email],
+    ['Beta list', list.ok ? `on the list (${list.detail})` : `FAILED: ${list.detail}`],
+    ['Confirmation', confirm.ok ? 'sent' : `FAILED: ${confirm.detail}`],
     ['When', when],
   ];
 
@@ -118,11 +132,11 @@ module.exports = async (req, res) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        from: process.env.RESEND_FROM || 'Workspace Dev <onboarding@resend.dev>',
+        from,
         to: [to],
         // Reply-To their email, so replying goes straight to them.
         reply_to: r.email,
-        subject: `Workspace invite reply — ${r.invite} (${r.platform})`,
+        subject: `Workspace invite reply — ${r.invite} (${r.platform})${list.ok && confirm.ok ? '' : ' (check the list)'}`,
         html:
           `<h2 style="font-family:system-ui,sans-serif">Workspace invite reply</h2>` +
           `<table style="font-family:system-ui,sans-serif;font-size:15px;border-collapse:collapse">` +
@@ -136,11 +150,14 @@ module.exports = async (req, res) => {
       const detail = await resendRes.text().catch(() => '');
       // Logged, never returned — the same as /api/signup.
       console.error('invite-reply: resend failed', resendRes.status, detail.slice(0, 500));
+      // On the list, they are recorded even though my email failed: no error for them.
+      if (list.ok) { res.status(201).json({ ok: true }); return; }
       res.status(502).json({ error: "That didn't send.", upstream: resendRes.status });
       return;
     }
   } catch (err) {
     console.error('invite-reply: resend threw', err);
+    if (list.ok) { res.status(201).json({ ok: true }); return; }
     res.status(502).json({ error: "That didn't send." });
     return;
   }
