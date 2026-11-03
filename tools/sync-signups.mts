@@ -6,7 +6,7 @@
  *   tools/sync-signups.sh --base <folder>      # into another base, such as a test copy
  *   tools/sync-signups.sh --dry-run            # say what would change, write nothing
  *
- * Reads every contact in the "Beta" segment through Resend's API, with its `computer` and `agents` properties (api/_beta-list.js writes them), and writes the Signups table through the Workspace engine (Base.open, insertRow, setCell, updateField), with every change stamped as the actor "sync-signups". It matches people on email, case-insensitively: a new email becomes a new row; a known one has its platform and AI tools brought up to date when they changed, and its name filled only when the row has none. It never deletes a row and never writes the same person twice. Brian's own and test addresses (EXCLUDED, below) are left out and only counted in the log. A select option the base doesn't have yet (grok, muse, a tool typed on the try page) is added to the field first, so no value lands outside its options.
+ * Reads every contact in the "Beta" segment through Resend's API, with its `computer` and `agents` properties (api/_beta-list.js writes them), and writes the Signups table through the Workspace engine (Base.open, insertRow, setCell, updateField), with every change stamped as the actor "sync-signups". It matches people on email, case-insensitively: a new email becomes a new row; a known one has its platform and AI tools brought up to date when they changed, and its name filled only when the row has none. A contact from an event's QR link (its `event` property) gets the event's name in "Met at" (eventName in api/_events.js), on a new row or a row whose "Met at" is empty. It never deletes a row and never writes the same person twice. Brian's own and test addresses (EXCLUDED, below) are left out and only counted in the log. A select option the base doesn't have yet (grok, muse, a tool typed on the try page) is added to the field first, so no value lands outside its options.
  *
  * The Resend key comes from RESEND_API_KEY, or else from the login Keychain of the account it runs under (`security add-generic-password -s resend-beta-sync -a "$USER" -w`, typed by him; the key is never in a file). The segment is the one named "Beta", or RESEND_AUDIENCE_ID when set. Resend allows a few requests a second, so calls are spaced.
  *
@@ -16,7 +16,10 @@
 import { execFileSync } from 'node:child_process'
 import * as os from 'node:os'
 import * as path from 'node:path'
+import { createRequire } from 'node:module'
 import { pathToFileURL } from 'node:url'
+
+const { eventName } = createRequire(import.meta.url)('../api/_events.js') as { eventName(slug: string): string }
 
 // Home-relative, so it runs under any account with the same ~/Syncthing layout (the Mac mini's is `assistant`).
 const WORKSPACE = path.join(os.homedir(), 'Syncthing/Projects/Agentic Workspace')
@@ -48,6 +51,8 @@ export interface Contact {
   created_at?: string | null
   computer?: string | null
   agents: string[]
+  /** The event's slug, from a QR link's sign-up (api/_events.js). */
+  event?: string | null
 }
 
 /** What one sync did, by email. */
@@ -110,9 +115,10 @@ export function syncContacts(base: BaseLike, all: readonly Contact[], opts: { dr
   // Options first, so every value written below is one the field offers.
   result.optionsAdded.push(...ensureOptions(base, 'platform', contacts.map((c) => c.computer ?? '').filter(Boolean), dryRun))
   result.optionsAdded.push(...ensureOptions(base, 'ai_tools', contacts.flatMap((c) => c.agents), dryRun))
+  result.optionsAdded.push(...ensureOptions(base, 'met_at', contacts.map((c) => (c.event ? eventName(c.event) : '')).filter(Boolean), dryRun))
 
-  const rows = base.db.prepare(`SELECT id, name, email, platform, ai_tools FROM "${TABLE}" WHERE email IS NOT NULL AND email != ''`).all() as Array<{
-    id: string; name: string | null; email: string; platform: string | null; ai_tools: string | null
+  const rows = base.db.prepare(`SELECT id, name, email, platform, ai_tools, met_at FROM "${TABLE}" WHERE email IS NOT NULL AND email != ''`).all() as Array<{
+    id: string; name: string | null; email: string; platform: string | null; ai_tools: string | null; met_at: string | null
   }>
   const byEmail = new Map(rows.map((r) => [r.email.trim().toLowerCase(), r]))
 
@@ -120,6 +126,7 @@ export function syncContacts(base: BaseLike, all: readonly Contact[], opts: { dr
     const key = c.email.trim().toLowerCase()
     const name = [c.first_name, c.last_name].filter(Boolean).join(' ').trim()
     const row = byEmail.get(key)
+    const met = c.event ? eventName(c.event) : ''
 
     if (!row) {
       if (!dryRun) {
@@ -131,12 +138,13 @@ export function syncContacts(base: BaseLike, all: readonly Contact[], opts: { dr
         }
         if (name) values.name = name
         if (c.computer) values.platform = c.computer
+        if (met) values.met_at = met
         if (c.created_at) values.signed_up = c.created_at.slice(0, 10)
         const id = base.insertRow(TABLE, values, { actor: ACTOR })
         // A second contact with the same email (different case) in one run is the same person.
-        byEmail.set(key, { id, name: name || null, email: c.email, platform: c.computer ?? null, ai_tools: JSON.stringify(c.agents) })
+        byEmail.set(key, { id, name: name || null, email: c.email, platform: c.computer ?? null, ai_tools: JSON.stringify(c.agents), met_at: met || null })
       } else {
-        byEmail.set(key, { id: '(dry run)', name: name || null, email: c.email, platform: c.computer ?? null, ai_tools: JSON.stringify(c.agents) })
+        byEmail.set(key, { id: '(dry run)', name: name || null, email: c.email, platform: c.computer ?? null, ai_tools: JSON.stringify(c.agents), met_at: met || null })
       }
       result.added.push(c.email)
       continue
@@ -147,6 +155,8 @@ export function syncContacts(base: BaseLike, all: readonly Contact[], opts: { dr
     if (c.computer && c.computer !== row.platform) changes.platform = c.computer
     if (c.agents.length && !sameList(c.agents, decodeList(row.ai_tools))) changes.ai_tools = c.agents
     if (name && !row.name) changes.name = name
+    // Where they met Brian, only when the row says nowhere yet: one he set by hand stays.
+    if (met && !row.met_at) changes.met_at = met
     if (!Object.keys(changes).length) {
       result.unchanged.push(c.email)
       continue
@@ -201,6 +211,7 @@ export async function fetchContacts(key: string, segment: string): Promise<Conta
         created_at: c.created_at ?? null,
         computer: prop('computer') || null,
         agents: prop('agents').split(',').map((a) => a.trim()).filter(Boolean),
+        event: prop('event') || null,
       })
     }
     if (!page.has_more || !page.data.length) break

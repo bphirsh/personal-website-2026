@@ -106,6 +106,26 @@ base.insertRow('signups', { name: 'Test', email: 'delivered@resend.dev' }, { act
 const plan2 = planImport(base)
 cases.push(['the import leaves them out too, counted, not listed', plan2.excluded === 2 && !plan2.add.some((p) => isExcluded(p.email)) && !plan2.skipped.some((s) => /brianhirsh|resend\.dev/i.test(s)) && plan2.add.some((p) => p.email === 'jordan@example.test')])
 
+// Event-tagged sign-ups fill "Met at" (row "Same-day follow-up for event sign-ups", 3 Nov 2026).
+base.setCell('signups', morgan, 'met_at', null, { actor: 'check' })
+const ev = syncContacts(base, [
+  { email: 'casey@example.test', first_name: 'Casey', computer: 'mac-apple-silicon', agents: [], event: 'ai-tinkerers-nov' },
+  { email: 'sam@example.test', computer: 'mac-apple-silicon', agents: ['claude', 'grok'], event: 'ai-tinkerers-nov' },
+  { email: 'morgan@example.test', computer: 'mac-apple-silicon', agents: ['cursor'], event: 'demo-night-2026' },
+  { email: 'riley@example.test', computer: null, agents: [], event: null },
+])
+const byMail = (e: string) => rows().find((r) => String(r.email).toLowerCase() === e)!
+const samMet = byMail('sam@example.test').met_at
+base.setCell('signups', byMail('sam@example.test').id as string, 'met_at', '21 Oct talk', { actor: 'check' })
+const kept = syncContacts(base, [{ email: 'sam@example.test', computer: 'mac-apple-silicon', agents: ['claude', 'grok'], event: 'demo-night-2026' }])
+cases.push(
+  ['a new contact from an event gets its name in Met at, the option added first', byMail('casey@example.test').met_at === 'AI Tinkerers' && opts('met_at').includes('AI Tinkerers') && ev.optionsAdded.includes('met_at: AI Tinkerers')],
+  // The base holds Morgan twice by now (the import's duplicate); the sync writes the one it matched.
+  ['a known row with no Met at gets the event', samMet === 'AI Tinkerers' && ev.updated.includes('sam@example.test (met_at)') && ev.updated.some((u) => u.startsWith('morgan@example.test (') && u.includes('met_at')) && rows().some((r) => String(r.email).toLowerCase() === 'morgan@example.test' && r.met_at === 'Demo Night')],
+  ['a Met at already set is kept', kept.updated.length === 0 && byMail('sam@example.test').met_at === '21 Oct talk'],
+  ['no event leaves Met at empty', byMail('riley@example.test').met_at == null],
+)
+
 let failed = 0
 for (const [name, ok] of cases) {
   if (!ok) failed++

@@ -68,7 +68,7 @@ const cases = [
   ['a name with HTML is escaped in the confirmation', { ...page, name: '<i>Sam</i>' }, (r) => confirmTo(r, 'sam@example.test').body.html.includes('Hi &lt;i&gt;Sam&lt;/i&gt;,')],
   ["Brian's email says both worked, Reply-To them", page, (r) => r.sent[0].body.text.includes('Beta list: on the list (added)') && r.sent[0].body.text.includes('Confirmation: sent') && r.sent[0].body.reply_to === 'sam@example.test' && !r.sent[0].body.subject.includes('check')],
   ['properties not created yet: they are created and the contact written again', page,
-    (r) => r.status === 201 && created(r).length === 2 && r.calls.filter((c) => c.url === '/contact-properties').map((c) => c.body.key).join() === 'computer,agents',
+    (r) => r.status === 201 && created(r).length === 2 && r.calls.filter((c) => c.url === '/contact-properties').map((c) => c.body.key).join() === 'computer,agents,event',
     // The first create fails, as Resend does for an unknown property; the second succeeds.
     ((n) => (c) => c.url === '/contacts' && c.method === 'POST' && n++ === 0)(0)],
   ['already a contact: updated by email and added to the segment, no duplicate', page, (r) => {
@@ -93,6 +93,19 @@ const cases = [
   ['a repeated agent is sent once', { ...page, agents: ['claude', 'claude'] }, (r) => r.status === 201 && r.sent[0].body.text.includes('Agents: Claude\n') && created(r)[0].body.properties.agents === 'claude'],
   ['a prototype key is not a computer', { ...page, computer: 'toString' }, (r) => r.status === 400 && r.sent.length === 0],
   ['HTML in the name is escaped', { ...page, name: '<b>x</b>' }, (r) => r.status === 201 && r.sent[0].body.html.includes('&lt;b&gt;x&lt;/b&gt;')],
+  // Event-tagged links (3 Nov 2026).
+  ['no event: no property, no line in the confirmation, "Event: (none)" for Brian', page, (r) => !('event' in created(r)[0].body.properties) && !confirmTo(r, 'sam@example.test').body.text.includes('Great to meet you') && r.sent[0].body.text.includes('Event: (none)') && !r.sent[0].body.subject.includes('(')],
+  ['with an event: saved as the event property', { ...page, event: 'ai-tinkerers-nov' }, (r) => r.status === 201 && created(r)[0].body.properties.event === 'ai-tinkerers-nov'],
+  ['with an event: the confirmation opens "Great to meet you at AI Tinkerers!"', { ...page, event: 'ai-tinkerers-nov' }, (r) => {
+    const c = confirmTo(r, 'sam@example.test');
+    return c.body.text.startsWith('Hi Sam,\n\nGreat to meet you at AI Tinkerers! Thanks for signing up') && c.body.html.includes('Great to meet you at AI Tinkerers! Thanks for signing up') && c.body.html.split('Great to meet you').length === 2;
+  }],
+  ["with an event: Brian's email names it, subject too", { ...page, event: 'ai-tinkerers-nov' }, (r) => r.sent[0].body.text.includes('Event: AI Tinkerers (ai-tinkerers-nov)') && r.sent[0].body.subject.includes('(AI Tinkerers)')],
+  ['an event in capitals is the same slug', { ...page, event: ' AI-Tinkerers-Nov ' }, (r) => r.status === 201 && created(r)[0].body.properties.event === 'ai-tinkerers-nov'],
+  ['a bad event is dropped, never refused', { ...page, event: '<b>x</b>' }, (r) => r.status === 201 && !('event' in created(r)[0].body.properties) && !JSON.stringify(r.calls).includes('<b>')],
+  ['an event that is not a string is dropped', { ...page, event: ['ai'] }, (r) => r.status === 201 && !('event' in created(r)[0].body.properties)],
+  ['an existing contact gets the event by update too', { ...page, event: 'demo-night-2026' }, (r) => r.calls.find((c) => c.method === 'PATCH').body.properties.event === 'demo-night-2026',
+    (c) => c.url === '/contacts' && c.method === 'POST'],
   ['the honeypot still drops silently, joining nothing', { ...page, website: 'spam' }, (r) => r.status === 201 && r.calls.length === 0],
 ];
 

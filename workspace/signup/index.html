@@ -269,7 +269,9 @@
         name: nameEl.value.trim(),
         email: emailEl.value.trim(),
         computer: pressed(computerEl)[0],
-        agents: pressed(agentsEl)
+        agents: pressed(agentsEl),
+        // The event from a QR link's ?event=, read from this page's address; the endpoint checks it.
+        event: new URLSearchParams(location.search).get('event') || undefined
       }),
       signal: controller.signal
     })
