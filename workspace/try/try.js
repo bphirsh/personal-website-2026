@@ -211,7 +211,7 @@ function showSample() {
   mountReplay(replay, r.invite, SAMPLE_NAME, text);
   mountFiles(filesMount, filesSample(r.invite).db);
   // The example's file is Sam Altman's, not theirs: the sign-up asks their computer and tools, and sends no role.
-  mountButton(reply, { invite: codeFromHash(location.hash), name: 'You', platform: null, role: null, ai_tools: [], knowledge_tools: [] });
+  mountButton(reply, { invite: codeFromHash(location.hash), name: 'You', platform: null, role: null, ai_tools: [], knowledge_tools: [], event: eventFromQuery() });
   // The same founder card as for their own file (28 Oct 2026).
   mountCard(card);
   // The banner and its parody line stay in view above the window, so the example is never seen without them.
@@ -225,6 +225,11 @@ function showSample() {
  */
 function inviteCode(properties) {
   return properties.invite ?? codeFromHash(location.hash);
+}
+
+/** The event from a QR link's `?event=` (3 Nov 2026), sent with the sign-up only; /api/invite-reply checks it. Nothing is stored. */
+function eventFromQuery() {
+  return new URLSearchParams(location.search).get('event') || null;
 }
 
 function showDemo(fileName, text, r) {
@@ -242,7 +247,7 @@ function showDemo(fileName, text, r) {
   mountReplay(replay, r.invite, fileName, text);
   mountFiles(filesMount, filesSample(r.invite).db);
   // Their role only when their file said one (27 Oct 2026).
-  mountButton(reply, { ...r.invite.properties, invite, role: r.invite.properties.hasRole ? r.invite.properties.role : null });
+  mountButton(reply, { ...r.invite.properties, invite, role: r.invite.properties.hasRole ? r.invite.properties.role : null, event: eventFromQuery() });
   // The founder card: the same for everyone, nothing from their file on it (28 Oct 2026).
   mountCard(card);
   revealWorkspace();

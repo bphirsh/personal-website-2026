@@ -3,12 +3,13 @@
  *
  * joinBetaList adds the person to Resend's "Beta" segment as a contact, or updates them if the email is already a contact, so signing up twice never duplicates. sendConfirmation sends them the standard "You're on the Workspace beta list" email from api/_confirmation.js. Neither throws: each returns { ok, detail }, and the caller puts any failure in my notification so a sign-up is never lost.
  *
- * Resend's audiences are now segments; RESEND_AUDIENCE_ID holds the segment id. The computer and agents are saved on the contact as two string properties (Brian, 30 Oct 2026), `computer` (one code, as mac-apple-silicon) and `agents` (codes joined by commas, as claude,cursor), the same codes the Signups database's options use, so tools/sync-signups.mts can copy them across. Resend refuses a property it hasn't been told about, so the first time a write fails these two are created and the write tried once more. Endpoints read from Resend's docs on 30 Oct 2026: POST /contacts (with segments and properties), PATCH /contacts/{email}, POST /contacts/{email}/segments/{id}, POST /contact-properties.
+ * Resend's audiences are now segments; RESEND_AUDIENCE_ID holds the segment id. The computer and agents are saved on the contact as two string properties (Brian, 30 Oct 2026), `computer` (one code, as mac-apple-silicon) and `agents` (codes joined by commas, as claude,cursor), the same codes the Signups database's options use, so tools/sync-signups.mts can copy them across. Since 3 Nov 2026 a sign-up from an event's QR link also saves the event's slug as `event` (api/_events.js), and its confirmation opens by naming the event. Resend refuses a property it hasn't been told about, so the first time a write fails these two are created and the write tried once more. Endpoints read from Resend's docs on 30 Oct 2026: POST /contacts (with segments and properties), PATCH /contacts/{email}, POST /contacts/{email}/segments/{id}, POST /contact-properties.
  *
  * Files starting with "_" in api/ are not deployed as endpoints; this one is only required by the two that are.
  */
 
 const confirmation = require('./_confirmation.js');
+const { eventName } = require('./_events.js');
 
 const RESEND = 'https://api.resend.com';
 
@@ -34,17 +35,18 @@ function nameFields(name) {
 }
 
 /** The properties we keep on a contact. Created once, by ensureProperties, when Resend doesn't know them yet. */
-const PROPERTY_KEYS = ['computer', 'agents'];
+const PROPERTY_KEYS = ['computer', 'agents', 'event'];
 
 async function ensureProperties(apiKey) {
   // One that already exists fails here, which is fine: either way it exists afterwards.
   for (const key of PROPERTY_KEYS) await call(apiKey, 'POST', '/contact-properties', { key, type: 'string' });
 }
 
-/** { computer, agents } as Resend properties, leaving out what wasn't said rather than writing an empty value over an earlier one. */
-function propertyFields(computer, agents) {
+/** { computer, agents, event } as Resend properties, leaving out what wasn't said rather than writing an empty value over an earlier one. */
+function propertyFields(computer, agents, event) {
   const out = {};
   if (computer) out.computer = String(computer);
+  if (event) out.event = String(event);
   // A free-typed tool from the try page could hold a comma, which would split it in two when read back.
   if (agents && agents.length) out.agents = agents.map((a) => String(a).replace(/,/g, ' ').trim()).filter(Boolean).join(',').slice(0, 500);
   return out;
@@ -53,10 +55,10 @@ function propertyFields(computer, agents) {
 /**
  * Put this email in the Beta segment, with its computer and agents. A new contact is created there; when that fails because the email is already a contact, its name is updated (if one was given) and it is added to the segment, which leaves an unsubscribed contact unsubscribed.
  */
-async function joinBetaList({ apiKey, segmentId, email, name, computer, agents }) {
+async function joinBetaList({ apiKey, segmentId, email, name, computer, agents, event }) {
   if (!segmentId) return { ok: false, detail: 'RESEND_AUDIENCE_ID is not set' };
   const names = nameFields(name);
-  const properties = propertyFields(computer, agents);
+  const properties = propertyFields(computer, agents, event);
   const hasProps = Object.keys(properties).length > 0;
   const contact = { email, ...names, ...(hasProps ? { properties } : {}), segments: [{ id: segmentId }] };
 
@@ -86,18 +88,27 @@ function escapeHtml(s) {
   ));
 }
 
-/** The confirmation, greeting them by first name, or "there" when no name was given (the try page's Notify button sends none). */
-function confirmationFor(name) {
+// The confirmation's opening sentence, which an event's line goes in front of.
+const OPENING = 'Thanks for signing up';
+
+/** The confirmation, greeting them by first name, or "there" when no name was given (the try page's Notify button sends none). With an event's slug, its first line is "Great to meet you at <event name>!", ahead of the thanks. */
+function confirmationFor(name, event) {
   const first = nameFields(name).first_name || 'there';
+  let { html, text } = confirmation;
+  if (event) {
+    const met = `Great to meet you at ${eventName(event)}! `;
+    html = html.replace(OPENING, escapeHtml(met) + OPENING);
+    text = text.replace(OPENING, met + OPENING);
+  }
   return {
     subject: confirmation.subject,
-    html: confirmation.html.split('{{name}}').join(escapeHtml(first)),
-    text: confirmation.text.split('{{name}}').join(first),
+    html: html.split('{{name}}').join(escapeHtml(first)),
+    text: text.split('{{name}}').join(first),
   };
 }
 
-async function sendConfirmation({ apiKey, from, email, name }) {
-  const c = confirmationFor(name);
+async function sendConfirmation({ apiKey, from, email, name, event }) {
+  const c = confirmationFor(name, event);
   const sent = await call(apiKey, 'POST', '/emails', { from, to: [email], subject: c.subject, html: c.html, text: c.text });
   return sent.ok ? { ok: true, detail: 'sent' } : { ok: false, detail: `${sent.status} ${sent.detail}` };
 }

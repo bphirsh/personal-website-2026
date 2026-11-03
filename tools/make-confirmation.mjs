@@ -21,6 +21,8 @@ const subject = md.match(/^subject:\s*(.+)$/m)[1].trim();
 
 for (const [name, body] of [['html', html], ['txt', text]]) {
   if (!body.includes('{{name}}')) throw new Error(`confirmation.${name} has no {{name}} to fill`);
+  // api/_beta-list.js puts an event's "Great to meet you at …!" in front of this sentence.
+  if (body.split('Thanks for signing up').length !== 2) throw new Error(`confirmation.${name} must hold "Thanks for signing up" exactly once`);
 }
 
 writeFileSync(join(root, 'api/_confirmation.js'), `// Made by tools/make-confirmation.mjs from Marketing/Email template/examples/confirmation.* — edit the template, not this file.

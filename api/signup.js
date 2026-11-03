@@ -13,6 +13,10 @@
  * me as before, saying whether the list and the confirmation worked. A
  * failure there never loses the sign-up: my email still goes.
  *
+ * Since 3 Nov 2026 a sign-up from an event's QR link carries `event` (a slug,
+ * api/_events.js): it is saved on the contact, named in my email, and opens
+ * the confirmation. One that isn't a slug is ignored, never refused.
+ *
  * Deliberately dependency-free — Resend's REST API is called with plain fetch
  * rather than its SDK, so no package.json is needed and the repo stays a
  * zero-config static deploy.
@@ -25,6 +29,7 @@
  */
 
 const { joinBetaList, sendConfirmation } = require('./_beta-list.js');
+const { eventSlug, eventName } = require('./_events.js');
 
 const EMAIL_RE = /^[^\s@]+@[^\s@.]+\.[^\s@]{2,}$/;
 
@@ -98,6 +103,8 @@ module.exports = async (req, res) => {
     return;
   }
   const agents = [...new Set(agentList)];
+  const event = eventSlug(data.event);
+  const eventText = event ? `${eventName(event)} (${event})` : '(none)';
   const computerText = COMPUTERS[computer];
   const agentsText = agents.length ? agents.map((a) => AGENTS[a]).join(', ') : '(none)';
 
@@ -112,9 +119,9 @@ module.exports = async (req, res) => {
   const from = process.env.RESEND_FROM || 'Workspace Dev <onboarding@resend.dev>';
 
   // The list first, then the confirmation only if they are on it, so the email never says something untrue.
-  const list = await joinBetaList({ apiKey, segmentId: process.env.RESEND_AUDIENCE_ID, email, name, computer, agents });
+  const list = await joinBetaList({ apiKey, segmentId: process.env.RESEND_AUDIENCE_ID, email, name, computer, agents, event });
   const confirm = list.ok
-    ? await sendConfirmation({ apiKey, from, email, name })
+    ? await sendConfirmation({ apiKey, from, email, name, event })
     : { ok: false, detail: 'not sent, since they are not on the list' };
   if (!list.ok) console.error('signup: beta list failed', list.detail);
   if (!confirm.ok) console.error('signup: confirmation failed', confirm.detail);
@@ -137,7 +144,7 @@ module.exports = async (req, res) => {
         to: [to],
         // Reply-To them, so replying goes straight to them.
         reply_to: email,
-        subject: `Workspace access request — ${name}${list.ok && confirm.ok ? '' : ' (check the list)'}`,
+        subject: `Workspace access request — ${name}${event ? ` (${eventName(event)})` : ''}${list.ok && confirm.ok ? '' : ' (check the list)'}`,
         html:
           `<h2 style="font-family:system-ui,sans-serif">New Workspace access request</h2>` +
           `<table style="font-family:system-ui,sans-serif;font-size:15px;border-collapse:collapse">` +
@@ -145,11 +152,12 @@ module.exports = async (req, res) => {
           `<tr><td style="padding:4px 14px 4px 0"><strong>Email</strong></td><td>${safeEmail}</td></tr>` +
           `<tr><td style="padding:4px 14px 4px 0"><strong>Computer</strong></td><td>${escapeHtml(computerText)}</td></tr>` +
           `<tr><td style="padding:4px 14px 4px 0"><strong>Agents</strong></td><td>${escapeHtml(agentsText)}</td></tr>` +
+          `<tr><td style="padding:4px 14px 4px 0"><strong>Event</strong></td><td>${escapeHtml(eventText)}</td></tr>` +
           `<tr><td style="padding:4px 14px 4px 0"><strong>Beta list</strong></td><td>${escapeHtml(listText)}</td></tr>` +
           `<tr><td style="padding:4px 14px 4px 0"><strong>Confirmation</strong></td><td>${escapeHtml(confirmText)}</td></tr>` +
           `<tr><td style="padding:4px 14px 4px 0"><strong>When</strong></td><td>${when}</td></tr>` +
           `</table>`,
-        text: `New Workspace access request\n\nName: ${name}\nEmail: ${email}\nComputer: ${computerText}\nAgents: ${agentsText}\nBeta list: ${listText}\nConfirmation: ${confirmText}\nWhen: ${when}\n`,
+        text: `New Workspace access request\n\nName: ${name}\nEmail: ${email}\nComputer: ${computerText}\nAgents: ${agentsText}\nEvent: ${eventText}\nBeta list: ${listText}\nConfirmation: ${confirmText}\nWhen: ${when}\n`,
       }),
     });
 

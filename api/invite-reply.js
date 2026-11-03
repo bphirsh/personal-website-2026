@@ -5,7 +5,8 @@
  * Nothing from their file is sent or seen here; the file is read in their
  * browser and stays there. Since M-027 (30 Oct 2026) their email also joins
  * the Resend beta list and gets the confirmation, like /api/signup
- * (api/_beta-list.js); my email says whether both worked.
+ * (api/_beta-list.js); my email says whether both worked. Since 3 Nov 2026 an
+ * event's slug from the page's `?event=` is carried too (api/_events.js).
  *
  * Deliberately dependency-free, like /api/signup — Resend's REST API is called
  * with plain fetch, so the repo stays a zero-config static deploy.
@@ -15,6 +16,7 @@
  */
 
 const { joinBetaList, sendConfirmation } = require('./_beta-list.js');
+const { eventSlug, eventName } = require('./_events.js');
 
 const EMAIL_RE = /^[^\s@]+@[^\s@.]+\.[^\s@]{2,}$/;
 const INVITE_RE = /^\d{2}-[a-z0-9]{4}$/;
@@ -24,7 +26,7 @@ const MAX_TOOLS = 20;
 const MAX_TOOL = 40;
 
 // The only fields read. Anything else in the body is ignored, never echoed.
-const FIELDS = ['invite', 'platform', 'role', 'ai_tools', 'knowledge_tools', 'email'];
+const FIELDS = ['invite', 'platform', 'role', 'ai_tools', 'knowledge_tools', 'email', 'event'];
 
 function escapeHtml(s) {
   return String(s).replace(/[&<>"']/g, (c) => (
@@ -41,7 +43,7 @@ function toolList(v) {
 }
 
 /**
- * Validate a reply. Returns `{ ok: true, reply }` with exactly the six fields,
+ * Validate a reply. Returns `{ ok: true, reply }` with exactly the seven fields,
  * or `{ ok: false, error }`. Exported so tools/check-invite-reply.mjs can test
  * it without a server.
  */
@@ -67,7 +69,10 @@ function readReply(data) {
   if (!email) return { ok: false, error: 'Add your email first.' };
   if (email.length > 160 || !EMAIL_RE.test(email)) return { ok: false, error: "That doesn't look like an email address." };
 
-  return { ok: true, reply: { invite, platform, role: role || null, ai_tools: ai, knowledge_tools: knowledge, email } };
+  // An event's slug from a QR link; one that isn't a slug is dropped, never refused.
+  const event = eventSlug(data.event);
+
+  return { ok: true, reply: { invite, platform, role: role || null, ai_tools: ai, knowledge_tools: knowledge, email, event } };
 }
 
 module.exports = async (req, res) => {
@@ -104,9 +109,9 @@ module.exports = async (req, res) => {
 
   // The list first, then the confirmation only if they are on it. No name is asked on the try page, so the greeting is "Hi there".
   const from = process.env.RESEND_FROM || 'Workspace Dev <onboarding@resend.dev>';
-  const list = await joinBetaList({ apiKey, segmentId: process.env.RESEND_AUDIENCE_ID, email: r.email, name: '', computer: r.platform, agents: r.ai_tools });
+  const list = await joinBetaList({ apiKey, segmentId: process.env.RESEND_AUDIENCE_ID, email: r.email, name: '', computer: r.platform, agents: r.ai_tools, event: r.event });
   const confirm = list.ok
-    ? await sendConfirmation({ apiKey, from, email: r.email, name: '' })
+    ? await sendConfirmation({ apiKey, from, email: r.email, name: '', event: r.event })
     : { ok: false, detail: 'not sent, since they are not on the list' };
   if (!list.ok) console.error('invite-reply: beta list failed', list.detail);
   if (!confirm.ok) console.error('invite-reply: confirmation failed', confirm.detail);
@@ -119,6 +124,7 @@ module.exports = async (req, res) => {
     ['AI tools', r.ai_tools.join(', ') || '(none)'],
     ['Knowledge tools', r.knowledge_tools.join(', ') || '(none)'],
     ['Email', r.email],
+    ['Event', r.event ? `${eventName(r.event)} (${r.event})` : '(none)'],
     ['Beta list', list.ok ? `on the list (${list.detail})` : `FAILED: ${list.detail}`],
     ['Confirmation', confirm.ok ? 'sent' : `FAILED: ${confirm.detail}`],
     ['When', when],

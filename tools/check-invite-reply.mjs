@@ -85,6 +85,24 @@ const cases = [
   }],
   ["Brian's email says both worked", 'POST', page, (r) => r.sent[0].body.text.includes('Beta list: on the list (added)') && r.sent[0].body.text.includes('Confirmation: sent')],
   ['a refused body touches no contact', 'POST', { ...page, email: 'nope' }, (r) => r.calls.length === 0],
+  // Event-tagged links (3 Nov 2026).
+  ['no event: none in the body, the property, or the confirmation', 'POST', page, (r) => {
+    const c = r.calls.find((x) => x.url.endsWith('/contacts') && x.method === 'POST');
+    const conf = r.calls.find((x) => x.url.endsWith('/emails') && x.body.to[0] === 'priya@example.test');
+    return !('event' in page) && !('event' in c.body.properties) && !conf.body.text.includes('Great to meet you') && r.sent[0].body.text.includes('Event: (none)');
+  }],
+  ['the page sends the event only when its address had one', null, null, () => replyBody({ ...page, ai_tools: [], knowledge_tools: [], event: 'ai-tinkerers-nov' }, 'a@b.test').event === 'ai-tinkerers-nov'],
+  ['with an event: saved on the contact, named in the confirmation and my email', 'POST', { ...page, event: 'ai-tinkerers-nov' }, (r) => {
+    const c = r.calls.find((x) => x.url.endsWith('/contacts') && x.method === 'POST');
+    const conf = r.calls.find((x) => x.url.endsWith('/emails') && x.body.to[0] === 'priya@example.test');
+    return r.status === 201 && c.body.properties.event === 'ai-tinkerers-nov'
+      && conf.body.text.startsWith('Hi there,\n\nGreat to meet you at AI Tinkerers! Thanks for signing up') && conf.body.html.includes('Great to meet you at AI Tinkerers! Thanks for signing up')
+      && r.sent[0].body.text.includes('Event: AI Tinkerers (ai-tinkerers-nov)');
+  }],
+  ['a bad event is dropped, never refused', 'POST', { ...page, event: '<script>' }, (r) => {
+    const c = r.calls.find((x) => x.url.endsWith('/contacts') && x.method === 'POST');
+    return r.status === 201 && !('event' in c.body.properties) && !JSON.stringify(r.calls).includes('script');
+  }],
   // The code from the link (M-010): a bad # is no code, never an error.
   ...[['#07-k3f9', '07-k3f9'], ['#07-K3F9', '07-k3f9'], ['#07%2Dk3f9', '07-k3f9'], ['', null], ['#junk', null],
     ['#100%', null], ['#%E0%A4%A', null], ['#%', null], ['#07-k3f9%', null]]
