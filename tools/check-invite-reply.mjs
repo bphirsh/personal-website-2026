@@ -15,6 +15,7 @@
 import { createRequire } from 'node:module';
 import { replyBody } from '../workspace/try/button.js';
 import { codeFromHash } from '../workspace/try/invite.js';
+import { HEADLINES, pickHeadline } from '../workspace/try/headline.js';
 
 const require = createRequire(import.meta.url);
 const handler = require('../api/invite-reply.js');
@@ -99,6 +100,22 @@ const cases = [
       && conf.body.text.startsWith('Hi there,\n\nGreat to meet you at AI Tinkerers! Thanks for signing up') && conf.body.html.includes('Great to meet you at AI Tinkerers! Thanks for signing up')
       && r.sent[0].body.text.includes('Event: AI Tinkerers (ai-tinkerers-nov)');
   }],
+  // Two landing headlines, counted by sign-ups (3 Nov 2026).
+  ['the page sends the headline it showed', null, null, () => replyBody({ ...page, ai_tools: [], knowledge_tools: [], headline: 'b' }, 'a@b.test').headline === 'b' && !('headline' in page)],
+  ['with a headline: saved on the contact and in my email', 'POST', { ...page, headline: 'a' }, (r) => {
+    const c = r.calls.find((x) => x.url.endsWith('/contacts') && x.method === 'POST');
+    return r.status === 201 && c.body.properties.headline === 'a' && r.sent[0].body.text.includes('Headline: a');
+  }],
+  ['no headline: no property, "Headline: (none)"', 'POST', page, (r) => {
+    const c = r.calls.find((x) => x.url.endsWith('/contacts') && x.method === 'POST');
+    return r.status === 201 && !('headline' in c.body.properties) && r.sent[0].body.text.includes('Headline: (none)');
+  }],
+  ...[['c'], ['A'], ['<b>'], [1], [['a']]].map(([h]) => [`a headline of ${JSON.stringify(h)} is dropped, never refused`, 'POST', { ...page, headline: h }, (r) => {
+    const c = r.calls.find((x) => x.url.endsWith('/contacts') && x.method === 'POST');
+    return r.status === 201 && !('headline' in c.body.properties) && r.sent[0].body.text.includes('Headline: (none)');
+  }]),
+  ['the two headlines are Story.md\'s, and a visit gets either', null, null, () => HEADLINES.a.startsWith('My AI agents have finished 915 tasks') && HEADLINES.b.startsWith('I asked Claude for a letter')
+    && pickHeadline(() => 0) === 'a' && pickHeadline(() => 0.49) === 'a' && pickHeadline(() => 0.5) === 'b' && pickHeadline(() => 0.99) === 'b'],
   ['a bad event is dropped, never refused', 'POST', { ...page, event: '<script>' }, (r) => {
     const c = r.calls.find((x) => x.url.endsWith('/contacts') && x.method === 'POST');
     return r.status === 201 && !('event' in c.body.properties) && !JSON.stringify(r.calls).includes('script');

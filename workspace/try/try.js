@@ -22,6 +22,10 @@ import { mountCard } from './card.js';
 import { mountStyleSwitcher } from './style.js';
 import { SAMPLE_TEXT } from './sample-data.js';
 import { wireGetFile, peek } from './getfile.js';
+import { pickHeadline, showHeadline } from './headline.js';
+
+// This visit's headline, kept in memory only and sent with the sign-up (headline.js).
+const HEADLINE = pickHeadline();
 
 const WORDS = {
   dragging: 'Let go',
@@ -211,7 +215,7 @@ function showSample() {
   mountReplay(replay, r.invite, SAMPLE_NAME, text);
   mountFiles(filesMount, filesSample(r.invite).db);
   // The example's file is Sam Altman's, not theirs: the sign-up asks their computer and tools, and sends no role.
-  mountButton(reply, { invite: codeFromHash(location.hash), name: 'You', platform: null, role: null, ai_tools: [], knowledge_tools: [], event: eventFromQuery() });
+  mountButton(reply, { invite: codeFromHash(location.hash), name: 'You', platform: null, role: null, ai_tools: [], knowledge_tools: [], event: eventFromQuery(), headline: HEADLINE });
   // The same founder card as for their own file (28 Oct 2026).
   mountCard(card);
   // The banner and its parody line stay in view above the window, so the example is never seen without them.
@@ -247,7 +251,7 @@ function showDemo(fileName, text, r) {
   mountReplay(replay, r.invite, fileName, text);
   mountFiles(filesMount, filesSample(r.invite).db);
   // Their role only when their file said one (27 Oct 2026).
-  mountButton(reply, { ...r.invite.properties, invite, role: r.invite.properties.hasRole ? r.invite.properties.role : null, event: eventFromQuery() });
+  mountButton(reply, { ...r.invite.properties, invite, role: r.invite.properties.hasRole ? r.invite.properties.role : null, event: eventFromQuery(), headline: HEADLINE });
   // The founder card: the same for everyone, nothing from their file on it (28 Oct 2026).
   mountCard(card);
   revealWorkspace();
@@ -334,6 +338,7 @@ function placeStyles() {
   else styles.undock();
 }
 roomBeside.addEventListener('change', placeStyles);
+showHeadline(sampleLink.querySelector('.title'), HEADLINE);
 sampleLink.hidden = false;
 document.getElementById('loadAnother').addEventListener('click', () => pick.click());
 document.getElementById('skipDemo').addEventListener('click', showSample);
