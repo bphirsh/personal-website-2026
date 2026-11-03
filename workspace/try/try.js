@@ -22,10 +22,10 @@ import { mountCard } from './card.js';
 import { mountStyleSwitcher } from './style.js';
 import { SAMPLE_TEXT } from './sample-data.js';
 import { wireGetFile, peek } from './getfile.js';
-import { pickHeadline, showHeadline } from './headline.js';
+import { pickHeadline, showHeadline, headlineFrom } from './headline.js';
 
-// This visit's headline, kept in memory only and sent with the sign-up (headline.js).
-const HEADLINE = pickHeadline();
+// This visit's headline: the one the prompt's link carried back (?h=), else a fresh pick. Kept in memory only, sent with the sign-up, and put in the copied prompt's link (headline.js).
+const HEADLINE = headlineFrom(location.search) ?? pickHeadline();
 
 const WORDS = {
   dragging: 'Let go',
@@ -233,7 +233,9 @@ function inviteCode(properties) {
 
 /** The event from a QR link's `?event=` (3 Nov 2026), sent with the sign-up only; /api/invite-reply checks it. Nothing is stored. */
 function eventFromQuery() {
-  return new URLSearchParams(location.search).get('event') || null;
+  const e = (new URLSearchParams(location.search).get('event') ?? '').trim().toLowerCase();
+  // The same shape api/_events.js accepts, so nothing else is carried into the prompt's link.
+  return e.length <= 48 && /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(e) ? e : null;
 }
 
 function showDemo(fileName, text, r) {
@@ -410,5 +412,5 @@ document.getElementById('copiedSkip').addEventListener('click', () => toStep2(tr
 document.getElementById('copyAgain').addEventListener('click', () => document.getElementById('getFile').click());
 document.getElementById('useDemo').addEventListener('click', showSample);
 // A refused copy stays in step 1, with the prompt shown for selecting.
-wireGetFile(document.getElementById('getFile'), document.getElementById('getFileStatus'), () => codeFromHash(location.hash), (ok) => (ok ? toCopied() : show(step1)));
+wireGetFile(document.getElementById('getFile'), document.getElementById('getFileStatus'), () => codeFromHash(location.hash), (ok) => (ok ? toCopied() : show(step1)), () => ({ headline: HEADLINE, event: eventFromQuery() }));
 document.getElementById('promptPeek').textContent = peek(codeFromHash(location.hash));
