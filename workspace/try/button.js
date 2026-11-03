@@ -48,10 +48,10 @@ const VARIANTS = {
 };
 
 /**
- * The body the button sends: exactly these fields, `role` only when their file said one, `email` only when typed, `event` only when the page's address had one.
+ * The body the button sends: exactly these fields, `role` only when their file said one, `email` only when typed, `event` only when the page's address had one, `headline` when the landing showed one.
  * A tool is sent by its id when known, else as written.
  */
-export function replyBody({ invite, platform, role, ai_tools, knowledge_tools, event }, email) {
+export function replyBody({ invite, platform, role, ai_tools, knowledge_tools, event, headline }, email) {
   const ids = (list) => list.map((t) => (t.known ? t.id : t.label));
   const body = { invite: invite ?? 'none', platform };
   if (role) body.role = role;
@@ -61,6 +61,8 @@ export function replyBody({ invite, platform, role, ai_tools, knowledge_tools, e
   if (typed) body.email = typed;
   // The event's slug from a QR link's `?event=`, only when the page was opened with one.
   if (event) body.event = event;
+  // Which landing headline this visit saw, "a" or "b" (headline.js).
+  if (headline) body.headline = headline;
   return body;
 }
 

@@ -38,6 +38,8 @@ code { font-family: var(--font-mono); font-size: 0.9em; background: var(--code-b
   line-height: var(--leading-tight);
   margin-bottom: var(--space-3);
 }
+/* The two test headlines are sentences, not a name: a size down, and kept to a readable measure. */
+.title[data-headline] { font-size: var(--text-h1); max-width: 22em; text-wrap: balance; }
 .lede { font-size: var(--text-prose); line-height: var(--leading-prose); color: var(--fg-secondary); }
 
 /* ── the drop zone ── */

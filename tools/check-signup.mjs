@@ -68,7 +68,7 @@ const cases = [
   ['a name with HTML is escaped in the confirmation', { ...page, name: '<i>Sam</i>' }, (r) => confirmTo(r, 'sam@example.test').body.html.includes('Hi &lt;i&gt;Sam&lt;/i&gt;,')],
   ["Brian's email says both worked, Reply-To them", page, (r) => r.sent[0].body.text.includes('Beta list: on the list (added)') && r.sent[0].body.text.includes('Confirmation: sent') && r.sent[0].body.reply_to === 'sam@example.test' && !r.sent[0].body.subject.includes('check')],
   ['properties not created yet: they are created and the contact written again', page,
-    (r) => r.status === 201 && created(r).length === 2 && r.calls.filter((c) => c.url === '/contact-properties').map((c) => c.body.key).join() === 'computer,agents,event',
+    (r) => r.status === 201 && created(r).length === 2 && r.calls.filter((c) => c.url === '/contact-properties').map((c) => c.body.key).join() === 'computer,agents,event,headline',
     // The first create fails, as Resend does for an unknown property; the second succeeds.
     ((n) => (c) => c.url === '/contacts' && c.method === 'POST' && n++ === 0)(0)],
   ['already a contact: updated by email and added to the segment, no duplicate', page, (r) => {

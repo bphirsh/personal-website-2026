@@ -15,6 +15,8 @@
 import { createRequire } from 'node:module';
 import { replyBody } from '../workspace/try/button.js';
 import { codeFromHash } from '../workspace/try/invite.js';
+import { HEADLINES, pickHeadline, headlineFrom } from '../workspace/try/headline.js';
+import { fillPrompt } from '../workspace/try/getfile.js';
 
 const require = createRequire(import.meta.url);
 const handler = require('../api/invite-reply.js');
@@ -99,6 +101,38 @@ const cases = [
       && conf.body.text.startsWith('Hi there,\n\nGreat to meet you at AI Tinkerers! Thanks for signing up') && conf.body.html.includes('Great to meet you at AI Tinkerers! Thanks for signing up')
       && r.sent[0].body.text.includes('Event: AI Tinkerers (ai-tinkerers-nov)');
   }],
+  // Two landing headlines, counted by sign-ups (3 Nov 2026).
+  ['the page sends the headline it showed', null, null, () => replyBody({ ...page, ai_tools: [], knowledge_tools: [], headline: 'b' }, 'a@b.test').headline === 'b' && !('headline' in page)],
+  ['with a headline: saved on the contact and in my email', 'POST', { ...page, headline: 'a' }, (r) => {
+    const c = r.calls.find((x) => x.url.endsWith('/contacts') && x.method === 'POST');
+    return r.status === 201 && c.body.properties.headline === 'a' && r.sent[0].body.text.includes('Headline: a');
+  }],
+  ['no headline: no property, "Headline: (none)"', 'POST', page, (r) => {
+    const c = r.calls.find((x) => x.url.endsWith('/contacts') && x.method === 'POST');
+    return r.status === 201 && !('headline' in c.body.properties) && r.sent[0].body.text.includes('Headline: (none)');
+  }],
+  ...[['c'], ['A'], ['<b>'], [1], [['a']]].map(([h]) => [`a headline of ${JSON.stringify(h)} is dropped, never refused`, 'POST', { ...page, headline: h }, (r) => {
+    const c = r.calls.find((x) => x.url.endsWith('/contacts') && x.method === 'POST');
+    return r.status === 201 && !('headline' in c.body.properties) && r.sent[0].body.text.includes('Headline: (none)');
+  }]),
+  ['the two headlines are Story.md\'s, and a visit gets either', null, null, () => HEADLINES.a.startsWith('My AI agents have finished 915 tasks') && HEADLINES.b.startsWith('I asked Claude for a letter')
+    && pickHeadline(() => 0) === 'a' && pickHeadline(() => 0.49) === 'a' && pickHeadline(() => 0.5) === 'b' && pickHeadline(() => 0.99) === 'b'],
+  // The return visit (amended 3 Nov 2026): the copied prompt's link carries the headline and event back.
+  ...[['?h=a', 'a'], ['?h=b', 'b'], ['?h=b&event=ai-tinkerers-nov', 'b'], ['', null], ['?h=c', null], ['?h=A', null], ['?h=toString', null], ['?event=x', null]]
+    .map(([q, want]) => [`headlineFrom(${JSON.stringify(q)}) is ${JSON.stringify(want)}`, null, null, () => headlineFrom(q) === want]),
+  ['a return visit with ?h=b sends b', 'POST', replyBody({ ...page, ai_tools: [], knowledge_tools: [], headline: headlineFrom('?h=b') ?? pickHeadline(() => 0) }, 'sam@example.test'), (r) => {
+    const c = r.calls.find((x) => x.url.endsWith('/contacts') && x.method === 'POST');
+    return r.status === 201 && c.body.properties.headline === 'b' && r.sent[0].body.text.includes('Headline: b');
+  }],
+  ["the copied prompt's link carries the headline and event, before the #code", null, null, () => {
+    const p = fillPrompt('90-test', undefined, { headline: 'b', event: 'ai-tinkerers-nov' });
+    return p.includes('https://www.brianhirsh.com/workspace/try?h=b&event=ai-tinkerers-nov#90-test') && (p.match(/90-test/g) || []).length === 3;
+  }],
+  ['without a code, the link carries them with no #', null, null, () => {
+    const p = fillPrompt(null, undefined, { headline: 'a' });
+    return p.includes('https://www.brianhirsh.com/workspace/try?h=a ') && !/workspace\/try[^ ]*#/.test(p) && !/[{}]/.test(p);
+  }],
+  ['with nothing to carry, the link is as before', null, null, () => fillPrompt('90-test').includes('https://www.brianhirsh.com/workspace/try#90-test') && fillPrompt(null).includes('https://www.brianhirsh.com/workspace/try ')],
   ['a bad event is dropped, never refused', 'POST', { ...page, event: '<script>' }, (r) => {
     const c = r.calls.find((x) => x.url.endsWith('/contacts') && x.method === 'POST');
     return r.status === 201 && !('event' in c.body.properties) && !JSON.stringify(r.calls).includes('script');

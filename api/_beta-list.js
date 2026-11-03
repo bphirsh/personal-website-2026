@@ -3,7 +3,7 @@
  *
  * joinBetaList adds the person to Resend's "Beta" segment as a contact, or updates them if the email is already a contact, so signing up twice never duplicates. sendConfirmation sends them the standard "You're on the Workspace beta list" email from api/_confirmation.js. Neither throws: each returns { ok, detail }, and the caller puts any failure in my notification so a sign-up is never lost.
  *
- * Resend's audiences are now segments; RESEND_AUDIENCE_ID holds the segment id. The computer and agents are saved on the contact as two string properties (Brian, 30 Oct 2026), `computer` (one code, as mac-apple-silicon) and `agents` (codes joined by commas, as claude,cursor), the same codes the Signups database's options use, so tools/sync-signups.mts can copy them across. Since 3 Nov 2026 a sign-up from an event's QR link also saves the event's slug as `event` (api/_events.js), and its confirmation opens by naming the event. Resend refuses a property it hasn't been told about, so the first time a write fails these two are created and the write tried once more. Endpoints read from Resend's docs on 30 Oct 2026: POST /contacts (with segments and properties), PATCH /contacts/{email}, POST /contacts/{email}/segments/{id}, POST /contact-properties.
+ * Resend's audiences are now segments; RESEND_AUDIENCE_ID holds the segment id. The computer and agents are saved on the contact as two string properties (Brian, 30 Oct 2026), `computer` (one code, as mac-apple-silicon) and `agents` (codes joined by commas, as claude,cursor), the same codes the Signups database's options use, so tools/sync-signups.mts can copy them across. Since 3 Nov 2026 a sign-up from an event's QR link also saves the event's slug as `event` (api/_events.js), and its confirmation opens by naming the event; a try-page sign-up saves which landing headline it saw as `headline` ("a" or "b"). Resend refuses a property it hasn't been told about, so the first time a write fails these two are created and the write tried once more. Endpoints read from Resend's docs on 30 Oct 2026: POST /contacts (with segments and properties), PATCH /contacts/{email}, POST /contacts/{email}/segments/{id}, POST /contact-properties.
  *
  * Files starting with "_" in api/ are not deployed as endpoints; this one is only required by the two that are.
  */
@@ -35,18 +35,19 @@ function nameFields(name) {
 }
 
 /** The properties we keep on a contact. Created once, by ensureProperties, when Resend doesn't know them yet. */
-const PROPERTY_KEYS = ['computer', 'agents', 'event'];
+const PROPERTY_KEYS = ['computer', 'agents', 'event', 'headline'];
 
 async function ensureProperties(apiKey) {
   // One that already exists fails here, which is fine: either way it exists afterwards.
   for (const key of PROPERTY_KEYS) await call(apiKey, 'POST', '/contact-properties', { key, type: 'string' });
 }
 
-/** { computer, agents, event } as Resend properties, leaving out what wasn't said rather than writing an empty value over an earlier one. */
-function propertyFields(computer, agents, event) {
+/** { computer, agents, event, headline } as Resend properties, leaving out what wasn't said rather than writing an empty value over an earlier one. */
+function propertyFields(computer, agents, event, headline) {
   const out = {};
   if (computer) out.computer = String(computer);
   if (event) out.event = String(event);
+  if (headline) out.headline = String(headline);
   // A free-typed tool from the try page could hold a comma, which would split it in two when read back.
   if (agents && agents.length) out.agents = agents.map((a) => String(a).replace(/,/g, ' ').trim()).filter(Boolean).join(',').slice(0, 500);
   return out;
@@ -55,10 +56,10 @@ function propertyFields(computer, agents, event) {
 /**
  * Put this email in the Beta segment, with its computer and agents. A new contact is created there; when that fails because the email is already a contact, its name is updated (if one was given) and it is added to the segment, which leaves an unsubscribed contact unsubscribed.
  */
-async function joinBetaList({ apiKey, segmentId, email, name, computer, agents, event }) {
+async function joinBetaList({ apiKey, segmentId, email, name, computer, agents, event, headline }) {
   if (!segmentId) return { ok: false, detail: 'RESEND_AUDIENCE_ID is not set' };
   const names = nameFields(name);
-  const properties = propertyFields(computer, agents, event);
+  const properties = propertyFields(computer, agents, event, headline);
   const hasProps = Object.keys(properties).length > 0;
   const contact = { email, ...names, ...(hasProps ? { properties } : {}), segments: [{ id: segmentId }] };
 
