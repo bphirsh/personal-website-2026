@@ -115,7 +115,7 @@ const cases = [
     const c = r.calls.find((x) => x.url.endsWith('/contacts') && x.method === 'POST');
     return r.status === 201 && !('headline' in c.body.properties) && r.sent[0].body.text.includes('Headline: (none)');
   }]),
-  ['the two headlines are Story.md\'s, and a visit gets either', null, null, () => HEADLINES.a.startsWith('My AI agents have finished 915 tasks') && HEADLINES.b.startsWith('I asked Claude for a letter')
+  ['the two headlines are Brian\'s picks, and a visit gets either', null, null, () => HEADLINES.a.startsWith('Find out what your AI agent') && HEADLINES.b.startsWith('Your agent already knows')
     && pickHeadline(() => 0) === 'a' && pickHeadline(() => 0.49) === 'a' && pickHeadline(() => 0.5) === 'b' && pickHeadline(() => 0.99) === 'b'],
   // The return visit (amended 3 Nov 2026): the copied prompt's link carries the headline and event back.
   ...[['?h=a', 'a'], ['?h=b', 'b'], ['?h=b&event=ai-tinkerers-nov', 'b'], ['', null], ['?h=c', null], ['?h=A', null], ['?h=toString', null], ['?event=x', null]]
