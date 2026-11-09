@@ -14,6 +14,16 @@ const MAX_SLUG = 48;
 /** Names for events whose slug doesn't read well on its own. Add one when a slug's readable form is wrong. */
 const EVENT_NAMES = {};
 
+/**
+ * Slugs that name a place on the site rather than an event (9 Nov 2026): a sign-up from there is tagged the same way (the contact's `event`, "Met at" in Signups), but its confirmation has no "Great to meet you at …" line. The download page's new-build box sends "download-page".
+ */
+const PLACES = { 'download-page': 'Download page' };
+
+/** Whether this slug is a place on the site rather than an event. */
+function isPlace(slug) {
+  return typeof slug === 'string' && Object.prototype.hasOwnProperty.call(PLACES, slug);
+}
+
 const MONTHS = new Set(['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'sept', 'oct', 'nov', 'dec']);
 // Words written in capitals rather than capitalised.
 const UPPER = new Set(['ai', 'ml', 'llm', 'ux', 'ui', 'nyc', 'sf', 'la', 'dc', 'uk', 'us', 'mit', 'api', 'js']);
@@ -27,10 +37,11 @@ function eventSlug(v) {
 
 /** "ai-tinkerers-nov" → "AI Tinkerers": from EVENT_NAMES, else the slug's words capitalised, with a trailing month or year left off. */
 function eventName(slug) {
+  if (isPlace(slug)) return PLACES[slug];
   if (Object.prototype.hasOwnProperty.call(EVENT_NAMES, slug)) return EVENT_NAMES[slug];
   const words = slug.split('-');
   while (words.length > 1 && (MONTHS.has(words[words.length - 1]) || /^(19|20)\d\d$/.test(words[words.length - 1]))) words.pop();
   return words.map((w) => (UPPER.has(w) ? w.toUpperCase() : w[0].toUpperCase() + w.slice(1))).join(' ');
 }
 
-module.exports = { eventSlug, eventName, EVENT_NAMES };
+module.exports = { eventSlug, eventName, isPlace, EVENT_NAMES, PLACES };

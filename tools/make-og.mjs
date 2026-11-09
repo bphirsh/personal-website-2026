@@ -2,9 +2,9 @@
 /**
  * make-og — draw the link-preview cards and the Workspace icons, once, as files the site keeps.
  *
- *   node tools/make-og.mjs
+ *   node tools/make-og.mjs [card file names…]
  *
- * Each card is a small HTML page in the site's style (the cream background, DM Serif Display and Outfit), drawn to a 1200×630 PNG in og/ by headless Chrome. Brian's own pages carry the 😁, the Workspace pages carry the Workspace mark. The words are the image text in Marketing/Beta Signups/Link previews.md: the part before the first " · " is the heading, the rest the line under it. The Workspace icons (favicon PNGs, the touch icon, the manifest icons) are drawn from workspace/media/workspace-logo-light.svg the same way, into workspace/media/. Run it again when the words or the mark change, and commit the result; nothing is drawn at deploy time.
+ * Each card is a small HTML page in the site's style (the cream background, DM Serif Display and Outfit), drawn to a 1200×630 PNG in og/ by headless Chrome. Brian's own pages carry the 😁, the Workspace pages carry the Workspace mark. The words are the image text in Marketing/Beta Signups/Link previews.md: the part before the first " · " is the heading, the rest the line under it. The Workspace icons (favicon PNGs, the touch icon, the manifest icons) are drawn from workspace/media/workspace-logo-light.svg the same way, into workspace/media/. Run it again when the words or the mark change, and commit the result; nothing is drawn at deploy time. Given card file names (as workspace-download.png), it draws only those cards and no icons.
  */
 
 import { execFileSync } from 'node:child_process';
@@ -18,14 +18,14 @@ const chrome = '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome';
 const logo = pathToFileURL(join(root, 'workspace/media/workspace-logo-light.svg')).href;
 const work = mkdtempSync(join(tmpdir(), 'make-og-'));
 
-// From Link previews.md, "Image text", 27 Oct 2026.
+// From Link previews.md, "Image text", 27 Oct 2026; the signup and download cards reworded 9 Nov 2026, when the download went public.
 export const CARDS = [
   { file: 'home.png', mark: 'brian', text: 'Brian Hirsh · Founder · Builder · Explorer', foot: 'brianhirsh.com' },
   { file: 'resume.png', mark: 'brian', text: 'Brian Hirsh · Founder · Product Leader · AI-Native Builder', foot: 'brianhirsh.com/resume' },
   { file: 'workspace.png', mark: 'workspace', text: 'A place for you + agents to collaborate', foot: 'brianhirsh.com/workspace' },
   { file: 'workspace-try.png', mark: 'workspace', text: 'Your AI makes it. You open it here.', foot: 'brianhirsh.com/workspace/try' },
-  { file: 'workspace-signup.png', mark: 'workspace', text: 'Request early access to Workspace', foot: 'brianhirsh.com/workspace/signup' },
-  { file: 'workspace-download.png', mark: 'workspace', text: 'Workspace beta · For invited testers', foot: 'brianhirsh.com/workspace/download' },
+  { file: 'workspace-signup.png', mark: 'workspace', text: 'New Workspace builds, by email', foot: 'brianhirsh.com/workspace/signup' },
+  { file: 'workspace-download.png', mark: 'workspace', text: 'Download Workspace · Free beta for Mac', foot: 'brianhirsh.com/workspace/download' },
 ];
 
 const ICONS = [
@@ -84,5 +84,6 @@ function draw(html, out, w, h, transparent) {
   console.log(`${out.replace(root + '/', '')}: ${dims}, ${Math.round(statSync(out).size / 1024)} KB`);
 }
 
-for (const c of CARDS) draw(card(c), join(root, 'og', c.file), 1200, 630);
-for (const i of ICONS) draw(icon(i), join(root, 'workspace/media', i.file), i.size, i.size, !i.solid);
+const only = process.argv.slice(2);
+for (const c of CARDS) if (!only.length || only.includes(c.file)) draw(card(c), join(root, 'og', c.file), 1200, 630);
+if (!only.length) for (const i of ICONS) draw(icon(i), join(root, 'workspace/media', i.file), i.size, i.size, !i.solid);

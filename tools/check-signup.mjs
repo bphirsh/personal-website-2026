@@ -4,7 +4,7 @@
  *
  *   node tools/check-signup.mjs
  *
- * It loads api/signup.js as Vercel would, replaces global fetch with a recorder, and calls the handler with made-up requests: the request-access page's body (an email since M-027, with the computer and agents), older pages' bodies, values the endpoint must refuse, and Resend failing at each step of the beta list (api/_beta-list.js). Each case says PASS or FAIL; exit 1 on any FAIL. What it cannot see: Vercel's own body parsing and Resend itself, which only a real send shows.
+ * It loads api/signup.js as Vercel would, replaces global fetch with a recorder, and calls the handler with made-up requests: the sign-up page's body, the download page's new-build box (an email since M-027, with the computer and agents), older pages' bodies, values the endpoint must refuse, and Resend failing at each step of the beta list (api/_beta-list.js). Each case says PASS or FAIL; exit 1 on any FAIL. What it cannot see: Vercel's own body parsing and Resend itself, which only a real send shows.
  */
 
 import { createRequire } from 'node:module';
@@ -44,6 +44,8 @@ const created = (r) => r.calls.filter((c) => c.url === '/contacts' && c.method =
 
 // The body the page sends (workspace/signup/index.html), with made-up values.
 const page = { name: 'Sam Q. Test', email: 'sam@example.test', computer: 'mac-apple-silicon', agents: ['claude', 'cursor'] };
+// The body the download page's new-build box sends (workspace/download/index.html).
+const downloadBox = { email: 'dana@example.test', computer: 'mac-apple-silicon', agents: [], event: 'download-page' };
 
 const cases = [
   ['the page body is sent, with computer and agents in the email', page, (r) => r.status === 201 && r.sent.length === 1 && r.sent[0].body.text.includes('Computer: Mac with Apple silicon') && r.sent[0].body.text.includes('Agents: Claude, Cursor')],
@@ -107,6 +109,23 @@ const cases = [
   ['an existing contact gets the event by update too', { ...page, event: 'demo-night-2026' }, (r) => r.calls.find((c) => c.method === 'PATCH').body.properties.event === 'demo-night-2026',
     (c) => c.url === '/contacts' && c.method === 'POST'],
   ['the honeypot still drops silently, joining nothing', { ...page, website: 'spam' }, (r) => r.status === 201 && r.calls.length === 0],
+  // The download page's new-build box (9 Nov 2026): an email only, the Mac it's for, tagged "download-page".
+  ['the download page box (no name) is accepted and joins the list', downloadBox, (r) => r.status === 201 && created(r)[0] && created(r)[0].body.email === 'dana@example.test' && !('first_name' in created(r)[0].body)],
+  ['the download page box is tagged: event "download-page", computer Apple silicon', downloadBox, (r) => created(r)[0].body.properties.event === 'download-page' && created(r)[0].body.properties.computer === 'mac-apple-silicon'],
+  ['the download page box: the confirmation says "Hi there," with no "Great to meet you" line', downloadBox, (r) => {
+    const c = confirmTo(r, 'dana@example.test');
+    return c && c.body.text.startsWith('Hi there,\n\nThanks for signing up') && !c.body.text.includes('Great to meet you') && !c.body.html.includes('Great to meet you');
+  }],
+  ["the download page box: Brian's email names the place, no name, the email in the subject", downloadBox, (r) => r.sent[0].body.text.includes('Name: (none)') && r.sent[0].body.text.includes('Event: Download page (download-page)') && r.sent[0].body.subject.includes('dana@example.test') && r.sent[0].body.subject.includes('(Download page)')],
+  ['the download page box with no computer is still refused', { ...downloadBox, computer: undefined }, (r) => r.status === 400 && r.calls.length === 0],
+  ['a name over 120 characters is refused', { ...page, name: 'x'.repeat(121) }, (r) => r.status === 400 && r.calls.length === 0],
+  // The confirmation since the download went public: the download link and a new-build email, no invite.
+  ['the confirmation gives the download link and promises a new-build email, no invite or waiting', page, (r) => {
+    const c = confirmTo(r, 'sam@example.test');
+    return ['html', 'text'].every((k) => c.body[k].includes('https://www.brianhirsh.com/workspace/download/') && c.body[k].includes("I'll email you when there's a new build")
+      && c.body[k].includes('https://www.brianhirsh.com/workspace/try/') && !/invite|your turn|onboard|password/i.test(c.body[k])) && !/invite/i.test(c.body.subject);
+  }],
+  ["Brian's email says sign-up, not access request", page, (r) => /^Workspace sign-up — Sam Q\. Test/.test(r.sent[0].body.subject) && r.sent[0].body.text.startsWith('New Workspace sign-up') && !/access request/i.test(JSON.stringify(r.sent[0].body))],
 ];
 
 let failed = 0;

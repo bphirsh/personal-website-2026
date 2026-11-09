@@ -13,14 +13,15 @@ const ENDPOINT = '/api/invite-reply';
 const EMAIL_RE = /^[^\s@]+@[^\s@.]+\.[^\s@]{2,}$/;
 
 const WORDS = {
-  reserve: 'Reserve my spot',
+  reserve: 'Email me new builds',
   keepPosted: 'Keep me posted', // on an Intel Mac, where the build will not run
   placeholder: 'you@example.com',
   noEmail: 'Add your email first.',
   badEmail: "That doesn't look like an email address.",
   sending: 'Sending…',
   failed: "That didn't send. Try again.",
-  inLine: (name) => (name && name !== 'You' ? `You're in line, ${name}! Brian will email you.` : "You're in line! Brian will email you."),
+  // Since 9 Nov 2026 (the download went public) the sign-up is for the new-build email, not a place in line.
+  inLine: (name) => (name && name !== 'You' ? `Thanks, ${name}! Brian will email you when there's a new build.` : "Thanks! Brian will email you when there's a new build."),
   thanks: (name) => (name && name !== 'You' ? `Thanks, ${name}! Brian will email you.` : 'Thanks! Brian will email you.'),
   question: 'Which computer would you use Workspace on?',
   tools: 'Which AI tools do you use most?',
@@ -39,7 +40,7 @@ export const COMPUTERS = [
 
 // The line for each computer, around the email box: "Email me at [ ] …" (M-007, M-013).
 const VARIANTS = {
-  'mac-apple-silicon': { after: "when it's ready!" },
+  'mac-apple-silicon': { after: "when there's a new build!" },
   windows: { after: "when there's a Windows version!" },
   linux: { after: "if there's a Linux version!" },
   // No line above the box for an Intel Mac any more, and no line under the sign-up (Brian, 28 Oct 2026).
