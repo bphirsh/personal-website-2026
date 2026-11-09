@@ -3,7 +3,7 @@
  *
  * latestBuild reads the release feed, https://releases.brianhirsh.com/latest-mac.yml (the file the app's own updater reads), and returns the .dmg it names, so the download never goes stale when a new version ships. The answer is kept in this instance's memory for a minute; when the feed can't be read in a few seconds, the last answer is used, or else FALLBACK, so a download never fails for it.
  *
- * recordClick stores one click as one tiny object in Vercel Blob: `downloads/<date>/<version>-<random>.txt`, body "1". Nothing else is stored: no IP, no user agent, no cookie, no referrer, nothing about the person. One object per click, with a random part in its name, means two clicks at once never overwrite each other (no read-modify-write). countClicks lists those objects and adds them up by day and by version. With no BLOB_READ_WRITE_TOKEN in the environment, nothing is counted and nothing fails.
+ * recordClick stores one click as one tiny object in Vercel Blob: `downloads/<date>/<version>-<random>.txt`, body "1". Nothing else is stored: no IP, no user agent, no cookie, no referrer, nothing about the person. One object per click, with a random part in its name, means two clicks at once never overwrite each other (no read-modify-write). countClicks lists those objects and adds them up by day and by version. With no Blob store connected (BLOB_STORE_ID with the project's OIDC token, or BLOB_READ_WRITE_TOKEN), nothing is counted and nothing fails.
  *
  * Vercel Blob is called over its REST API with plain fetch, not the @vercel/blob package: a package would need a package.json, which the site deliberately doesn't have (api/README.md). The calls are the ones @vercel/blob 2.8.2 makes (read from its published source on 9 Nov 2026): PUT https://vercel.com/api/blob/?pathname=<p> with the headers below to store, and GET https://vercel.com/api/blob?prefix=<p>&limit=1000&cursor=<c> to list ({ blobs: [{ pathname }], cursor, hasMore }). The store id is the fourth "_"-separated part of the token (vercel_blob_rw_<storeId>_<secret>).
  *
@@ -78,11 +78,17 @@ async function latestBuild() {
   }
 }
 
-/** The Blob store's token and id, or null when counting is off. */
-function blobAuth() {
+/**
+ * The Blob store's credentials, or null when counting is off. Two ways, as @vercel/blob 2.8.2 resolves them: a store connected since Vercel's OIDC change gives BLOB_STORE_ID, and the function signs in with the project's OIDC token (the x-vercel-oidc-token request header, or VERCEL_OIDC_TOKEN); an older store gives BLOB_READ_WRITE_TOKEN, which carries its own store id. OIDC is tried first, as the package does.
+ */
+function blobAuth(req) {
+  const storeId = (process.env.BLOB_STORE_ID || '').trim().replace(/^store_/, '');
+  const h = req && req.headers ? req.headers['x-vercel-oidc-token'] : undefined;
+  const oidc = String((Array.isArray(h) ? h[0] : h) || process.env.VERCEL_OIDC_TOKEN || '').trim();
+  if (storeId && oidc) return { token: oidc, storeId, kind: 'oidc' };
   const token = process.env.BLOB_READ_WRITE_TOKEN;
   if (!token) return null;
-  return { token, storeId: token.split('_')[3] || '' };
+  return { token, storeId: token.split('_')[3] || '', kind: 'readWrite' };
 }
 
 function blobHeaders(auth) {
@@ -104,25 +110,27 @@ function recordPath(version, date = today()) {
  * Store one click. Resolves to { ok, detail }, never throws, and gives up after TIMEOUTS.count so the redirect is never held up for long. With no token it does nothing and says so once per instance.
  */
 let saidOff = false;
-async function recordClick(version) {
-  const auth = blobAuth();
+async function recordClick(version, req) {
+  const auth = blobAuth(req);
   if (!auth) {
-    if (!saidOff) { console.log('download: BLOB_READ_WRITE_TOKEN is not set, so clicks are not counted'); saidOff = true; }
+    if (!saidOff) { console.log('download: no Blob store is connected (BLOB_STORE_ID with OIDC, or BLOB_READ_WRITE_TOKEN), so clicks are not counted'); saidOff = true; }
     return { ok: false, detail: 'counting is off' };
   }
   const pathname = recordPath(version);
+  // The access the store was made with: a store is public or private, and a PUT naming the other is refused. BLOB_ACCESS says which; unset, public is tried first and private once if refused. The object's name and body say nothing about anyone either way.
+  const first = process.env.BLOB_ACCESS === 'private' ? 'private' : 'public';
+  const put = (access) => fetchWithin(TIMEOUTS.count, `${blobApi()}/?${new URLSearchParams({ pathname })}`, {
+    method: 'PUT',
+    headers: { ...blobHeaders(auth), 'x-vercel-blob-access': access, 'x-content-type': 'text/plain', 'x-add-random-suffix': '0' },
+    body: '1',
+  });
   try {
-    const res = await fetchWithin(TIMEOUTS.count, `${blobApi()}/?${new URLSearchParams({ pathname })}`, {
-      method: 'PUT',
-      headers: {
-        ...blobHeaders(auth),
-        // The access the store was made with; the dmg's store was public. The object's name and body say nothing about anyone either way.
-        'x-vercel-blob-access': process.env.BLOB_ACCESS === 'private' ? 'private' : 'public',
-        'x-content-type': 'text/plain',
-        'x-add-random-suffix': '0',
-      },
-      body: '1',
-    });
+    let res = await put(first);
+    if (!res.ok && res.status === 400 && !process.env.BLOB_ACCESS) {
+      const why = await res.text().catch(() => '');
+      if (/access/i.test(why)) res = await put(first === 'public' ? 'private' : 'public');
+      else res = new Response(why, { status: 400 });
+    }
     if (!res.ok) {
       const detail = (await res.text().catch(() => '')).slice(0, 200);
       console.error('download: the click was not counted', res.status, detail);
@@ -138,8 +146,8 @@ async function recordClick(version) {
 /**
  * Every stored click, added up: { total, byDay: { date: n }, byVersion: { version: n }, counting }. Throws when Blob can't be listed, so the endpoint can say so rather than report a false zero.
  */
-async function countClicks() {
-  const auth = blobAuth();
+async function countClicks(req) {
+  const auth = blobAuth(req);
   if (!auth) return { total: 0, byDay: {}, byVersion: {}, counting: false };
   const byDay = {};
   const byVersion = {};
