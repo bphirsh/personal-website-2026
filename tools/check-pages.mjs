@@ -35,7 +35,8 @@ const cases = [
   ...WORKSPACE_PAGES.map((p) => [`${p} links to the download in one click`, () => /href="\/workspace\/download\/"|href="\/api\/download"/.test(read(p))]),
   ['the download page button goes through /api/download', () => /<a class="btn dl-btn" id="downloadLink" href="\/api\/download">Download for Mac<\/a>/.test(download)],
   ['the download page has no password field and no call to download-auth', () => !/type="password"|download-auth/.test(download)],
-  ['the download page states the limits: Apple silicon, beta, free, closed source', () => /Apple silicon/.test(download) && /beta/i.test(download) && /free/i.test(download) && /closed source, all rights reserved/.test(download)],
+  // Brian, 9 Nov 2026: the warranty line, the install steps and the privacy line came off the download page; it says only that this is an early version and may have issues.
+  ['the download page states the limits: Apple silicon, free beta, an early version that may have issues', () => /Apple silicon/.test(download) && /free beta/i.test(download) && /early version/.test(download) && !/real work/.test(download)],
   ['the download page says it is signed and notarized, with no Gatekeeper steps', () => /signed and notarized/.test(download) && !/right-click|Privacy &amp; Security|Gatekeeper/i.test(download)],
   ['the download page drops "shared with you privately" and "don\'t pass on"', () => !/shared with you privately|pass on the app/i.test(download)],
   ['the new-build box sends the email, Apple silicon, no name, tagged download-page', () => /email: email/.test(boxBody) && /computer: 'mac-apple-silicon'/.test(boxBody) && /'download-page'/.test(boxBody) && !/\bname\s*:/.test(boxBody)],
@@ -43,7 +44,7 @@ const cases = [
     const input = download.match(/<input type="email" id="email"[^>]*>/);
     return input && !/required/.test(input[0]) && !/addEventListener\('click'[\s\S]*downloadLink/.test(download);
   }],
-  ['the download page says how clicks are counted and still promises no analytics or cookies', () => /counts clicks: a date and the version, nothing about you/.test(download) && /No analytics, no cookies/.test(download)],
+  ['the download page drops the warranty, install steps and privacy line (Brian, 9 Nov 2026)', () => !/warranty|Installing|counts clicks/.test(download)],
   ['the sign-up page keeps its form and the computer it requires', () => { const s = read('workspace/signup/index.html'); return /id="signupForm"/.test(s) && /Please choose a computer\./.test(s) && /Get an email when there's a new build/.test(s); }],
   ['/api/download-auth is gone', () => !existsSync(join(root, 'api/download-auth.js'))],
   ['/workspace/beta-download still redirects to the download page', () => { const v = JSON.parse(read('vercel.json')); return v.redirects.some((r) => r.source === '/workspace/beta-download' && r.destination === '/workspace/download'); }],

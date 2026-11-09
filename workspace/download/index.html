@@ -91,23 +91,6 @@
   .terms p + p { margin-top: 11px; }
   .terms strong { font-weight: 600; color: var(--text-primary); }
 
-  .install-note {
-    font-size: 14px;
-    color: var(--text-secondary);
-    font-weight: 300;
-    line-height: 1.7;
-    margin-top: 26px;
-  }
-  .install-note code {
-    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-    font-size: 13px;
-    background: color-mix(in srgb, var(--text-primary) 8%, transparent);
-    padding: 2px 6px;
-    border-radius: 5px;
-  }
-  .install-note ol { margin: 10px 0 10px 20px; }
-  .install-note li { margin-bottom: 6px; }
-
   /* The optional new-build email: quiet, below everything, never in the way of the download. */
   .notify {
     margin-top: 26px;
@@ -122,13 +105,6 @@
   @media (max-width: 420px) {
     .notify-row { flex-direction: column; }
     .notify-row .btn { padding: 14px 22px; }
-  }
-  .privacy {
-    font-size: 13px;
-    color: var(--text-muted);
-    font-weight: 300;
-    margin-top: 20px;
-    line-height: 1.6;
   }
 </style>
 </head>
@@ -156,19 +132,8 @@
 
     <section class="terms">
       <h2>Before you install</h2>
-      <p><strong>This is an early beta, not a finished product.</strong> It may crash, behave strangely, lose data or change without warning. Please don't use it for anything you'd be upset to lose, and don't depend on it for real work.</p>
-      <p>It comes with no warranty of any kind, and I'm not liable for anything that goes wrong while you're using it. Free to use; closed source, all rights reserved.</p>
+      <p><strong>This is an early version.</strong> You may run into bugs or rough edges while I keep building it. If something goes wrong, write to <a href="mailto:brian@brianhirsh.com?subject=Workspace%20beta%20feedback">brian@brianhirsh.com</a>.</p>
     </section>
-
-    <div class="install-note">
-      <strong>Installing</strong>
-      <ol>
-        <li>Open the <code>.dmg</code> and drag Workspace into Applications.</li>
-        <li>Open Workspace. It's signed and notarized by Apple, so it opens normally.</li>
-      </ol>
-      Hit a bug? Write to
-      <a href="mailto:brian@brianhirsh.com?subject=Workspace%20beta%20feedback">brian@brianhirsh.com</a>.
-    </div>
 
     <form class="notify" id="notifyForm" novalidate>
       <div class="field">
@@ -189,8 +154,6 @@
       </div>
     </form>
     <div class="status" id="status" role="status" aria-live="polite"></div>
-
-    <p class="privacy">The download button counts clicks: a date and the version, nothing about you. An email you leave comes straight to me, and I won't share it. No analytics, no cookies on this page.</p>
   </div>
 
   <div class="footer">
