@@ -54,17 +54,10 @@
   .dl-head .lede { font-size: 16px; margin-bottom: 0; }
 
   .dl-btn { padding: 18px 36px; font-size: 16px; }
-  /* Version and size, read from the release feed; left out when it can't be read. */
-  .build-line {
-    font-size: 13px;
-    color: var(--text-muted);
-    font-weight: 300;
-    margin-top: 14px;
-    min-height: 1.4em;
-    font-variant-numeric: tabular-nums;
-  }
-  .build-line strong { font-weight: 600; color: var(--text-secondary); }
-  .doc-links { font-size: 13px; color: var(--text-muted); font-weight: 300; margin-top: 4px; }
+  /* The version, read from the release feed, small inside the button; left out when it can't be read (Brian, 9 Nov 2026). */
+  .dl-version { font-size: 12px; font-weight: 400; opacity: .6; margin-left: 10px; font-variant-numeric: tabular-nums; }
+  .dl-version:empty { display: none; }
+  .doc-links { font-size: 13px; color: var(--text-muted); font-weight: 300; margin-top: 14px; }
   .doc-links a { color: var(--text-secondary); }
 
   .terms {
@@ -91,22 +84,6 @@
   }
   .terms p + p { margin-top: 11px; }
   .terms strong { font-weight: 600; color: var(--text-primary); }
-
-  /* The optional new-build email: quiet, below everything, never in the way of the download. */
-  .notify {
-    margin-top: 26px;
-    padding-top: 22px;
-    border-top: 1px solid var(--border);
-  }
-  .notify .field { margin-bottom: 0; }
-  .notify .field label { text-transform: none; letter-spacing: 0; font-size: 15px; font-weight: 500; color: var(--text-primary); }
-  .notify-row { display: flex; gap: 10px; }
-  .notify-row input { flex: 1; min-width: 0; }
-  .notify-row .btn { padding: 0 22px; flex: none; color: var(--text-primary); background: transparent; box-shadow: inset 0 0 0 1px var(--border); }
-  @media (max-width: 420px) {
-    .notify-row { flex-direction: column; }
-    .notify-row .btn { padding: 14px 22px; }
-  }
 </style>
 </head>
 <body>
@@ -116,46 +93,25 @@
   <div class="card dl-card fade-up">
     <a href="/workspace/" class="back-link">← Workspace</a>
 
+    <div class="section-label">Beta</div>
     <picture class="app-icon">
       <source media="(prefers-color-scheme: dark)" srcset="/workspace/media/workspace-logo-dark.svg">
       <img src="/workspace/media/workspace-logo-light.svg" alt="" width="72" height="72" decoding="async">
     </picture>
 
     <div class="dl-head">
-      <div class="section-label">Beta</div>
       <h1 class="page-title">Download Workspace</h1>
       <p class="lede">A free beta for Macs with Apple silicon. I'm building it on my own in NYC.</p>
     </div>
 
     <!-- /api/download counts the click (a date and a version, nothing else) and redirects to the newest .dmg on releases.brianhirsh.com. -->
-    <a class="btn dl-btn" id="downloadLink" href="/api/download">Download for Mac</a>
-    <p class="build-line" id="buildLine"></p>
+    <a class="btn dl-btn" id="downloadLink" href="/api/download">Download for Mac<span class="dl-version" id="dlVersion"></span></a>
     <p class="doc-links"><a href="/workspace/releases/">Release notes</a> · <a href="/workspace/terms/">Terms of use</a></p>
 
     <section class="terms">
       <h2>Before you install</h2>
       <p><strong>This is an early version.</strong> You may run into bugs or rough edges while I keep building it. If something goes wrong, write to <a href="mailto:brian@brianhirsh.com?subject=Workspace%20beta%20feedback">brian@brianhirsh.com</a>.</p>
     </section>
-
-    <form class="notify" id="notifyForm" novalidate>
-      <div class="field">
-        <label for="email">Email me when there's a new build <span style="color:var(--text-muted);font-weight:300">(optional)</span></label>
-        <div class="notify-row">
-          <input type="email" id="email" name="email" autocomplete="email" maxlength="160" placeholder="you@example.com">
-          <button type="submit" class="btn" id="notifyBtn">
-            <span class="spinner" aria-hidden="true"></span>
-            <span id="notifyLabel">Email me</span>
-          </button>
-        </div>
-        <div class="error" id="emailError" aria-live="polite"></div>
-      </div>
-      <!-- Honeypot: real people never see or fill this. -->
-      <div class="hp" aria-hidden="true">
-        <label for="website">Leave this blank</label>
-        <input type="text" id="website" name="website" tabindex="-1" autocomplete="off">
-      </div>
-    </form>
-    <div class="status" id="status" role="status" aria-live="polite"></div>
   </div>
 
   <div class="footer">
@@ -167,104 +123,15 @@
 <script>
 (function () {
   'use strict';
-
-  // The version and size of the build the button gives, from the release feed through /api/download?info=1 (the feed's own host doesn't let a page read it). Left out if it can't be read; the button works either way.
-  var line = document.getElementById('buildLine');
-  var infoCtl = new AbortController();
-  var infoTimer = setTimeout(function () { infoCtl.abort(); }, 6000);
-  fetch('/api/download?info=1', { signal: infoCtl.signal })
+  // The version of the build the button gives, from the release feed through /api/download?info=1 (the feed's own host doesn't let a page read it), shown small inside the button. Left out if it can't be read; the button works either way.
+  var v = document.getElementById('dlVersion');
+  var ctl = new AbortController();
+  var timer = setTimeout(function () { ctl.abort(); }, 6000);
+  fetch('/api/download?info=1', { signal: ctl.signal })
     .then(function (r) { return r.ok ? r.json() : null; })
-    .then(function (b) {
-      if (!b || !b.version) return;
-      var bits = ['Version <strong>' + escapeHtml(b.version) + '</strong>'];
-      if (b.size) bits.push(Math.round(b.size / (1024 * 1024)) + ' MB');
-      bits.push('Signed and notarized');
-      line.innerHTML = bits.join(' · ');
-    })
+    .then(function (b) { if (b && b.version && /^[0-9A-Za-z.+-]{1,40}$/.test(b.version)) v.textContent = 'v' + b.version; })
     .catch(function () {})
-    .finally(function () { clearTimeout(infoTimer); });
-
-  // The optional new-build email, through /api/signup. Tagged as coming from this page (event "download-page", a place in api/_events.js), or with the event in this page's address when a QR link had one. The computer is a Mac with Apple silicon: that's what this download is for.
-  var CONTACT_EMAIL = 'brian@brianhirsh.com';
-  var form     = document.getElementById('notifyForm');
-  var emailEl  = document.getElementById('email');
-  var honey    = document.getElementById('website');
-  var btn      = document.getElementById('notifyBtn');
-  var label    = document.getElementById('notifyLabel');
-  var statusEl = document.getElementById('status');
-  var errorEl  = document.getElementById('emailError');
-
-  function show(kind, html) {
-    statusEl.className = 'status ' + kind;
-    statusEl.innerHTML = html;
-    statusEl.setAttribute('data-show', 'true');
-  }
-
-  function setError(message) {
-    errorEl.textContent = message || '';
-    if (message) emailEl.setAttribute('aria-invalid', 'true');
-    else emailEl.removeAttribute('aria-invalid');
-  }
-
-  emailEl.addEventListener('input', function () { if (emailEl.getAttribute('aria-invalid')) setError(''); });
-
-  form.addEventListener('submit', function (e) {
-    e.preventDefault();
-    var email = emailEl.value.trim();
-
-    if (honey.value) { form.style.display = 'none'; show('ok', "Thanks! I'll email you when there's a new build."); return; }
-    if (!email) { setError('Add your email first.'); emailEl.focus(); return; }
-    if (!/^[^\s@]+@[^\s@.]+\.[^\s@]{2,}$/.test(email)) { setError("That doesn't look like an email address."); emailEl.focus(); return; }
-    setError('');
-
-    btn.disabled = true;
-    btn.setAttribute('data-busy', 'true');
-    label.textContent = 'Sending…';
-    statusEl.removeAttribute('data-show');
-
-    var controller = new AbortController();
-    var timer = setTimeout(function () { controller.abort(); }, 12000);
-
-    fetch('/api/signup', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        email: email,
-        computer: 'mac-apple-silicon',
-        agents: [],
-        event: new URLSearchParams(location.search).get('event') || 'download-page'
-      }),
-      signal: controller.signal
-    })
-      .then(function (res) {
-        return res.json().catch(function () { return {}; }).then(function (body) { return { ok: res.ok, body: body }; });
-      })
-      .then(function (r) {
-        if (r.ok) {
-          form.style.display = 'none';
-          show('ok', "<strong>Thanks!</strong> I'll email you at " + escapeHtml(email) + " when there's a new build.");
-        } else {
-          show('bad', escapeHtml(r.body.error || 'Something went wrong on my end.') +
-            ' You can also email me at <a href="mailto:' + CONTACT_EMAIL + '?subject=Workspace%20new%20builds">' + CONTACT_EMAIL + '</a>.');
-        }
-      })
-      .catch(function (err) {
-        show('bad', (err.name === 'AbortError' ? 'That took too long. Please try again in a moment.' : "I couldn't reach the sign-up just now.") +
-          ' You can also email me at <a href="mailto:' + CONTACT_EMAIL + '?subject=Workspace%20new%20builds">' + CONTACT_EMAIL + '</a>.');
-      })
-      .finally(function () {
-        clearTimeout(timer);
-        btn.disabled = false;
-        btn.removeAttribute('data-busy');
-        label.textContent = 'Email me';
-      });
-  });
-
-  function escapeHtml(s) {
-    return String(s).replace(/[&<>"']/g, function (c) {
-      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
-    });
-  }
+    .finally(function () { clearTimeout(timer); });
 })();
 </script>
 

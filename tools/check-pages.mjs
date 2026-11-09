@@ -4,7 +4,7 @@
  *
  *   node tools/check-pages.mjs
  *
- * Nothing is served or fetched: it reads the HTML and the scripts as they are in the repository. It checks that every Workspace page reaches the download in one click, that the download page has no password and its button goes through /api/download, what the download page's new-build box sends to /api/signup, that the password endpoint is gone and the old URL still redirects, and that no page, meta text or email still talks about requesting access, passwords, Open Anyway, onboarding, being on a list or waiting for a turn. Each case says PASS or FAIL; exit 1 on any FAIL. What it cannot see: how the pages look and behave in a browser.
+ * Nothing is served or fetched: it reads the HTML and the scripts as they are in the repository. It checks that every Workspace page reaches the download in one click, that the download page has no password and its button goes through /api/download, that the password endpoint is gone and the old URL still redirects, and that no page, meta text or email still talks about requesting access, passwords, Open Anyway, onboarding, being on a list or waiting for a turn. Each case says PASS or FAIL; exit 1 on any FAIL. What it cannot see: how the pages look and behave in a browser.
  */
 
 import { readFileSync, existsSync } from 'node:fs';
@@ -28,22 +28,17 @@ function require_(p) {
 // The words a visitor must no longer meet. "onboarding@resend.dev" is Resend's sender name, not copy; "off the list" is how to unsubscribe.
 const STALE = /request(ed)? access|password|open anyway|onboard(?!ing@resend\.dev)|on the list|your turn|get invited|invites? go out|for invited testers|reserve my spot|you're in line/i;
 
-/** The new-build box's request body, as written in the download page's script. */
-const boxBody = (download.match(/fetch\('\/api\/signup',[\s\S]*?body: JSON\.stringify\((\{[\s\S]*?\})\),/) || [])[1] || '';
 
 const cases = [
   ...WORKSPACE_PAGES.map((p) => [`${p} links to the download in one click`, () => /href="\/workspace\/download\/"|href="\/api\/download"/.test(read(p))]),
-  ['the download page button goes through /api/download', () => /<a class="btn dl-btn" id="downloadLink" href="\/api\/download">Download for Mac<\/a>/.test(download)],
+  ['the download page button goes through /api/download, with the version inside it', () => /<a class="btn dl-btn" id="downloadLink" href="\/api\/download">Download for Mac<span class="dl-version" id="dlVersion"><\/span><\/a>/.test(download) && !/addEventListener\('click'[\s\S]*downloadLink/.test(download)],
   ['the download page has no password field and no call to download-auth', () => !/type="password"|download-auth/.test(download)],
   // Brian, 9 Nov 2026: the warranty line, the install steps and the privacy line came off the download page; it says only that this is an early version and may have issues.
   ['the download page states the limits: Apple silicon, free beta, an early version that may have issues', () => /Apple silicon/.test(download) && /free beta/i.test(download) && /early version/.test(download) && !/real work/.test(download)],
   ['the download page says it is signed and notarized, with no Gatekeeper steps', () => /signed and notarized/.test(download) && !/right-click|Privacy &amp; Security|Gatekeeper/i.test(download)],
   ['the download page drops "shared with you privately" and "don\'t pass on"', () => !/shared with you privately|pass on the app/i.test(download)],
-  ['the new-build box sends the email, Apple silicon, no name, tagged download-page', () => /email: email/.test(boxBody) && /computer: 'mac-apple-silicon'/.test(boxBody) && /'download-page'/.test(boxBody) && !/\bname\s*:/.test(boxBody)],
-  ['the new-build box is optional: its input is not required, and the button is a plain link', () => {
-    const input = download.match(/<input type="email" id="email"[^>]*>/);
-    return input && !/required/.test(input[0]) && !/addEventListener\('click'[\s\S]*downloadLink/.test(download);
-  }],
+  // Brian, 9 Nov 2026: the new-build box, the size and "Signed and notarized" came off the download page; the version sits in the button. The new-build email is still on the sign-up page and the try page.
+  ['the download page has no email box, no size and no signed line under the button', () => !/id="notifyForm"|type="email"|\/api\/signup|' MB'|Signed and notarized/.test(download)],
   ['the download page drops the warranty, install steps and privacy line (Brian, 9 Nov 2026)', () => !/warranty|Installing|counts clicks/.test(download)],
   ['the sign-up page keeps its form and the computer it requires', () => { const s = read('workspace/signup/index.html'); return /id="signupForm"/.test(s) && /Please choose a computer\./.test(s) && /Get an email when there's a new build/.test(s); }],
   ['/api/download-auth is gone', () => !existsSync(join(root, 'api/download-auth.js'))],
