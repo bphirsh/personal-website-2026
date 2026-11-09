@@ -13,6 +13,8 @@ const require = createRequire(import.meta.url);
 const downloads = require('../api/_downloads.js');
 const download = require('../api/download.js');
 const downloadCount = require('../api/download-count.js');
+const COUNT_KEY = 'check-key-0123456789abcdef';
+process.env.DOWNLOAD_COUNT_KEY = COUNT_KEY;
 
 // Short, so a hanging stub costs a fraction of a second rather than seconds.
 Object.assign(downloads.TIMEOUTS, { feed: 150, count: 150, list: 300 });
@@ -79,7 +81,8 @@ function makeRes() {
 async function run(handler, req) {
   const res = makeRes();
   const t = Date.now();
-  await handler({ query: {}, headers: {}, ...req }, res);
+  const headers = handler === downloadCount && !(req.headers && 'x-count-key' in req.headers) ? { 'x-count-key': COUNT_KEY, ...(req.headers || {}) } : (req.headers || {});
+  await handler({ query: {}, ...req, headers }, res);
   res.ms = Date.now() - t;
   return res;
 }
@@ -148,7 +151,10 @@ const cases = [
   ['the count skips anything in the store that is not a click record', { token: true, seed: true, extra: ['downloads/notes.txt', 'Workspace-1.1.3-arm64.dmg'] }, () => run(downloadCount, { method: 'GET' }), (r) => r.body.total === 5],
   ['the count holds no identities: only total, byDay, byVersion, counting', { token: true, seed: true }, () => run(downloadCount, { method: 'GET' }),
     (r) => Object.keys(r.body).sort().join() === 'byDay,byVersion,counting,total'],
-  ['the count is cached at the edge for a minute', { token: true, seed: true }, () => run(downloadCount, { method: 'GET' }), (r) => /s-maxage=60/.test(r.headers['cache-control'])],
+  ['the count is never cached at the edge (the cache does not know the key)', { token: true, seed: true }, () => run(downloadCount, { method: 'GET' }), (r) => /private, no-store/.test(r.headers['cache-control'])],
+  ['the count without the key: 404, Blob never called', { token: true, seed: true }, () => run(downloadCount, { method: 'GET', headers: { 'x-count-key': '' } }), (r) => r.statusCode === 404 && r.body.total === undefined && calls.length === 0],
+  ['the count with a wrong key: 404', { token: true, seed: true }, () => run(downloadCount, { method: 'GET', headers: { 'x-count-key': 'nope-nope-nope-nope' } }), (r) => r.statusCode === 404 && r.body.total === undefined],
+  ['the count with DOWNLOAD_COUNT_KEY unset: 404 even with a key', { token: true, seed: true }, async () => { delete process.env.DOWNLOAD_COUNT_KEY; try { return await run(downloadCount, { method: 'GET' }); } finally { process.env.DOWNLOAD_COUNT_KEY = COUNT_KEY; } }, (r) => r.statusCode === 404],
   ['Blob failing to list: 502, not a false zero', { token: true, list: 'fail' }, () => run(downloadCount, { method: 'GET' }), (r) => r.statusCode === 502 && r.body.total === undefined],
   ['a click then the count: the count is one', { token: true }, async () => { await run(download, { method: 'GET' }); return run(downloadCount, { method: 'GET' }); }, (r) => r.body.total === 1 && r.body.byVersion['1.2.0'] === 1],
 ];
