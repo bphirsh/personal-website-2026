@@ -1,7 +1,7 @@
 /**
  * The beta list (M-027, 30 Oct 2026): what /api/signup and /api/invite-reply do with a new email before telling me.
  *
- * joinBetaList adds the person to Resend's "Beta" segment as a contact, or updates them if the email is already a contact, so signing up twice never duplicates. sendConfirmation sends them the standard "You're on the Workspace beta list" email from api/_confirmation.js. Neither throws: each returns { ok, detail }, and the caller puts any failure in my notification so a sign-up is never lost.
+ * joinBetaList adds the person to Resend's "Beta" segment as a contact, or updates them if the email is already a contact, so signing up twice never duplicates. sendConfirmation sends them the standard confirmation (thanks, the download link, and a new-build email to come) from api/_confirmation.js. Neither throws: each returns { ok, detail }, and the caller puts any failure in my notification so a sign-up is never lost.
  *
  * Resend's audiences are now segments; RESEND_AUDIENCE_ID holds the segment id. The computer and agents are saved on the contact as two string properties (Brian, 30 Oct 2026), `computer` (one code, as mac-apple-silicon) and `agents` (codes joined by commas, as claude,cursor), the same codes the Signups database's options use, so tools/sync-signups.mts can copy them across. Since 3 Nov 2026 a sign-up from an event's QR link also saves the event's slug as `event` (api/_events.js), and its confirmation opens by naming the event; a try-page sign-up saves which landing headline it saw as `headline` ("a" or "b"). Resend refuses a property it hasn't been told about, so the first time a write fails these two are created and the write tried once more. Endpoints read from Resend's docs on 30 Oct 2026: POST /contacts (with segments and properties), PATCH /contacts/{email}, POST /contacts/{email}/segments/{id}, POST /contact-properties.
  *
@@ -9,7 +9,7 @@
  */
 
 const confirmation = require('./_confirmation.js');
-const { eventName } = require('./_events.js');
+const { eventName, isPlace } = require('./_events.js');
 
 const RESEND = 'https://api.resend.com';
 
@@ -92,11 +92,11 @@ function escapeHtml(s) {
 // The confirmation's opening sentence, which an event's line goes in front of.
 const OPENING = 'Thanks for signing up';
 
-/** The confirmation, greeting them by first name, or "there" when no name was given (the try page's Notify button sends none). With an event's slug, its first line is "Great to meet you at <event name>!", ahead of the thanks. */
+/** The confirmation, greeting them by first name, or "there" when no name was given (the try page's button and the download page's box send none). With an event's slug, its first line is "Great to meet you at <event name>!", ahead of the thanks; a place on the site (isPlace, as "download-page") gets no such line. */
 function confirmationFor(name, event) {
   const first = nameFields(name).first_name || 'there';
   let { html, text } = confirmation;
-  if (event) {
+  if (event && !isPlace(event)) {
     const met = `Great to meet you at ${eventName(event)}! `;
     html = html.replace(OPENING, escapeHtml(met) + OPENING);
     text = text.replace(OPENING, met + OPENING);

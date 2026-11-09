@@ -146,7 +146,7 @@
     gap: 8px;
   }
 
-  /* Request access and Try it now side by side; on a phone, one above the other. */
+  /* Download for Mac and Try it now side by side; on a phone, one above the other. */
   .intro-ctas { display: flex; justify-content: center; align-items: center; flex-wrap: wrap; gap: 12px; margin-top: 28px; }
   /* Try it now is the quieter of the two: an outline in the page's own colours. */
   .btn-quiet { color: var(--text-primary); background: transparent; box-shadow: inset 0 0 0 1px var(--border); }
@@ -163,12 +163,11 @@
     margin-bottom: 18px;
   }
 
-  /* One primary action. Anyone landing here almost certainly doesn't have a
-     password yet — people who do get sent straight to the download page — so
-     the download is a quiet line rather than an equal-weight card. */
+  /* Download is the main action (9 Nov 2026, the build went public); the
+     new-build email is a quiet line under the cards. */
   .actions { display: block; }
 
-  /* Two cards side by side, Request access and Try it now; one column on a phone. */
+  /* Two cards side by side, Download for Mac and Try it now; one column on a phone. */
   .action-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; max-width: 980px; margin: 0 auto; }
   .action-cards .action-card { max-width: none; margin: 0; }
 
@@ -261,7 +260,7 @@
   <nav>
     <a href="/" class="logo">Brian <span class="logo-italic">Hirsh</span></a>
     <ul class="nav-links">
-      <li><a href="/workspace/signup/">Request access</a></li>
+      <li><a href="/workspace/download/">Download</a></li>
     </ul>
   </nav>
 
@@ -274,7 +273,7 @@
     <h1 class="page-title">Workspace</h1>
     <p class="lede">An agentic workspace for your Mac — built so AI can work alongside you with full context, not just answer questions in a side panel.</p>
     <div class="intro-ctas">
-      <a class="btn intro-cta" href="/workspace/signup/">Request access <span aria-hidden="true">→</span></a>
+      <a class="btn intro-cta" href="/workspace/download/">Download for Mac <span aria-hidden="true">→</span></a>
       <a class="btn intro-cta btn-quiet" href="/workspace/try/">Try it now <span aria-hidden="true">→</span></a>
     </div>
   </div>
@@ -299,9 +298,9 @@
   <!-- ACTIONS -->
   <div class="actions fade-up" style="animation-delay:0.24s">
     <div class="action-cards">
-      <a class="action-card" href="/workspace/signup/">
-        <h2>Request access <span class="arrow">→</span></h2>
-        <p>Early and rough, but useful and powerful.</p>
+      <a class="action-card" href="/workspace/download/">
+        <h2>Download for Mac <span class="arrow">→</span></h2>
+        <p>A free beta for Macs with Apple silicon. Early and rough, but useful and powerful.</p>
       </a>
       <a class="action-card" href="/workspace/try/">
         <h2>Try it now <span class="arrow">→</span></h2>
@@ -309,7 +308,7 @@
       </a>
     </div>
     <p class="secondary-action">
-      Already have a password? <a href="/workspace/download/">Download the beta →</a>
+      Want an email when there's a new build? <a href="/workspace/signup/">Sign up →</a>
     </p>
   </div>
 

@@ -1,5 +1,5 @@
 /**
- * POST /api/signup — the beta access request form.
+ * POST /api/signup — the new-build email sign-up (/workspace/signup/ and the box on /workspace/download/).
  *
  * Validates a name plus an email, and since 28 Oct 2026 the computer
  * they'd use and the agents they use. The computer is required, here as on
@@ -16,6 +16,13 @@
  * Since 3 Nov 2026 a sign-up from an event's QR link carries `event` (a slug,
  * api/_events.js): it is saved on the contact, named in my email, and opens
  * the confirmation. One that isn't a slug is ignored, never refused.
+ *
+ * Since 9 Nov 2026 (the download went public) the name is optional here: the
+ * download page's box sends only an email, its computer (Mac with Apple
+ * silicon, since it's the download page) and `event: "download-page"`, a
+ * place rather than an event (PLACES in api/_events.js), so it is tagged in
+ * Resend and in Signups' "Met at" without a "Great to meet you" line. The
+ * signup page still asks for a name.
  *
  * Deliberately dependency-free — Resend's REST API is called with plain fetch
  * rather than its SDK, so no package.json is needed and the repo stays a
@@ -73,8 +80,8 @@ module.exports = async (req, res) => {
   // `email` from the page since 30 Oct 2026; `contact` from a page loaded before then.
   const email = String(data.email ?? data.contact ?? '').trim();
 
-  if (!name || name.length > 120) {
-    res.status(400).json({ error: 'Please provide a name.' });
+  if (name.length > 120) {
+    res.status(400).json({ error: 'That name is too long.' });
     return;
   }
   if (!email) {
@@ -129,7 +136,7 @@ module.exports = async (req, res) => {
   const confirmText = confirm.ok ? 'sent' : `FAILED: ${confirm.detail}`;
 
   const when = new Date().toISOString();
-  const safeName = escapeHtml(name);
+  const safeName = escapeHtml(name || '(none)');
   const safeEmail = escapeHtml(email);
 
   try {
@@ -144,9 +151,9 @@ module.exports = async (req, res) => {
         to: [to],
         // Reply-To them, so replying goes straight to them.
         reply_to: email,
-        subject: `Workspace access request — ${name}${event ? ` (${eventName(event)})` : ''}${list.ok && confirm.ok ? '' : ' (check the list)'}`,
+        subject: `Workspace sign-up — ${name || email}${event ? ` (${eventName(event)})` : ''}${list.ok && confirm.ok ? '' : ' (check the list)'}`,
         html:
-          `<h2 style="font-family:system-ui,sans-serif">New Workspace access request</h2>` +
+          `<h2 style="font-family:system-ui,sans-serif">New Workspace sign-up</h2>` +
           `<table style="font-family:system-ui,sans-serif;font-size:15px;border-collapse:collapse">` +
           `<tr><td style="padding:4px 14px 4px 0"><strong>Name</strong></td><td>${safeName}</td></tr>` +
           `<tr><td style="padding:4px 14px 4px 0"><strong>Email</strong></td><td>${safeEmail}</td></tr>` +
@@ -157,7 +164,7 @@ module.exports = async (req, res) => {
           `<tr><td style="padding:4px 14px 4px 0"><strong>Confirmation</strong></td><td>${escapeHtml(confirmText)}</td></tr>` +
           `<tr><td style="padding:4px 14px 4px 0"><strong>When</strong></td><td>${when}</td></tr>` +
           `</table>`,
-        text: `New Workspace access request\n\nName: ${name}\nEmail: ${email}\nComputer: ${computerText}\nAgents: ${agentsText}\nEvent: ${eventText}\nBeta list: ${listText}\nConfirmation: ${confirmText}\nWhen: ${when}\n`,
+        text: `New Workspace sign-up\n\nName: ${name || '(none)'}\nEmail: ${email}\nComputer: ${computerText}\nAgents: ${agentsText}\nEvent: ${eventText}\nBeta list: ${listText}\nConfirmation: ${confirmText}\nWhen: ${when}\n`,
       }),
     });
 

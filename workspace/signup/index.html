@@ -3,25 +3,25 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Request access to Workspace</title>
-<meta name="description" content="Get the early Workspace beta for your Mac. Leave your name and email, and Brian will write when there's a new build to try.">
+<title>Get an email when there's a new Workspace build</title>
+<meta name="description" content="Workspace is a free beta for your Mac, and you can download it now. Leave your email and Brian will write when there's a new build.">
 <!-- Link previews (Marketing/Beta Signups/Link previews.md, 27 Oct 2026); the card is drawn by tools/make-og.mjs. -->
 <link rel="canonical" href="https://www.brianhirsh.com/workspace/signup/">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Brian Hirsh">
-<meta property="og:title" content="Request access to Workspace">
-<meta property="og:description" content="Get the early Workspace beta for your Mac. Leave your name and email, and Brian will write when there's a new build to try.">
+<meta property="og:title" content="Get an email when there's a new Workspace build">
+<meta property="og:description" content="Workspace is a free beta for your Mac, and you can download it now. Leave your email and Brian will write when there's a new build.">
 <meta property="og:url" content="https://www.brianhirsh.com/workspace/signup/">
 <meta property="og:image" content="https://www.brianhirsh.com/og/workspace-signup.png">
 <meta property="og:image:type" content="image/png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
-<meta property="og:image:alt" content="Request early access to Workspace">
+<meta property="og:image:alt" content="New Workspace builds, by email">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="Request access to Workspace">
-<meta name="twitter:description" content="Get the early Workspace beta for your Mac. Leave your name and email, and Brian will write when there's a new build to try.">
+<meta name="twitter:title" content="Get an email when there's a new Workspace build">
+<meta name="twitter:description" content="Workspace is a free beta for your Mac, and you can download it now. Leave your email and Brian will write when there's a new build.">
 <meta name="twitter:image" content="https://www.brianhirsh.com/og/workspace-signup.png">
-<meta name="twitter:image:alt" content="Request early access to Workspace">
+<meta name="twitter:image:alt" content="New Workspace builds, by email">
 <meta name="theme-color" content="#F4F1EC" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#141312" media="(prefers-color-scheme: dark)">
 <link rel="icon" type="image/svg+xml" href="/workspace/media/workspace-logo-light.svg">
@@ -51,6 +51,9 @@
   }
   .form-head { margin-bottom: 32px; }
   .form-head .lede { font-size: 16px; }
+  .form-head .lede + .lede { margin-top: 10px; }
+  .form-head .lede a { color: var(--accent); font-weight: 500; text-decoration: none; }
+  .form-head .lede a:hover { text-decoration: underline; }
   /* The two questions (28 Oct 2026): one computer, any number of agents, as chips. */
   .field .choice-label { text-transform: none; letter-spacing: 0; font-size: 15px; color: var(--text-primary); }
   .choices { display: flex; flex-wrap: wrap; gap: 8px; }
@@ -74,8 +77,9 @@
 
     <div class="form-head">
       <div class="section-label">Beta</div>
-      <h1 class="page-title">Request access</h1>
-      <p class="lede">This is an <strong>early beta</strong>, not a finished product — expect rough edges.</p>
+      <h1 class="page-title">Get an email when there's a new build</h1>
+      <p class="lede">Workspace is a free <strong>early beta</strong> for Macs with Apple silicon, and you can <a href="/workspace/download/">download it now →</a></p>
+      <p class="lede">Leave your email and I'll write when there's a new build.</p>
     </div>
 
     <form id="signupForm" novalidate>
@@ -129,7 +133,7 @@
 
       <button type="submit" class="btn" id="submitBtn">
         <span class="spinner" aria-hidden="true"></span>
-        <span id="submitLabel">Request access</span>
+        <span id="submitLabel">Email me new builds</span>
       </button>
     </form>
 
@@ -245,7 +249,7 @@
 
     // Silently accept-and-drop anything that filled the honeypot.
     if (honey.value) {
-      show('ok', "Thanks — you're on the list.");
+      show('ok', "Thanks! I'll email you when there's a new build.");
       form.style.display = 'none';
       return;
     }
@@ -283,8 +287,9 @@
       .then(function (r) {
         if (r.ok) {
           form.style.display = 'none';
-          show('ok', "<strong>You're on the list.</strong><br>I'll email you at " +
-                     escapeHtml(emailEl.value.trim()) + " when there's a new build to try.");
+          show('ok', "<strong>Thanks!</strong> I'll email you at " +
+                     escapeHtml(emailEl.value.trim()) + " when there's a new build. " +
+                     'In the meantime, <a href="/workspace/download/">download Workspace →</a>');
         } else if (r.status === 429) {
           show('bad', 'That\'s a lot of requests in a short window — give it a minute and try again.');
         } else {
@@ -301,7 +306,7 @@
         clearTimeout(timer);
         btn.disabled = false;
         btn.removeAttribute('data-busy');
-        label.textContent = 'Request access';
+        label.textContent = 'Email me new builds';
       });
   });
 
