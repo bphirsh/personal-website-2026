@@ -64,6 +64,8 @@
     font-variant-numeric: tabular-nums;
   }
   .build-line strong { font-weight: 600; color: var(--text-secondary); }
+  .doc-links { font-size: 13px; color: var(--text-muted); font-weight: 300; margin-top: 4px; }
+  .doc-links a { color: var(--text-secondary); }
 
   .terms {
     background: color-mix(in srgb, var(--accent) 7%, transparent);
@@ -128,6 +130,7 @@
     <!-- /api/download counts the click (a date and a version, nothing else) and redirects to the newest .dmg on releases.brianhirsh.com. -->
     <a class="btn dl-btn" id="downloadLink" href="/api/download">Download for Mac</a>
     <p class="build-line" id="buildLine"></p>
+    <p class="doc-links"><a href="/workspace/releases/">Release notes</a> · <a href="/workspace/terms/">Terms of use</a></p>
 
     <section class="terms">
       <h2>Before you install</h2>
