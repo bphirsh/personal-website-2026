@@ -12,7 +12,7 @@ const SLUG_RE = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 const MAX_SLUG = 48;
 
 /** Names for events whose slug doesn't read well on its own. Add one when a slug's readable form is wrong. */
-const EVENT_NAMES = {};
+const EVENT_NAMES = { 'fractal-demo-party': "Fractal's Weekly Demo Party" };
 
 /**
  * Slugs that name a place on the site rather than an event (9 Nov 2026): a sign-up from there is tagged the same way (the contact's `event`, "Met at" in Signups), but its confirmation has no "Great to meet you at …" line. The download page's new-build box sends "download-page".
