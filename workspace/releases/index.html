@@ -39,6 +39,7 @@
   .release time, .release .when { display: block; font-size: 13px; color: var(--text-muted); font-weight: 300; margin-bottom: 10px; }
   .release ul { margin: 8px 0 0 20px; }
   .release li { margin-bottom: 4px; }
+  .release h3 { font-family: inherit; font-size: 15px; font-weight: 600; color: var(--text-primary); margin: 16px 0 0; }
   .latest { display: inline-block; margin-left: 8px; font-size: 11px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--accent); vertical-align: middle; }
 </style>
 </head>
@@ -55,8 +56,61 @@
     </div>
     <!-- Release notes (row "Release notes and terms on the website", 9 Nov 2026). Newest first. One section per published version: its number, its date, and what someone using the app would notice, in plain words. Write it at each release, from the app's Build Log, in the same voice as the rest of the site. At the same time, update the roadmap on /workspace/try/ (section#roadmap): move anything this release ships into a Shipped leg for its version, and take it out of Next, Soon or Future (Brian, 10 Nov 2026). -->
     <div class="doc">
+      <section class="release" id="v1.2.0">
+        <h2>1.2.0 <span class="latest">Latest</span></h2>
+        <time datetime="2026-11-11">11 November 2026</time>
+        <p>The biggest update yet: Workspace now teaches your AI agents how it works, and adds templates, video and audio, and a lot of database power.</p>
+        <h3>🤖 Your agents</h3>
+        <ul>
+          <li>The Welcome helps you teach your AI agent Workspace, and checks that it learned. A <strong>Finish setting up</strong> page in the left bar shows which agents know Workspace and the ideas they left for you.</li>
+          <li>Workspace gives your agents skills and an AGENTS.md, so they can make pages and databases for you from any folder. A database an agent makes for you shows up by itself, with Open and Undo.</li>
+        </ul>
+        <h3>📋 Templates</h3>
+        <ul>
+          <li>Start a new page or database page from a template, and save any page as one.</li>
+          <li>Save a database's sheets, fields and views as a template, and start new databases from it.</li>
+        </ul>
+        <h3>💪 Databases</h3>
+        <ul>
+          <li>Lookup and rollup columns show, count or total values from linked rows.</li>
+          <li>Date filters can use relative dates, like today, next week or the past 30 days.</li>
+          <li>A Medium row height, with a default you can set for every view.</li>
+          <li>Board cards show under your pointer as you drag them, and you can reorder them within a column.</li>
+          <li>Quicker editing: a new column is ready to name as you type, an empty date starts on today, and Shift-Enter adds a row right where you are.</li>
+        </ul>
+        <h3>🦋 Pages</h3>
+        <ul>
+          <li>Math written in $ signs is drawn as typeset math.</li>
+          <li>A page's properties are a tidy form, so editing them can't break the page.</li>
+          <li>Lists can be lettered (a, b, c) or use roman numerals (i, ii, iii).</li>
+          <li>Plain web addresses can be clicked, and tables keep long text readable, with columns you can drag wider.</li>
+          <li>A new Links view shows the pages linking to a page and the pages it links to.</li>
+          <li>Code pages have a Format Document button, including for SQL and TOML.</li>
+        </ul>
+        <h3>🎬 Video and audio</h3>
+        <ul>
+          <li>Videos and audio files play in a tab, and start when opened (there's a setting to turn that off).</li>
+          <li>More Mac formats play, including Apple Lossless, AIFF and ProRes.</li>
+          <li>Arrow keys move between the pictures, videos and sounds in a folder.</li>
+        </ul>
+        <h3>🗂️ Tabs and windows</h3>
+        <ul>
+          <li>Pin tabs: a pinned tab stays on the left as just its icon.</li>
+          <li>When tabs don't fit, a button at the end of the tab bar lists them all.</li>
+          <li>Long pages show a thin scroll bar.</li>
+          <li>Aliases and shortcuts show in the left bar and open what they point to.</li>
+        </ul>
+        <h3>💻 On your Mac</h3>
+        <ul>
+          <li>A large vault opens at once, without waiting for its whole folder tree.</li>
+          <li>Open web page files (.html) from Finder, and Open in Terminal from any folder.</li>
+          <li>A tidier menu bar and Settings, and a friendlier installer.</li>
+          <li>Buttons on notices, like Undo, work again, and if one page fails to draw, the rest of the window keeps working.</li>
+        </ul>
+      </section>
+
       <section class="release" id="v1.1.5">
-        <h2>1.1.5 <span class="latest">Latest</span></h2>
+        <h2>1.1.5</h2>
         <time datetime="2026-11-10">10 November 2026</time>
         <ul>
           <li>You can drag the window by the top of the left bar again, even when the tab bar is scrolled. Before, tabs scrolled out of view got in the way.</li>
