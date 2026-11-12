@@ -119,12 +119,20 @@
   @keyframes float { from { transform: translate(0, 0) rotate(-2deg); } to { transform: translate(var(--dx, 10px), var(--dy, -14px)) rotate(2deg); } }
 
   /* ── GATHER: the window the files fly into, then a page, then a database that turns into a board ── */
-  .gather { position: relative; height: 640vh; }
+  .gather { position: relative; height: 470vh; }
   .gather-stage {
     position: sticky; top: 0; height: 100vh; min-height: 560px;
     display: flex; align-items: center; justify-content: center;
     overflow: hidden;
   }
+  .pane { transition: opacity 0.4s ease; }
+  .views span[role="button"] { cursor: pointer; }
+  .show-tabs { position: absolute; left: 50%; bottom: max(14px, 3.5vh); transform: translateX(-50%); z-index: 4; display: flex; gap: 4px; background: var(--card); border: 1px solid var(--border); border-radius: 100px; padding: 5px; box-shadow: var(--chip-shadow); opacity: 0; visibility: hidden; }
+  .show-tabs button { position: relative; overflow: hidden; border: none; background: transparent; font: inherit; font-size: 14px; font-weight: 500; color: var(--text-secondary); padding: 9px 18px; border-radius: 100px; cursor: pointer; transition: background 0.25s, color 0.25s; }
+  .show-tabs button.on { background: var(--text-primary); color: var(--bg); }
+  .show-tabs button::after { content: ''; position: absolute; left: 14px; right: 14px; bottom: 4px; height: 2px; border-radius: 2px; background: var(--accent); transform: scaleX(0); transform-origin: left; }
+  .show-tabs button.run::after { animation: fillbar 3.8s linear forwards; }
+  @keyframes fillbar { to { transform: scaleX(1); } }
   .gather-captions { position: absolute; top: 5vh; left: 0; right: 0; text-align: center; z-index: 3; pointer-events: none; height: 120px; }
   .cap {
     position: absolute; left: 0; right: 0; margin: 0 auto; max-width: 640px; padding: 0 16px;
@@ -136,7 +144,7 @@
 
   .win {
     position: relative; z-index: 1;
-    width: min(900px, 94vw); height: min(540px, 64vh);
+    width: min(900px, 94vw); height: min(520px, 60vh);
     margin-top: 13vh;
     background: var(--win); border-radius: 18px; box-shadow: var(--win-shadow);
     border: 1px solid var(--win-line);
@@ -315,6 +323,58 @@
   .final .secondary { margin-top: 18px; font-size: 14px; color: var(--text-secondary); font-weight: 300; }
   .final .secondary a { color: var(--text-primary); }
 
+
+  /* Set up in a minute: each step has a small picture above it. */
+  .step { text-align: center; }
+  .viz { height: 132px; border-radius: 18px; background: var(--win-side); border: 1px solid var(--win-line); margin-bottom: 20px; display: flex; align-items: center; justify-content: center; gap: 16px; position: relative; overflow: hidden; }
+  .viz-app { width: 56px; height: 56px; filter: drop-shadow(0 6px 14px rgba(0,0,0,0.15)); }
+  .viz-arrow { font-size: 22px; color: var(--accent); animation: nudge 1.6s ease-in-out infinite; }
+  @keyframes nudge { 50% { transform: translateX(6px); } }
+  .viz-folder { display: flex; flex-direction: column; align-items: center; gap: 6px; font-size: 11px; color: var(--text-secondary); }
+  .viz-folder small { font-size: 11px; }
+  .fold { width: 58px; height: 44px; border-radius: 6px; background: linear-gradient(180deg, #7cb7f5, #4d97ec); position: relative; box-shadow: 0 6px 14px rgba(40,100,180,0.25); }
+  .fold::before { content: ''; position: absolute; left: 0; top: -7px; width: 24px; height: 10px; border-radius: 4px 4px 0 0; background: #6aacf2; }
+  .viz-folder.big .fold { width: 74px; height: 56px; }
+  .pop { position: absolute; font-size: 16px; background: var(--win); border: 1px solid var(--win-line); border-radius: 8px; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; box-shadow: var(--chip-shadow); animation: popf 3s ease-in-out infinite; }
+  .pop1 { left: calc(50% - 74px); top: 20px; } .pop2 { right: calc(50% - 76px); top: 30px; animation-delay: -1s; } .pop3 { left: calc(50% + 34px); bottom: 18px; animation-delay: -2s; }
+  @keyframes popf { 50% { transform: translateY(-6px); } }
+  .viz-chat { flex-direction: column; align-items: stretch; gap: 8px; padding: 14px; justify-content: center; }
+  .bub { font-size: 12px; line-height: 1.4; padding: 7px 11px; border-radius: 12px; max-width: 88%; text-align: left; }
+  .bub.me { align-self: flex-end; background: var(--text-primary); color: var(--bg); border-bottom-right-radius: 4px; }
+  .bub.ai { align-self: flex-start; background: var(--win); border: 1px solid var(--win-line); border-bottom-left-radius: 4px; }
+  .bub.ai b { color: var(--accent); font-weight: 600; margin-right: 4px; }
+  .bub u { text-decoration: none; background: var(--soft); border-radius: 4px; padding: 0 3px; }
+
+  /* Your files stay yours: a Finder window slides across to the same files in Workspace's left bar. */
+  .swap-tabs { display: inline-flex; gap: 4px; margin-top: 22px; background: var(--win-side); border: 1px solid var(--win-line); border-radius: 100px; padding: 4px; }
+  .swap-tabs button { border: none; background: transparent; font: inherit; font-size: 13px; font-weight: 500; color: var(--text-secondary); padding: 7px 14px; border-radius: 100px; cursor: pointer; }
+  .swap-tabs button.on { background: var(--text-primary); color: var(--bg); }
+  .swap { overflow: hidden; border-radius: 14px; }
+  .swap-track { display: flex; width: 200%; transition: transform 0.9s cubic-bezier(.6,.05,.2,1); }
+  .swap-track.ws { transform: translateX(-50%); }
+  .mini { width: 50%; background: var(--win); border: 1px solid var(--win-line); border-radius: 14px; overflow: hidden; }
+  .mini-bar { height: 30px; background: var(--win-bar); border-bottom: 1px solid var(--win-line); display: flex; align-items: center; gap: 6px; padding: 0 12px; }
+  .mini-bar i { width: 9px; height: 9px; border-radius: 50%; border: 1px solid var(--text-muted); opacity: 0.6; }
+  .mini-bar span { margin: 0 auto; font-size: 11.5px; color: var(--text-secondary); font-weight: 500; transform: translateX(-20px); }
+  .mini-body { display: grid; grid-template-columns: 36% 1fr; height: 214px; }
+  .f-side { background: var(--win-side); border-right: 1px solid var(--win-line); padding: 10px 8px; font-size: 11.5px; display: grid; align-content: start; gap: 2px; }
+  .f-side small { font-size: 10px; color: var(--text-muted); padding: 0 6px 4px; }
+  .f-side div { padding: 3px 6px; border-radius: 5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .f-side .on { background: var(--soft); }
+  .finder .f-side .on { background: color-mix(in srgb, #4d97ec 18%, transparent); }
+  .f-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px 6px; padding: 14px 10px; align-content: start; }
+  .f-item { display: flex; flex-direction: column; align-items: center; gap: 5px; font-size: 10.5px; color: var(--text-secondary); text-align: center; line-height: 1.2; word-break: break-word; }
+  .fi { width: 34px; height: 40px; position: relative; }
+  .fi.doc { background: #fff; border: 1px solid rgba(0,0,0,0.12); border-radius: 3px 10px 3px 3px; font-size: 8px; font-weight: 700; letter-spacing: 0; white-space: nowrap; color: #8a8580; display: flex; align-items: flex-end; justify-content: center; padding-bottom: 5px; box-shadow: 0 2px 4px rgba(0,0,0,0.08); }
+  .fi.folder { width: 42px; height: 32px; margin-top: 8px; border-radius: 4px; background: linear-gradient(180deg, #7cb7f5, #4d97ec); }
+  .fi.folder::before { content: ''; position: absolute; left: 0; top: -5px; width: 16px; height: 7px; border-radius: 3px 3px 0 0; background: #6aacf2; }
+  .fi.img { width: 38px; height: 30px; margin-top: 10px; border-radius: 3px; background: linear-gradient(135deg, #f6c99f, #e98a5a 60%, #7aa0c8); border: 2px solid #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.12); }
+  .w-page { padding: 14px 16px; display: grid; gap: 8px; align-content: start; font-size: 14px; }
+  .w-page .ln { height: 7px; border-radius: 4px; background: var(--win-line); }
+  .w-page .w90 { width: 90%; } .w-page .w70 { width: 70%; } .w-page .w80 { width: 80%; }
+  .w-page .chk { width: 60%; height: 9px; border-radius: 4px; background: var(--win-line); position: relative; margin-left: 16px; }
+  .w-page .chk::before { content: ''; position: absolute; left: -16px; top: -1px; width: 10px; height: 10px; border-radius: 3px; border: 1.5px solid var(--text-muted); }
+
   .reveal-up { opacity: 0; transform: translateY(24px); transition: opacity 0.7s ease, transform 0.7s ease; }
   .reveal-up.in { opacity: 1; transform: none; }
 
@@ -410,7 +470,7 @@
         <div class="cap" data-cap="4"><h2>Databases that do the heavy lifting.</h2><p>Relations, lookups and rollups, and every view you need. Turn a table into a board in one click.</p></div>
       </div>
 
-      <div class="win" id="win" aria-hidden="true">
+      <div class="win" id="win">
         <div class="win-bar"><i></i><i></i><i></i><div class="tab" id="winTab">Home</div></div>
         <div class="win-side">
           <div class="vault">Your vault</div>
@@ -464,7 +524,7 @@
           <div class="pane pane-db" id="paneDb" style="opacity:0">
             <div class="crumb">Your vault › Databases › Tasks</div>
             <h3>Tasks</h3>
-            <div class="views"><span class="on" id="vTable">▦ Table</span><span id="vBoard">▥ Board</span><span class="v-cal">▤ Calendar</span></div>
+            <div class="views"><span class="on" id="vTable" role="button">▦ Table</span><span id="vBoard" role="button">▥ Board</span><span class="v-cal">▤ Calendar</span></div>
             <div class="db" id="db">
               <div class="db-head" id="dbHead"><span>TASK</span><span>STATUS</span><span>OWNER</span></div>
               <div class="col-bg" data-col="0"></div><div class="col-bg" data-col="1"></div><div class="col-bg" data-col="2"></div>
@@ -480,6 +540,12 @@
             </div>
           </div>
         </div>
+      </div>
+
+      <div class="show-tabs" id="showTabs" role="tablist" aria-label="Show in the window">
+        <button type="button" class="on" data-view="page" role="tab" aria-selected="true">📄 Page</button>
+        <button type="button" data-view="table" role="tab" aria-selected="false">▦ Table</button>
+        <button type="button" data-view="board" role="tab" aria-selected="false">▥ Board</button>
       </div>
     </div>
   </section>
@@ -551,24 +617,63 @@
     <div class="kicker">How it works</div>
     <h2 class="big">Set up in a minute.</h2>
     <div class="steps">
-      <div class="step"><div class="n">1</div><h3>Download Workspace</h3><p>It's free, for Macs with Apple silicon.</p></div>
-      <div class="step"><div class="n">2</div><h3>Open a folder</h3><p>Start fresh, or use a folder you already keep notes in.</p></div>
-      <div class="step"><div class="n">3</div><h3>Ask your agent</h3><p>Workspace teaches your agents how it works, so you can just ask.</p><div class="ask">"Set up a project for my launch, with a tasks database."</div></div>
+      <div class="step">
+        <div class="viz viz-dl" aria-hidden="true">
+          <img class="viz-app" src="/workspace/media/workspace-logo-light.svg" alt="" width="56" height="56">
+          <span class="viz-arrow">→</span>
+          <span class="viz-folder"><span class="fold"></span><small>Applications</small></span>
+        </div>
+        <div class="n">1</div><h3>Download Workspace</h3><p>Free, for Macs with Apple silicon. Drag it into Applications and open it.</p>
+      </div>
+      <div class="step">
+        <div class="viz viz-vault" aria-hidden="true">
+          <span class="viz-folder big"><span class="fold"></span><small>My vault</small></span>
+          <span class="pop pop1">📄</span><span class="pop pop2">▦</span><span class="pop pop3">🖼️</span>
+        </div>
+        <div class="n">2</div><h3>Open a folder</h3><p>Start fresh, or pick a folder you already keep notes in.</p>
+      </div>
+      <div class="step">
+        <div class="viz viz-chat" aria-hidden="true">
+          <div class="bub me">Set up a project for my launch, with a tasks database.</div>
+          <div class="bub ai"><b>Claude</b> Done: made <u>Launch plan</u> and <u>Tasks</u>.</div>
+        </div>
+        <div class="n">3</div><h3>Ask your agent</h3><p>Workspace teaches your agents how it works, so you can just ask.</p>
+      </div>
     </div>
 
-    <div class="own" style="text-align:left">
+    <div class="own reveal-up" id="own" style="text-align:left">
       <div>
         <h2>Your files stay yours.</h2>
-        <p class="lede">Everything lives in a folder on your Mac, as plain Markdown and SQLite. No account, nothing uploaded, and you can open your files with any other app, today or in ten years.</p>
+        <p class="lede">They're just files on your Mac: Markdown pages and SQLite databases in a normal folder. Open them in Finder, in any other app, or in Workspace. No account, and your notes stay on your Mac.</p>
+        <div class="swap-tabs" role="tablist" aria-label="Show the files in">
+          <button type="button" class="on" data-side="0" role="tab" aria-selected="true">In Finder</button>
+          <button type="button" data-side="1" role="tab" aria-selected="false">In Workspace</button>
+        </div>
       </div>
-      <div class="files" aria-hidden="true">
-        <b>Your vault/</b><br>
-        ├─ Projects/<br>
-        │&nbsp;&nbsp;├─ Launch plan.md<br>
-        │&nbsp;&nbsp;└─ Research.md<br>
-        ├─ Clients/<br>
-        │&nbsp;&nbsp;└─ Clients.sqlite<br>
-        └─ AGENTS.md
+      <div class="swap" aria-hidden="true">
+        <div class="swap-track" id="swapTrack">
+          <div class="mini finder">
+            <div class="mini-bar"><i></i><i></i><i></i><span>My vault</span></div>
+            <div class="mini-body">
+              <div class="f-side"><small>Favorites</small><div>🖥️ Desktop</div><div>📄 Documents</div><div class="on">📁 My vault</div><div>⬇️ Downloads</div></div>
+              <div class="f-grid">
+                <div class="f-item"><span class="fi doc">MD</span>Launch plan.md</div>
+                <div class="f-item"><span class="fi doc">MD</span>Research.md</div>
+                <div class="f-item"><span class="fi folder"></span>Tasks</div>
+                <div class="f-item"><span class="fi folder"></span>Clients</div>
+                <div class="f-item"><span class="fi doc">MD</span>AGENTS.md</div>
+                <div class="f-item"><span class="fi img"></span>Screenshot.png</div>
+              </div>
+            </div>
+          </div>
+          <div class="mini wsp">
+            <div class="mini-bar"><i></i><i></i><i></i><span>Workspace</span></div>
+            <div class="mini-body">
+              <div class="f-side ws"><small>My vault</small><div class="on">📄 Launch plan</div><div>📄 Research</div><div>▦ Tasks</div><div>▦ Clients</div><div>📄 AGENTS.md</div><div>🖼️ Screenshot</div></div>
+              <div class="w-page"><b>🚀 Launch plan</b><span class="ln w90"></span><span class="ln w70"></span><span class="ln w80"></span><span class="chk"></span><span class="chk"></span></div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </section>
@@ -652,7 +757,7 @@
     <div class="faq">
       <details><summary>Is it really free?</summary><p>Yes. Workspace is in beta and free, and the version you download stays free to use.</p></details>
       <details><summary>Which agents does it work with?</summary><p>Any agent that reads and writes files on your Mac, like Claude Code and Codex. Workspace teaches them how it works, so they can make pages and databases for you.</p></details>
-      <details><summary>Where are my notes kept?</summary><p>In a folder on your Mac, as Markdown files and SQLite databases. Nothing is uploaded, there's no account, and you can open your files with any other app.</p></details>
+      <details><summary>Where are my notes kept?</summary><p>In a normal folder on your Mac, as Markdown files and SQLite databases. There's no account, your notes stay on your Mac, and you can open your files with any other app.</p></details>
       <details><summary>Can I bring my notes from Obsidian or Notion?</summary><p>Importing from Obsidian, Notion and Airtable is next on the <a href="#roadmap">roadmap</a>.</p></details>
       <details><summary>Does it work on Windows, an Intel Mac or my phone?</summary><p>Not yet. It needs a Mac with Apple silicon (M1 or newer). An iOS app is coming soon, and Windows and Android after that.</p></details>
       <details><summary>Who makes it?</summary><p>Me, Brian. I'm building Workspace in NYC, mostly with a team of AI agents working in Workspace itself. I'd love to hear what you think: <a href="mailto:brian@brianhirsh.com?subject=Workspace">brian@brianhirsh.com</a>.</p></details>
@@ -799,32 +904,53 @@
       if (fade > 0.5 && t < 1) lit[c.dataset.to] = true;
     });
 
-    // Home fills in, then the page, then the database.
+    // Home fills in.
     var full = win(p, 0.46, 0.54);
     winEmpty.style.display = full >= 1 ? 'none' : '';
     winEmpty.style.opacity = String(1 - full);
     winFull.style.opacity = String(full);
     counters.forEach(function (c) { c[0].textContent = String(Math.round(c[1] * full)); });
-    var toDoc = win(p, 0.58, 0.63), toDb = win(p, 0.73, 0.78);
-    // On a phone the sidebar folds away once the window leaves Home, so the page and the board get the whole width.
-    var sideCol = window.innerWidth < 680 ? 34 * (1 - toDoc) : null;
+
+    // Past Home the window becomes a showcase of a page, a table and a board.
+    sf = win(p, 0.58, 0.64);
+    chipLit = lit;
+    setShowcase(sf >= 0.5);
+    applyPanes();
+    var cap = p < 0.1 ? 0 : p < 0.4 ? 1 : sf < 0.5 ? 2 : view === 'page' ? 3 : 4;
+    if (cap !== lastCap) { caps.forEach(function (el, i) { el.classList.toggle('on', i === cap); }); lastCap = cap; }
+  }
+
+  /* SHOWCASE — the buttons under the window (and the view tabs inside it) pick Page, Table or Board; while the showcase is on screen they also move on by themselves every 3.8 seconds. Clicking one picks it and restarts the count. */
+  var VIEWS = ['page', 'table', 'board'], view = 'page', sf = 0, chipLit = {}, active = false, timer = null;
+  var showTabs = document.getElementById('showTabs');
+  var tabBtns = Array.prototype.slice.call(showTabs.querySelectorAll('button'));
+  var m = 0, mFrom = 0, mTo = 0, mStart = 0, mRaf = null, mSnap = null;
+
+  function applyPanes() {
+    var phone = window.innerWidth < 680;
+    var sideCol = phone ? 34 * (1 - sf) : null;
     winEl.style.gridTemplateColumns = sideCol === null ? '' : sideCol.toFixed(2) + '% 1fr';
     winSide.style.padding = sideCol !== null && sideCol < 2 ? '0' : '';
     winSide.style.borderRight = sideCol !== null && sideCol < 2 ? 'none' : '';
-    if (dbGeo && db.clientWidth !== dbGeo.W) measureDb();
-    paneHome.style.opacity = String(1 - toDoc);
-    paneDoc.style.opacity = String(toDoc * (1 - toDb));
-    paneDoc.style.transform = 'translateY(' + ((1 - toDoc) * 14).toFixed(1) + 'px)';
-    paneDb.style.opacity = String(toDb);
-    paneDb.style.transform = 'translateY(' + ((1 - toDb) * 14).toFixed(1) + 'px)';
-    if (toDb > 0.5) { lit.tasks = true; winTab.textContent = 'Tasks'; }
-    else if (toDoc > 0.5) { lit.plan = true; winTab.textContent = 'Launch plan'; }
+    if (dbGeo && db.clientWidth !== dbGeo.W) { measureDb(); drawDb(); }
+    paneHome.style.opacity = String(1 - sf);
+    paneDoc.style.opacity = String(view === 'page' ? sf : 0);
+    paneDb.style.opacity = String(view === 'page' ? 0 : sf);
+    paneDoc.style.pointerEvents = paneDb.style.pointerEvents = 'none';
+    if (view !== 'page') paneDb.style.pointerEvents = sf > 0.5 ? 'auto' : 'none';
+    showTabs.style.opacity = String(sf);
+    showTabs.style.visibility = sf > 0.02 ? 'visible' : 'hidden';
+    showTabs.style.pointerEvents = sf > 0.5 ? 'auto' : 'none';
+    var lit = {};
+    Object.keys(chipLit).forEach(function (k) { lit[k] = true; });
+    if (sf > 0.5) { if (view === 'page') { lit.plan = true; winTab.textContent = 'Launch plan'; } else { lit.tasks = true; winTab.textContent = 'Tasks'; } }
     else winTab.textContent = 'Home';
     Object.keys(rows).forEach(function (k) { rows[k].classList.toggle('lit', !!lit[k]); });
+  }
 
-    // Table to board.
-    var m = ease(win(p, 0.84, 0.95));
-    vTable.classList.toggle('on', m < 0.5); vBoard.classList.toggle('on', m >= 0.5);
+  function drawDb() {
+    if (!dbGeo) return;
+    vTable.classList.toggle('on', view !== 'board'); vBoard.classList.toggle('on', view === 'board');
     dbHead.style.opacity = String(1 - clamp(m * 2));
     colHeads.forEach(function (el) { el.style.opacity = String(clamp(m * 2 - 1)); });
     colBgs.forEach(function (el) { el.style.opacity = String(m); });
@@ -836,22 +962,57 @@
       el.style.height = lerp(g.th, g.bh, m).toFixed(1) + 'px';
       el.querySelector('.t-bg').style.opacity = String(m);
       el.querySelector('.t-line').style.opacity = String(1 - m);
-      el.querySelector('.t-cells').style.opacity = String(1 - clamp(m * 2));
       Array.prototype.forEach.call(el.querySelectorAll('.t-cells > *'), function (x) { x.style.opacity = String(1 - clamp(m * 2)); });
       el.querySelector('.t-meta').style.opacity = String(clamp(m * 2 - 1));
       el.classList.toggle('is-card', m >= 0.5);
     });
-
-    var cap = p < 0.1 ? 0 : p < 0.4 ? 1 : p < 0.58 ? 2 : p < 0.74 ? 3 : 4;
-    if (cap !== lastCap) { caps.forEach(function (el, i) { el.classList.toggle('on', i === cap); }); lastCap = cap; }
   }
+
+  // The table slides into a board (and back) over 0.8 s. If animation frames are paused (a background tab), it snaps there instead.
+  function animateM(target) {
+    if (reduce.matches) { m = target; drawDb(); return; }
+    mFrom = m; mTo = target; mStart = performance.now();
+    cancelAnimationFrame(mRaf); clearTimeout(mSnap);
+    (function step(now) {
+      var t = clamp((now - mStart) / 800);
+      m = lerp(mFrom, mTo, ease(t)); drawDb();
+      if (t < 1) mRaf = requestAnimationFrame(step);
+    })(mStart);
+    mSnap = setTimeout(function () { if (m !== mTo) { m = mTo; drawDb(); } }, 1000);
+  }
+
+  function select(v) {
+    view = v;
+    tabBtns.forEach(function (b) {
+      var on = b.dataset.view === v;
+      b.classList.toggle('on', on); b.setAttribute('aria-selected', String(on));
+      b.classList.remove('run'); void b.offsetWidth; if (on && active && !reduce.matches) b.classList.add('run');
+    });
+    animateM(v === 'board' ? 1 : 0);
+    applyPanes();
+    if (sf >= 0.5) { var cap = v === 'page' ? 3 : 4; if (cap !== lastCap) { caps.forEach(function (el, i) { el.classList.toggle('on', i === cap); }); lastCap = cap; } }
+    restart();
+  }
+  function restart() {
+    clearInterval(timer); timer = null;
+    if (active && !reduce.matches) timer = setInterval(function () { select(VIEWS[(VIEWS.indexOf(view) + 1) % VIEWS.length]); }, 3800);
+  }
+  function setShowcase(on) {
+    if (on === active) return;
+    active = on;
+    if (on) select(view); else { clearInterval(timer); timer = null; tabBtns.forEach(function (b) { b.classList.remove('run'); }); }
+  }
+  tabBtns.forEach(function (b) { b.addEventListener('click', function () { select(b.dataset.view); }); });
+  vTable.addEventListener('click', function () { select('table'); });
+  vBoard.addEventListener('click', function () { select('board'); });
 
   function finished() {
     caps.forEach(function (el, i) { el.classList.toggle('on', i === 2); });
     winEmpty.style.display = 'none'; winFull.style.opacity = '1';
     counters.forEach(function (c) { c[0].textContent = String(c[1]); });
     measure();
-    tasks.forEach(function (el, i) { var g = dbGeo.t[i]; el.style.left = '0px'; el.style.top = g.ty + 'px'; el.style.width = g.tw + 'px'; el.style.height = g.th + 'px'; });
+    Object.keys(rows).forEach(function (k) { rows[k].style.opacity = '1'; });
+    sf = 1; active = true; select('page'); drawDb();
   }
 
   var ticking = false;
@@ -859,13 +1020,36 @@
   function setup() {
     if (reduce.matches) { finished(); return; }
     // Measure with every file at its untransformed size and the database laid out.
-    measure(); render();
+    measure(); drawDb(); render();
   }
   window.addEventListener('scroll', onScroll, { passive: true });
   window.addEventListener('resize', setup);
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(setup);
   window.addEventListener('load', setup);
   setup();
+})();
+
+/* YOUR FILES — the Finder window slides across to the same files in Workspace's left bar, and back, every 3.5 seconds while it's on screen. The two buttons pick a side and restart the count. */
+(function () {
+  'use strict';
+  var track = document.getElementById('swapTrack');
+  var own = document.getElementById('own');
+  var btns = Array.prototype.slice.call(own.querySelectorAll('.swap-tabs button'));
+  var side = 0, timer = null, seen = false;
+  var still = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  function show(n) {
+    side = n; track.classList.toggle('ws', n === 1);
+    btns.forEach(function (b) { var on = +b.dataset.side === n; b.classList.toggle('on', on); b.setAttribute('aria-selected', String(on)); });
+  }
+  function restart() { clearInterval(timer); timer = null; if (seen && !still) timer = setInterval(function () { show(1 - side); }, 3500); }
+  btns.forEach(function (b) { b.addEventListener('click', function () { show(+b.dataset.side); restart(); }); });
+  if (!('IntersectionObserver' in window)) return;
+  new IntersectionObserver(function (es) {
+    es.forEach(function (e) {
+      if (e.isIntersecting && !seen) { seen = true; setTimeout(function () { show(1); restart(); }, 1200); }
+      else if (!e.isIntersecting && seen) { clearInterval(timer); timer = null; seen = false; }
+    });
+  }, { threshold: 0.4 }).observe(own);
 })();
 
 /* Sections fade up and the speed bars grow the first time they come into view. */
