@@ -148,9 +148,10 @@ async function recordClick(version, req) {
  */
 async function countClicks(req) {
   const auth = blobAuth(req);
-  if (!auth) return { total: 0, byDay: {}, byVersion: {}, counting: false };
+  if (!auth) return { total: 0, byDay: {}, byVersion: {}, clicks: [], counting: false };
   const byDay = {};
   const byVersion = {};
+  const clicks = [];
   let total = 0;
   let cursor;
   for (let page = 0; page < 200; page++) {
@@ -165,12 +166,15 @@ async function countClicks(req) {
       total++;
       byDay[m[1]] = (byDay[m[1]] || 0) + 1;
       byVersion[m[2]] = (byVersion[m[2]] || 0) + 1;
+      // The moment Blob stored it, so a reader can count days in its own time zone (the day in the path is UTC).
+      clicks.push({ at: b.uploadedAt || null, version: m[2] });
     }
     if (!body.hasMore || !body.cursor) break;
     cursor = body.cursor;
   }
   const sorted = (o) => Object.fromEntries(Object.entries(o).sort(([a], [b]) => (a < b ? -1 : 1)));
-  return { total, byDay: sorted(byDay), byVersion: sorted(byVersion), counting: true };
+  clicks.sort((a, b) => String(a.at) < String(b.at) ? -1 : 1);
+  return { total, byDay: sorted(byDay), byVersion: sorted(byVersion), clicks, counting: true };
 }
 
 module.exports = { latestBuild, parseFeed, recordClick, recordPath, countClicks, reset, TIMEOUTS, FALLBACK, FEED, RECORD_RE };

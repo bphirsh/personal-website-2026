@@ -149,8 +149,9 @@ const cases = [
       && r.body.byDay['2026-11-09'] === 3 && r.body.byDay['2026-11-10'] === 2 && r.body.byVersion['1.1.3'] === 4 && r.body.byVersion['1.2.0'] === 1
       && calls.filter((c) => c.method === 'GET').length === 3],
   ['the count skips anything in the store that is not a click record', { token: true, seed: true, extra: ['downloads/notes.txt', 'Workspace-1.1.3-arm64.dmg'] }, () => run(downloadCount, { method: 'GET' }), (r) => r.body.total === 5],
-  ['the count holds no identities: only total, byDay, byVersion, counting', { token: true, seed: true }, () => run(downloadCount, { method: 'GET' }),
-    (r) => Object.keys(r.body).sort().join() === 'byDay,byVersion,counting,total'],
+  ['the count holds no identities: only total, byDay, byVersion, counting, and clicks of just a time and a version', { token: true, seed: true }, () => run(downloadCount, { method: 'GET' }),
+    (r) => Object.keys(r.body).sort().join() === 'byDay,byVersion,clicks,counting,total'
+      && r.body.clicks.length === r.body.total && r.body.clicks.every((c) => Object.keys(c).sort().join() === 'at,version')],
   ['the count is never cached at the edge (the cache does not know the key)', { token: true, seed: true }, () => run(downloadCount, { method: 'GET' }), (r) => /private, no-store/.test(r.headers['cache-control'])],
   ['the count without the key: 404, Blob never called', { token: true, seed: true }, () => run(downloadCount, { method: 'GET', headers: { 'x-count-key': '' } }), (r) => r.statusCode === 404 && r.body.total === undefined && calls.length === 0],
   ['the count with a wrong key: 404', { token: true, seed: true }, () => run(downloadCount, { method: 'GET', headers: { 'x-count-key': 'nope-nope-nope-nope' } }), (r) => r.statusCode === 404 && r.body.total === undefined],
