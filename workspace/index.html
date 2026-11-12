@@ -3,14 +3,14 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Workspace — files you and your agents share</title>
-<meta name="description" content="A Mac app where your AI agents work alongside you with full context, in pages and databases you both read.">
-<!-- Link previews (Marketing/Beta Signups/Link previews.md, 27 Oct 2026); the card is drawn by tools/make-og.mjs. -->
+<title>Workspace — see everything you and your agents are working on</title>
+<meta name="description" content="A free Mac app where you and your AI agents share the same pages, databases and files, so you can finally see everything that's going on.">
+<!-- The landing page (Brian, 12 Nov 2026): benefits first, a scroll where scattered work gathers into one window, then proof, the film, the roadmap and questions. Link previews: Marketing/Beta Signups/Link previews.md; the card is drawn by tools/make-og.mjs. -->
 <link rel="canonical" href="https://www.brianhirsh.com/workspace/">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Brian Hirsh">
-<meta property="og:title" content="Workspace — files you and your agents share">
-<meta property="og:description" content="A Mac app where your AI agents work alongside you with full context, in pages and databases you both read.">
+<meta property="og:title" content="Workspace — see everything you and your agents are working on">
+<meta property="og:description" content="A free Mac app where you and your AI agents share the same pages, databases and files, so you can finally see everything that's going on.">
 <meta property="og:url" content="https://www.brianhirsh.com/workspace/">
 <meta property="og:image" content="https://www.brianhirsh.com/og/workspace.png">
 <meta property="og:image:type" content="image/png">
@@ -18,8 +18,8 @@
 <meta property="og:image:height" content="630">
 <meta property="og:image:alt" content="A place for you + agents to collaborate">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="Workspace — files you and your agents share">
-<meta name="twitter:description" content="A Mac app where your AI agents work alongside you with full context, in pages and databases you both read.">
+<meta name="twitter:title" content="Workspace — see everything you and your agents are working on">
+<meta name="twitter:description" content="A free Mac app where you and your AI agents share the same pages, databases and files, so you can finally see everything that's going on.">
 <meta name="twitter:image" content="https://www.brianhirsh.com/og/workspace.png">
 <meta name="twitter:image:alt" content="A place for you + agents to collaborate">
 <meta name="theme-color" content="#F4F1EC" media="(prefers-color-scheme: light)">
@@ -32,224 +32,264 @@
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/workspace/workspace.css">
 <style>
-  .video-card {
-    padding: 0;
-    background: #000;
-    border-radius: var(--radius-lg);
-    overflow: hidden;
-    margin-bottom: 20px;
-    position: relative;
+  :root {
+    --win: #FFFFFF;
+    --win-side: #F2EFEA;
+    --win-bar: #EDEAE4;
+    --win-line: rgba(26, 26, 26, 0.08);
+    --chip: #FFFFFF;
+    --chip-shadow: 0 10px 30px rgba(26, 26, 26, 0.10), 0 1px 2px rgba(26, 26, 26, 0.06);
+    --win-shadow: 0 30px 80px rgba(26, 26, 26, 0.14), 0 2px 6px rgba(26, 26, 26, 0.06);
+    --soft: color-mix(in srgb, var(--accent) 10%, transparent);
+    --green: #2f7d52;
+    --red: #c2410c;
   }
-
-  .video-stage {
-    position: relative;
-    width: 100%;
-    background: #000;
-    /* Set from JS to match the chosen file, so there is no layout shift
-       when the poster loads. */
-    aspect-ratio: 16 / 9;
-    transition: aspect-ratio 0.3s ease;
-  }
-
-  .video-stage video {
-    width: 100%;
-    height: 100%;
-    display: block;
-    object-fit: contain;
-    background: #000;
-  }
-
-  /* ── Play overlay ── */
-  .play-overlay {
-    position: absolute;
-    inset: 0;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 18px;
-    border: none;
-    cursor: pointer;
-    background: linear-gradient(180deg, rgba(0,0,0,0.12) 0%, rgba(0,0,0,0.42) 100%);
-    transition: opacity 0.35s ease, visibility 0.35s ease;
-    font-family: inherit;
-    padding: 0;
-  }
-
-  .play-overlay[hidden] {
-    opacity: 0;
-    visibility: hidden;
-    display: flex; /* keep flex so the fade-out still lays out */
-    pointer-events: none;
-  }
-
-  .play-ring {
-    width: 84px;
-    height: 84px;
-    border-radius: 50%;
-    background: rgba(255, 255, 255, 0.94);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: 0 8px 34px rgba(0, 0, 0, 0.32);
-    transition: transform 0.25s ease, background 0.25s ease;
-  }
-
-  .play-overlay:hover .play-ring { transform: scale(1.07); background: #fff; }
-  .play-overlay:focus-visible { outline: 3px solid var(--accent); outline-offset: -6px; }
-
-  .play-ring svg {
-    width: 30px;
-    height: 30px;
-    margin-left: 5px; /* optically centre the triangle in the circle */
-    fill: #1A1A1A;
-  }
-
-  .play-label {
-    color: #fff;
-    font-size: 14px;
-    font-weight: 500;
-    letter-spacing: 1.4px;
-    text-transform: uppercase;
-    text-shadow: 0 1px 10px rgba(0, 0, 0, 0.5);
-  }
-
-  .video-note {
-    text-align: center;
-    font-size: 13px;
-    color: var(--text-muted);
-    font-weight: 300;
-    padding: 0 6px;
-    margin: -6px 0 34px;
-  }
-
-
-  /* ── Intro + actions ── */
-  .intro { text-align: center; margin-bottom: 34px; }
-
-  .app-icon {
-    display: block;
-    width: 96px;
-    height: 96px;
-    margin: 0 auto 18px;
-  }
-
-  .app-icon img { width: 100%; height: 100%; display: block; }
-  .intro .lede { margin: 0 auto; }
-
-  /* Same action as the card below the video, offered before a visitor has to
-     sit through 49 seconds to find it. Smaller, so the card still reads as the
-     primary call to action. */
-  .intro-cta {
-    padding: 12px 26px;
-    font-size: 14px;
-    gap: 8px;
-  }
-
-  /* Download for Mac and Try it now side by side; on a phone, one above the other. */
-  .intro-ctas { display: flex; justify-content: center; align-items: center; flex-wrap: wrap; gap: 12px; margin-top: 28px; }
-  /* Try it now is the quieter of the two: an outline in the page's own colours. */
-  .btn-quiet { color: var(--text-primary); background: transparent; box-shadow: inset 0 0 0 1px var(--border); }
   @media (prefers-color-scheme: dark) {
-    .btn-quiet { color: var(--text-primary); background: transparent; }
-  }
-
-  .eyebrow {
-    font-size: 13px;
-    font-weight: 500;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    color: var(--text-muted);
-    margin-bottom: 18px;
-  }
-
-  /* Download is the main action (9 Nov 2026, the build went public); the
-     new-build email is a quiet line under the cards. */
-  .actions { display: block; }
-
-  /* Two cards side by side, Download for Mac and Try it now; one column on a phone. */
-  .action-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; max-width: 980px; margin: 0 auto; }
-  .action-cards .action-card { max-width: none; margin: 0; }
-
-  .action-card {
-    display: block;
-    text-align: center;
-    max-width: 580px;
-    margin: 0 auto;
-    background: var(--card);
-    border-radius: var(--radius);
-    padding: 38px 34px;
-    text-decoration: none;
-    color: inherit;
-    border: 1px solid transparent;
-    box-shadow: var(--shadow);
-    transition: transform 0.25s ease, border-color 0.25s ease;
-  }
-
-  @media (hover: hover) {
-    .action-card:hover {
-      transform: translateY(-3px);
-      border-color: var(--border);
+    :root {
+      --win: #1F1E1C;
+      --win-side: #191817;
+      --win-bar: #232220;
+      --win-line: rgba(244, 241, 236, 0.09);
+      --chip: #262523;
+      --chip-shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
+      --win-shadow: 0 30px 80px rgba(0, 0, 0, 0.5);
+      --green: #7fce9f;
+      --red: #f0a070;
     }
-    .action-card:hover .arrow { transform: translateX(5px); }
   }
 
-  .action-card h2 {
+  /* workspace.css sets overflow-x: hidden on html and body, which makes body a scroll container and stops position: sticky from working in the gather scroll. clip hides the same overflow without that. */
+  html, body { overflow-x: clip; }
+
+  .site-wrapper.wide-wrapper { max-width: 1120px; padding-bottom: 40px; }
+  nav { margin-bottom: 20px; }
+  .nav-cta { padding: 9px 18px; font-size: 13px; }
+
+  /* ── HERO ── */
+  .hero { text-align: center; padding: 36px 0 10px; }
+  .hero .app-icon { display: block; width: 84px; height: 84px; margin: 0 auto 22px; }
+  .hero .app-icon img { width: 100%; height: 100%; display: block; }
+  .hero h1 {
     font-family: 'DM Serif Display', serif;
-    font-size: 28px;
     font-weight: 400;
-    letter-spacing: -0.5px;
-    /* inline-flex, not flex: across a full-width card, space-between would
-       fling the arrow to the far edge, away from the words it belongs to. */
-    display: inline-flex;
-    align-items: center;
-    gap: 12px;
+    font-size: clamp(40px, 6.6vw, 76px);
+    line-height: 1.02;
+    letter-spacing: -2px;
+    max-width: 14ch;
+    margin: 0 auto 22px;
+  }
+  .hero h1 em { font-style: italic; color: var(--accent); }
+  .hero .lede { margin: 0 auto; font-size: 19px; max-width: 46ch; }
+  .ctas { display: flex; justify-content: center; align-items: center; flex-wrap: wrap; gap: 14px; margin-top: 30px; }
+  .btn-quiet { background: transparent; color: var(--text-primary); border: 1px solid var(--border); }
+  @media (prefers-color-scheme: dark) { .btn-quiet { background: transparent; color: var(--text-primary); } }
+  .fine { margin-top: 14px; font-size: 13px; color: var(--text-muted); font-weight: 300; }
+
+  /* A phone can't install a Mac app, so it is offered the link by email instead. */
+  .for-phone { display: none !important; }
+  @media (pointer: coarse) and (max-width: 900px) {
+    .for-mac { display: none !important; }
+    .for-phone { display: inline-flex !important; }
+    p.for-phone, div.for-phone { display: block !important; }
   }
 
-  .arrow {
-    color: var(--accent);
-    font-size: 21px;
-    transition: transform 0.25s ease;
+  /* ── GATHER: scattered work flies into one window as you scroll ── */
+  .gather { position: relative; height: 340vh; margin-top: 10px; }
+  .gather-stage {
+    position: sticky; top: 0; height: 100vh; min-height: 560px;
+    display: flex; align-items: center; justify-content: center;
+    overflow: hidden;
   }
-
-  .action-card p {
-    font-size: 15px;
-    color: var(--text-secondary);
-    font-weight: 300;
-    line-height: 1.6;
-    margin-top: 8px;
+  .gather-captions {
+    position: absolute; top: 5vh; left: 0; right: 0; text-align: center; z-index: 3;
+    pointer-events: none; height: 120px;
   }
-
-  .secondary-action {
-    text-align: center;
-    margin-top: 20px;
-    font-size: 14px;
-    font-weight: 300;
-    color: var(--text-muted);
+  .cap {
+    position: absolute; left: 0; right: 0; margin: 0 auto; max-width: 620px; padding: 0 16px;
+    opacity: 0; transform: translateY(10px); transition: opacity 0.45s ease, transform 0.45s ease;
   }
+  .cap.on { opacity: 1; transform: none; }
+  .cap h2 { font-family: 'DM Serif Display', serif; font-weight: 400; font-size: clamp(26px, 3.6vw, 40px); letter-spacing: -1px; line-height: 1.1; }
+  .cap p { color: var(--text-secondary); font-weight: 300; font-size: 16px; margin-top: 8px; }
 
-  .secondary-action a {
-    color: var(--text-secondary);
-    text-decoration: none;
-    font-weight: 500;
-    border-bottom: 1px solid var(--border);
-    padding-bottom: 2px;
-    transition: color 0.2s, border-color 0.2s;
+  .win {
+    position: relative; z-index: 1;
+    width: min(880px, 94vw); height: min(520px, 62vh);
+    margin-top: 12vh;
+    background: var(--win); border-radius: 18px; box-shadow: var(--win-shadow);
+    border: 1px solid var(--win-line);
+    display: grid; grid-template-columns: 30% 1fr; grid-template-rows: 38px 1fr;
+    overflow: hidden; text-align: left;
   }
+  .win-bar { grid-column: 1 / -1; background: var(--win-bar); display: flex; align-items: center; gap: 8px; padding: 0 14px; border-bottom: 1px solid var(--win-line); }
+  .win-bar i { width: 11px; height: 11px; border-radius: 50%; border: 1px solid var(--text-muted); opacity: 0.6; }
+  .win-bar .tab { margin-left: 18px; font-size: 12px; color: var(--text-secondary); background: var(--win); padding: 5px 12px; border-radius: 7px 7px 0 0; align-self: flex-end; }
+  .win-side { background: var(--win-side); border-right: 1px solid var(--win-line); padding: 14px 10px; overflow: hidden; }
+  .win-side .vault { font-size: 11px; color: var(--text-muted); padding: 0 8px 8px; letter-spacing: 0.3px; }
+  .row { display: flex; align-items: center; gap: 8px; font-size: 13px; padding: 4px 8px; border-radius: 6px; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; opacity: 0; transition: background 0.3s; }
+  .row.folder { font-weight: 500; opacity: 1; }
+  .row.indent { padding-left: 24px; }
+  .row .ic { width: 16px; text-align: center; flex: none; font-size: 12px; }
+  .row.lit { background: var(--soft); }
+  .win-page { padding: 26px 30px; overflow: hidden; }
+  .win-page .crumb { font-size: 11px; color: var(--text-muted); margin-bottom: 12px; }
+  .win-page h3 { font-family: 'Outfit', sans-serif; font-weight: 600; font-size: clamp(20px, 2.6vw, 28px); letter-spacing: -0.5px; line-height: 1.15; margin-bottom: 12px; }
+  .win-page p { font-size: 13.5px; color: var(--text-secondary); line-height: 1.6; max-width: 46ch; }
+  .win-page .counts { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 18px; }
+  .win-page .count { background: var(--win-side); border: 1px solid var(--win-line); border-radius: 10px; padding: 8px 12px; font-size: 12px; color: var(--text-secondary); }
+  .win-page .count b { display: block; font-size: 18px; color: var(--text-primary); font-weight: 600; }
+  .win-page .empty { color: var(--text-muted); font-size: 13px; }
 
-  .secondary-action a:hover {
-    color: var(--text-primary);
-    border-color: var(--text-muted);
+  .chip {
+    position: absolute; top: 0; left: 0; z-index: 2;
+    display: flex; align-items: center; gap: 9px;
+    background: var(--chip); border: 1px solid var(--win-line); box-shadow: var(--chip-shadow);
+    border-radius: 12px; padding: 9px 13px; font-size: 13px; white-space: nowrap;
+    will-change: transform, opacity; pointer-events: none;
   }
+  .chip .ic { font-size: 16px; }
+  .chip small { display: block; font-size: 11px; color: var(--text-muted); line-height: 1.2; }
+  .chip span { line-height: 1.25; }
 
+  /* ── SECTIONS ── */
+  section.block { padding: 70px 0 10px; }
+  .kicker { font-size: 12px; font-weight: 600; letter-spacing: 2.5px; text-transform: uppercase; color: var(--accent); margin-bottom: 14px; }
+  h2.big { font-family: 'DM Serif Display', serif; font-weight: 400; font-size: clamp(32px, 4.4vw, 50px); line-height: 1.06; letter-spacing: -1.2px; margin-bottom: 16px; }
+  .center { text-align: center; }
+  .center .lede { margin: 0 auto; }
+
+  .benefit { display: grid; grid-template-columns: 1fr 1.1fr; gap: 56px; align-items: center; padding: 56px 0; }
+  .benefit.flip .b-text { order: 2; }
+  .benefit .lede { font-size: 17px; }
+  .b-points { list-style: none; margin-top: 20px; display: grid; gap: 10px; }
+  .b-points li { display: flex; gap: 10px; font-size: 15px; color: var(--text-secondary); font-weight: 300; }
+  .b-points li::before { content: '✓'; color: var(--accent); font-weight: 600; }
+  .b-points b { color: var(--text-primary); font-weight: 500; }
+
+  .panel { background: var(--win); border: 1px solid var(--win-line); border-radius: 18px; box-shadow: var(--win-shadow); overflow: hidden; }
+  .panel-head { display: flex; align-items: center; justify-content: space-between; padding: 14px 18px; border-bottom: 1px solid var(--win-line); font-size: 13px; font-weight: 600; }
+  .panel-head span { font-weight: 400; color: var(--text-muted); font-size: 12px; }
+  .change { display: grid; grid-template-columns: 34px 1fr auto; gap: 12px; align-items: center; padding: 13px 18px; border-bottom: 1px solid var(--win-line); font-size: 13.5px; }
+  .change:last-child { border-bottom: none; }
+  .who { width: 34px; height: 34px; border-radius: 10px; background: var(--win-side); display: flex; align-items: center; justify-content: center; font-size: 16px; }
+  .change small { display: block; color: var(--text-muted); font-size: 12px; }
+  .diff { font-size: 12px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .diff .add { color: var(--green); } .diff .del { color: var(--red); margin-left: 6px; }
+  .undo { font-size: 11px; color: var(--text-muted); border: 1px solid var(--win-line); border-radius: 6px; padding: 2px 7px; margin-left: 8px; }
+
+  .agents { padding: 18px; display: grid; gap: 12px; }
+  .agent-card { border: 1px solid var(--win-line); border-radius: 14px; padding: 14px 16px; display: grid; grid-template-columns: 40px 1fr; gap: 12px; align-items: start; }
+  .agent-card .who { width: 40px; height: 40px; font-size: 19px; }
+  .agent-card b { font-weight: 600; font-size: 14px; }
+  .agent-card p { font-size: 12.5px; color: var(--text-secondary); margin-top: 2px; line-height: 1.5; }
+  .tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+  .tag { font-size: 11px; background: var(--win-side); border: 1px solid var(--win-line); border-radius: 100px; padding: 2px 9px; color: var(--text-secondary); }
+  .working { display: inline-flex; align-items: center; gap: 6px; font-size: 11px; color: var(--green); margin-left: 6px; }
+  .working::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: currentColor; animation: pulse 1.4s ease-in-out infinite; }
+  @keyframes pulse { 50% { opacity: 0.3; } }
+
+  .speed { padding: 26px 24px; display: grid; gap: 26px; }
+  .metric .num { font-family: 'DM Serif Display', serif; font-size: 54px; line-height: 1; letter-spacing: -1.5px; }
+  .metric .num small { font-family: 'Outfit', sans-serif; font-size: 15px; letter-spacing: 0; color: var(--text-secondary); margin-left: 8px; }
+  .bars { display: grid; gap: 8px; margin-top: 14px; }
+  .bar { display: grid; grid-template-columns: 96px 1fr; align-items: center; gap: 10px; font-size: 12px; color: var(--text-secondary); }
+  .bar div { height: 10px; border-radius: 100px; background: var(--text-muted); opacity: 0.35; transform-origin: left; }
+  .bar.us div { background: var(--accent); opacity: 1; }
+  .reveal .bar div { transform: scaleX(0); transition: transform 1.1s cubic-bezier(.2,.7,.2,1); }
+  .reveal.in .bar div { transform: scaleX(1); }
+
+  /* ── HOW IT WORKS ── */
+  .steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; margin-top: 36px; }
+  .step { background: var(--card); border-radius: var(--radius); padding: 30px 26px; box-shadow: var(--shadow); }
+  .step .n { width: 32px; height: 32px; border-radius: 50%; background: var(--soft); color: var(--accent); display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 14px; margin-bottom: 16px; }
+  .step h3 { font-size: 18px; font-weight: 600; margin-bottom: 6px; }
+  .step p { font-size: 14.5px; color: var(--text-secondary); font-weight: 300; }
+  .ask { margin-top: 14px; background: var(--win-side); border: 1px solid var(--win-line); border-radius: 12px; padding: 10px 12px; font-size: 13px; color: var(--text-primary); font-family: ui-monospace, 'SF Mono', Menlo, monospace; }
+
+  .own { margin-top: 70px; background: var(--card); border-radius: var(--radius-lg); padding: 44px 48px; display: grid; grid-template-columns: 1.2fr 1fr; gap: 40px; align-items: center; box-shadow: var(--shadow); }
+  .own h2 { font-family: 'DM Serif Display', serif; font-weight: 400; font-size: clamp(28px, 3.4vw, 38px); line-height: 1.1; letter-spacing: -1px; margin-bottom: 12px; }
+  .files { font-family: ui-monospace, 'SF Mono', Menlo, monospace; font-size: 13px; line-height: 1.9; color: var(--text-secondary); background: var(--win-side); border: 1px solid var(--win-line); border-radius: 14px; padding: 18px 20px; }
+  .files b { color: var(--text-primary); font-weight: 500; }
+
+  /* ── FILM (the same four cuts the old page chose between) ── */
+  .video-card { padding: 0; background: #000; border-radius: var(--radius-lg); overflow: hidden; margin: 34px auto 0; position: relative; max-width: 920px; }
+  .video-stage { position: relative; width: 100%; background: #000; aspect-ratio: 16 / 9; }
+  .video-stage video { width: 100%; height: 100%; display: block; object-fit: contain; background: #000; }
+  .play-overlay { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 18px; border: none; cursor: pointer; background: linear-gradient(180deg, rgba(0,0,0,0.12) 0%, rgba(0,0,0,0.42) 100%); transition: opacity 0.35s ease, visibility 0.35s ease; font-family: inherit; padding: 0; }
+  .play-overlay[hidden] { opacity: 0; visibility: hidden; display: flex; pointer-events: none; }
+  .play-ring { width: 84px; height: 84px; border-radius: 50%; background: rgba(255,255,255,0.94); display: flex; align-items: center; justify-content: center; box-shadow: 0 8px 34px rgba(0,0,0,0.32); transition: transform 0.25s ease; }
+  .play-overlay:hover .play-ring { transform: scale(1.07); }
+  .play-overlay:focus-visible { outline: 3px solid var(--accent); outline-offset: -6px; }
+  .play-ring svg { width: 30px; height: 30px; margin-left: 5px; fill: #1A1A1A; }
+  .play-label { color: #fff; font-size: 14px; font-weight: 500; letter-spacing: 1.4px; text-transform: uppercase; text-shadow: 0 1px 10px rgba(0,0,0,0.5); }
+  .try-line { text-align: center; margin-top: 22px; font-size: 15px; color: var(--text-secondary); font-weight: 300; }
+  .try-line a { color: var(--text-primary); font-weight: 500; }
+
+  /* ── ROADMAP ── */
+  .roadmap { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-top: 36px; }
+  .leg { background: var(--card); border-radius: 22px; padding: 22px 20px; box-shadow: var(--shadow); }
+  .leg h3 { font-size: 13px; font-weight: 600; letter-spacing: 1.6px; text-transform: uppercase; color: var(--text-muted); margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; }
+  .leg.shipped h3 { color: var(--green); }
+  .leg.next { outline: 2px solid var(--accent); outline-offset: -2px; }
+  .leg.next h3 { color: var(--accent); }
+  .leg ul { list-style: none; display: grid; gap: 9px; }
+  .leg li { font-size: 14px; line-height: 1.4; display: flex; gap: 8px; }
+  .leg li .e { flex: none; }
+  .leg .ver { font-size: 11px; color: var(--text-muted); font-weight: 400; letter-spacing: 0.5px; text-transform: none; }
+  .leg details summary { cursor: pointer; font-size: 13px; color: var(--text-muted); margin-top: 12px; list-style: none; }
+  .leg details summary::-webkit-details-marker { display: none; }
+  .leg details ul { margin-top: 10px; }
+
+  /* ── FAQ ── */
+  .faq { max-width: 760px; margin: 30px auto 0; }
+  .faq details { background: var(--card); border-radius: 18px; padding: 18px 24px; margin-bottom: 10px; box-shadow: var(--shadow); }
+  .faq summary { cursor: pointer; font-weight: 500; font-size: 16px; list-style: none; display: flex; justify-content: space-between; gap: 16px; }
+  .faq summary::-webkit-details-marker { display: none; }
+  .faq summary::after { content: '+'; color: var(--text-muted); font-size: 20px; line-height: 1; transition: transform 0.2s; }
+  .faq details[open] summary::after { transform: rotate(45deg); }
+  .faq details p { margin-top: 10px; color: var(--text-secondary); font-weight: 300; font-size: 15px; }
+  .faq a { color: var(--text-primary); }
+
+  /* ── FINAL CTA ── */
+  .final { margin-top: 80px; background: var(--card); border-radius: var(--radius-lg); padding: 56px 40px; text-align: center; box-shadow: var(--shadow); }
+  .final .app-icon { display: block; width: 64px; height: 64px; margin: 0 auto 18px; }
+  .final .app-icon img { width: 100%; height: 100%; display: block; }
+  .final .secondary { margin-top: 18px; font-size: 14px; color: var(--text-secondary); font-weight: 300; }
+  .final .secondary a { color: var(--text-primary); }
+
+  .reveal-up { opacity: 0; transform: translateY(24px); transition: opacity 0.7s ease, transform 0.7s ease; }
+  .reveal-up.in { opacity: 1; transform: none; }
+
+  @media (max-width: 900px) {
+    .benefit, .benefit.flip { grid-template-columns: 1fr; gap: 28px; padding: 40px 0; }
+    .benefit.flip .b-text { order: 0; }
+    .steps { grid-template-columns: 1fr; }
+    .own { grid-template-columns: 1fr; padding: 34px 26px; }
+    .roadmap { grid-template-columns: 1fr 1fr; }
+  }
   @media (max-width: 680px) {
-    .intro-ctas { flex-direction: column; }
-    .action-cards { grid-template-columns: 1fr; }
-    .action-card { padding: 32px 24px; }
-    .action-card h2 { font-size: 25px; }
-    .play-ring { width: 68px; height: 68px; }
-    .play-ring svg { width: 25px; height: 25px; }
-    .video-note { margin-bottom: 26px; }
+    .hero { padding-top: 16px; }
+    .hero .lede { font-size: 17px; }
+    .win { grid-template-columns: 40% 1fr; height: 56vh; margin-top: 18vh; }
+    .win-page { padding: 18px 16px; }
+    .win-page p { font-size: 12.5px; }
+    .row { font-size: 11.5px; padding: 3px 6px; }
+    .row.indent { padding-left: 16px; }
+    .chip { font-size: 11.5px; padding: 7px 10px; }
+    .chip small { display: none; }
+    .gather-captions { top: 3vh; }
+    .roadmap { grid-template-columns: 1fr; }
+    .final { padding: 40px 22px; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .gather { height: auto; }
+    .gather-stage { position: relative; height: auto; min-height: 0; padding: 150px 0 40px; }
+    .cap { transition: none; }
+    .chip { display: none; }
+    .row { opacity: 1; }
+    .reveal-up, .reveal .bar div { opacity: 1; transform: none; transition: none; }
+    .working::before { animation: none; }
   }
 </style>
 </head>
@@ -259,58 +299,271 @@
 
   <nav>
     <a href="/" class="logo">Brian <span class="logo-italic">Hirsh</span></a>
-    <ul class="nav-links">
-      <li><a href="/workspace/download/">Download</a></li>
-    </ul>
+    <a class="btn nav-cta for-mac" href="/workspace/download/">Download for Mac</a>
+    <a class="btn nav-cta for-phone" href="/workspace/signup/">Get the link</a>
   </nav>
 
-  <div class="intro fade-up">
-    <div class="eyebrow">Beta</div>
+  <header class="hero fade-up">
     <picture class="app-icon">
       <source media="(prefers-color-scheme: dark)" srcset="/workspace/media/workspace-logo-dark.svg">
-      <img src="/workspace/media/workspace-logo-light.svg" alt="" width="96" height="96" decoding="async">
+      <img src="/workspace/media/workspace-logo-light.svg" alt="Workspace" width="84" height="84" decoding="async">
     </picture>
-    <h1 class="page-title">Workspace</h1>
-    <p class="lede">An agentic workspace for your Mac — built so AI can work alongside you with full context, not just answer questions in a side panel.</p>
-    <div class="intro-ctas">
-      <a class="btn intro-cta" href="/workspace/download/">Download for Mac <span aria-hidden="true">→</span></a>
-      <a class="btn intro-cta btn-quiet" href="/workspace/try/">Try it now <span aria-hidden="true">→</span></a>
+    <h1>Finally, see <em>everything</em> you and your agents are working on.</h1>
+    <p class="lede">Workspace is a Mac app where you and your AI agents share the same pages, databases and files. Nothing gets lost in a chat again, and you can see every change.</p>
+    <div class="ctas">
+      <a class="btn for-mac" href="/workspace/download/">Download for Mac <span aria-hidden="true">→</span></a>
+      <a class="btn for-phone" href="/workspace/signup/">Email me the download link <span aria-hidden="true">→</span></a>
+      <a class="btn btn-quiet" href="#film">Watch the film</a>
     </div>
-  </div>
+    <p class="fine for-mac">Free · for Macs with Apple silicon</p>
+    <p class="fine for-phone">Workspace is a free Mac app. Leave your email and open the link on your Mac.</p>
+  </header>
 
-  <!-- VIDEO -->
-  <div class="video-card fade-up" style="animation-delay:0.12s">
-    <div class="video-stage" id="stage">
-      <video id="film" playsinline preload="none" controls-list="nodownload"></video>
-      <button class="play-overlay" id="playBtn" type="button" aria-label="Play the Workspace film, with sound">
-        <span class="play-ring">
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>
-        </span>
-        <span class="play-label">Play with sound</span>
-      </button>
+  <!-- GATHER: the scroll where scattered work flies into the window. Each .chip has data-to naming the sidebar row it lands on. -->
+  <section class="gather" id="gather" aria-label="Your scattered work, gathered into Workspace">
+    <div class="gather-stage" id="gatherStage">
+      <div class="gather-captions" aria-live="polite">
+        <div class="cap on" data-cap="0"><h2>Your work is everywhere.</h2><p>Notes in one app, plans in another, and your agent's best work buried in a chat from last Tuesday.</p></div>
+        <div class="cap" data-cap="1"><h2>Bring it all into one place.</h2><p>Your notes, databases, files and everything your agents make, together in one folder on your Mac.</p></div>
+        <div class="cap" data-cap="2"><h2>Now you can see all of it.</h2><p>Every page, every database, every change, for you and your agents.</p></div>
+      </div>
+
+      <div class="win" id="win" aria-hidden="true">
+        <div class="win-bar"><i></i><i></i><i></i><div class="tab">Home</div></div>
+        <div class="win-side">
+          <div class="vault">Your vault</div>
+          <div class="row folder"><span class="ic">▾</span>Projects</div>
+          <div class="row indent" data-row="plan"><span class="ic">📄</span>Launch plan</div>
+          <div class="row indent" data-row="research"><span class="ic">📄</span>Research</div>
+          <div class="row indent" data-row="meeting"><span class="ic">📄</span>Meeting notes</div>
+          <div class="row folder"><span class="ic">▾</span>Databases</div>
+          <div class="row indent" data-row="clients"><span class="ic">▦</span>Clients</div>
+          <div class="row indent" data-row="tasks"><span class="ic">▦</span>Tasks</div>
+          <div class="row indent" data-row="reading"><span class="ic">▦</span>Reading list</div>
+          <div class="row folder"><span class="ic">▾</span>Agents</div>
+          <div class="row indent" data-row="roles"><span class="ic">🤖</span>Roles</div>
+          <div class="row indent" data-row="skills"><span class="ic">🧰</span>Skills</div>
+          <div class="row indent" data-row="agentsmd"><span class="ic">📄</span>AGENTS.md</div>
+          <div class="row folder"><span class="ic">▾</span>Files</div>
+          <div class="row indent" data-row="shots"><span class="ic">🖼️</span>Screenshots</div>
+        </div>
+        <div class="win-page">
+          <div class="crumb">Your vault › Home</div>
+          <h3 id="winTitle">Home</h3>
+          <p id="winEmpty" class="empty">Nothing here yet.</p>
+          <div id="winFull" style="opacity:0">
+            <p>Everything you and your agents work on, in one place. Your agents read and write these same pages, and every change they make shows up here.</p>
+            <div class="counts">
+              <div class="count"><b id="nPages">0</b>pages</div>
+              <div class="count"><b id="nDbs">0</b>databases</div>
+              <div class="count"><b id="nAgents">0</b>agent roles</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="chip" data-to="plan" data-x="0.06" data-y="0.30"><span class="ic">💬</span><span>Chat with Claude<small>the launch plan, 3 days ago</small></span></div>
+      <div class="chip" data-to="research" data-x="0.80" data-y="0.26"><span class="ic">🧩</span><span>research-v3 (artifact)<small>lost in a side panel</small></span></div>
+      <div class="chip" data-to="meeting" data-x="0.03" data-y="0.62"><span class="ic">📝</span><span>Meeting notes.docx<small>Downloads folder</small></span></div>
+      <div class="chip" data-to="clients" data-x="0.84" data-y="0.55"><span class="ic">📊</span><span>clients.csv<small>exported from a spreadsheet</small></span></div>
+      <div class="chip" data-to="tasks" data-x="0.18" data-y="0.86"><span class="ic">✅</span><span>todo.txt<small>Desktop</small></span></div>
+      <div class="chip" data-to="reading" data-x="0.66" data-y="0.88"><span class="ic">🔖</span><span>Reading list<small>another app</small></span></div>
+      <div class="chip" data-to="roles" data-x="0.70" data-y="0.40"><span class="ic">⌨️</span><span>Codex session<small>the refactor plan</small></span></div>
+      <div class="chip" data-to="skills" data-x="0.14" data-y="0.46"><span class="ic">🧰</span><span>deploy-skill.md<small>somewhere in ~/.claude</small></span></div>
+      <div class="chip" data-to="agentsmd" data-x="0.88" data-y="0.74"><span class="ic">📄</span><span>CLAUDE.md<small>one per project</small></span></div>
+      <div class="chip" data-to="shots" data-x="0.40" data-y="0.94"><span class="ic">🖼️</span><span>Screenshot 2026-11-03.png<small>Desktop</small></span></div>
     </div>
-  </div>
+  </section>
 
-  <div class="video-note fade-up" style="animation-delay:0.18s">
-    <span>49 seconds, with sound.</span>
-  </div>
-
-  <!-- ACTIONS -->
-  <div class="actions fade-up" style="animation-delay:0.24s">
-    <div class="action-cards">
-      <a class="action-card" href="/workspace/download/">
-        <h2>Download for Mac <span class="arrow">→</span></h2>
-        <p>A free beta for Macs with Apple silicon. Early and rough, but useful and powerful.</p>
-      </a>
-      <a class="action-card" href="/workspace/try/">
-        <h2>Try it now <span class="arrow">→</span></h2>
-        <p>See Workspace with your own work in it, in your browser.</p>
-      </a>
+  <!-- BENEFITS -->
+  <section class="benefit reveal-up">
+    <div class="b-text">
+      <div class="kicker">See everything</div>
+      <h2 class="big">Know what's going on, finally.</h2>
+      <p class="lede">No more wondering what your agents did while you were away. Workspace shows every page and row they touched, with the exact changes, and you can undo any of it.</p>
+      <ul class="b-points">
+        <li><span><b>Changes</b>: see exactly what changed while agents worked</span></li>
+        <li><span><b>Version history</b>: go back to any earlier version of a page</span></li>
+        <li><span><b>One place</b>: notes, databases, files and plans, side by side</span></li>
+      </ul>
     </div>
-    <p class="secondary-action">
-      Want an email when there's a new build? <a href="/workspace/signup/">Sign up →</a>
-    </p>
-  </div>
+    <div class="panel" aria-hidden="true">
+      <div class="panel-head">While you were away <span>since 9:12 am</span></div>
+      <div class="change"><div class="who">🤖</div><div>Claude edited <b>Launch plan</b><small>Researcher · 14 min ago</small></div><div class="diff"><span class="add">+12</span><span class="del">−3</span><span class="undo">Undo</span></div></div>
+      <div class="change"><div class="who">🤖</div><div>Codex added 4 rows to <b>Clients</b><small>Builder · 38 min ago</small></div><div class="diff"><span class="add">+4 rows</span><span class="undo">Undo</span></div></div>
+      <div class="change"><div class="who">🤖</div><div>Claude made a new page, <b>Competitor notes</b><small>Researcher · 1 hr ago</small></div><div class="diff"><span class="add">new</span><span class="undo">Undo</span></div></div>
+      <div class="change"><div class="who">🙂</div><div>You edited <b>Meeting notes</b><small>2 hr ago</small></div><div class="diff"><span class="add">+5</span><span class="del">−1</span></div></div>
+    </div>
+  </section>
+
+  <section class="benefit flip reveal-up">
+    <div class="b-text">
+      <div class="kicker">Work together</div>
+      <h2 class="big">One shared space for you and your agents.</h2>
+      <p class="lede">Your agents read and write the same pages and databases you do, right in your folder. No copying and pasting between chats, and no context lost when a session ends.</p>
+      <ul class="b-points">
+        <li><span><b>Roles</b>: reuse how each agent works, improving as it learns</span></li>
+        <li><span><b>Skills</b>: every skill and instruction, kept in one place</span></li>
+        <li><span><b>Your agents</b>: works with Claude Code, Codex and other agents that use files</span></li>
+      </ul>
+    </div>
+    <div class="panel" aria-hidden="true">
+      <div class="panel-head">Agents <span>3 roles</span></div>
+      <div class="agents">
+        <div class="agent-card"><div class="who">🔎</div><div><b>Researcher</b><span class="working">working</span><p>Reads the Research folder, writes findings into Competitor notes.</p><div class="tags"><span class="tag">Claude Code</span><span class="tag">web-search skill</span></div></div></div>
+        <div class="agent-card"><div class="who">🛠️</div><div><b>Builder</b><p>Takes tasks from the Tasks database and marks them done when they're finished.</p><div class="tags"><span class="tag">Codex</span><span class="tag">deploy skill</span></div></div></div>
+        <div class="agent-card"><div class="who">✍️</div><div><b>Writer</b><p>Drafts posts in your voice from the Launch plan. Learned: "keep it short".</p><div class="tags"><span class="tag">Claude Code</span><span class="tag">3 learnings</span></div></div></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="benefit reveal-up">
+    <div class="b-text">
+      <div class="kicker">Blazing fast</div>
+      <h2 class="big">Fast for you. Fast for your agents.</h2>
+      <p class="lede">Everything is a file on your Mac, so there's no waiting on a server. Pages open instantly, and your agents read them directly instead of going through a slow connector, using fewer tokens on every task.</p>
+    </div>
+    <div class="panel reveal" id="speed" aria-label="Compared with the Notion MCP: 10 times faster and 35 percent fewer tokens">
+      <div class="speed">
+        <div class="metric">
+          <div class="num">10×<small>faster than the Notion MCP</small></div>
+          <div class="bars"><div class="bar"><span>Notion MCP</span><div style="width:100%"></div></div><div class="bar us"><span>Workspace</span><div style="width:10%"></div></div></div>
+        </div>
+        <div class="metric">
+          <div class="num">35%<small>fewer tokens</small></div>
+          <div class="bars"><div class="bar"><span>Notion MCP</span><div style="width:100%"></div></div><div class="bar us"><span>Workspace</span><div style="width:65%"></div></div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- HOW IT WORKS -->
+  <section class="block center reveal-up">
+    <div class="kicker">How it works</div>
+    <h2 class="big">Set up in a minute.</h2>
+    <div class="steps">
+      <div class="step"><div class="n">1</div><h3>Download Workspace</h3><p>It's free, for Macs with Apple silicon.</p></div>
+      <div class="step"><div class="n">2</div><h3>Open a folder</h3><p>Start fresh, or use a folder you already keep notes in.</p></div>
+      <div class="step"><div class="n">3</div><h3>Ask your agent</h3><p>Workspace teaches your agents how it works, so you can just ask.</p><div class="ask">"Set up a project for my launch, with a tasks database."</div></div>
+    </div>
+
+    <div class="own" style="text-align:left">
+      <div>
+        <h2>Your files stay yours.</h2>
+        <p class="lede">Everything lives in a folder on your Mac, as plain Markdown and SQLite. No account, nothing uploaded, and you can open your files with any other app, today or in ten years.</p>
+      </div>
+      <div class="files" aria-hidden="true">
+        <b>Your vault/</b><br>
+        ├─ Projects/<br>
+        │&nbsp;&nbsp;├─ Launch plan.md<br>
+        │&nbsp;&nbsp;└─ Research.md<br>
+        ├─ Clients/<br>
+        │&nbsp;&nbsp;└─ Clients.sqlite<br>
+        └─ AGENTS.md
+      </div>
+    </div>
+  </section>
+
+  <!-- FILM -->
+  <section class="block center reveal-up" id="film">
+    <div class="kicker">The film</div>
+    <h2 class="big">See it in 49 seconds.</h2>
+    <div class="video-card">
+      <div class="video-stage" id="stage">
+        <video id="filmVideo" playsinline preload="none" controls-list="nodownload"></video>
+        <button class="play-overlay" id="playBtn" type="button" aria-label="Play the Workspace film, with sound">
+          <span class="play-ring"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg></span>
+          <span class="play-label">Play with sound</span>
+        </button>
+      </div>
+    </div>
+    <p class="try-line for-mac">Not ready to download? <a href="/workspace/try/">Try it in your browser</a> with your own work in it.</p>
+  </section>
+
+  <!-- ROADMAP: keep in step with the release notes (workspace/releases/index.html says to update it at each release). -->
+  <section class="block center reveal-up" id="roadmap">
+    <div class="kicker">Roadmap</div>
+    <h2 class="big">Where it's going.</h2>
+    <p class="lede">I ship a new version every week or two. Here's what's done and what's coming.</p>
+    <div class="roadmap" style="text-align:left">
+      <div class="leg shipped">
+        <h3>Shipped <span class="ver">v1.2</span></h3>
+        <ul>
+          <li><span class="e">🎓</span>Teach your AI agents Workspace</li>
+          <li><span class="e">🧩</span>Your agents make pages and databases for you</li>
+          <li><span class="e">📋</span>Templates for pages and databases</li>
+          <li><span class="e">🔗</span>Lookup and rollup columns</li>
+          <li><span class="e">🎬</span>Video and audio play in the app</li>
+        </ul>
+        <details>
+          <summary>Earlier: v1.0 and v1.1 ▾</summary>
+          <ul>
+            <li><span class="e">💪</span>Powerful relational databases</li>
+            <li><span class="e">🦋</span>Beautiful markdown writing</li>
+            <li><span class="e">💻</span>Open code, HTML, photos and documents</li>
+            <li><span class="e">↩️</span>Version history</li>
+            <li><span class="e">🤖</span>Agent roles, skills and learnings</li>
+            <li><span class="e">🤖</span>What agents changed here</li>
+            <li><span class="e">🏗️</span>Automatic updating</li>
+          </ul>
+        </details>
+      </div>
+      <div class="leg next">
+        <h3>Next</h3>
+        <ul>
+          <li><span class="e">📥</span>Import from Obsidian, Notion and Airtable</li>
+          <li><span class="e">📊</span>Import CSV, Excel, Google Docs and Sheets</li>
+          <li><span class="e">🔍</span>Better search (⌘K), with previews and filters</li>
+          <li><span class="e">🗂️</span>Drag files out and Quick Look, like Finder</li>
+        </ul>
+      </div>
+      <div class="leg">
+        <h3>Soon</h3>
+        <ul>
+          <li><span class="e">🤖</span>Agent workflows, with a visual editor</li>
+          <li><span class="e">📱</span>iOS app</li>
+          <li><span class="e">🔄</span>Live syncing</li>
+          <li><span class="e">📅</span>Calendar and timeline views</li>
+        </ul>
+      </div>
+      <div class="leg">
+        <h3>Future</h3>
+        <ul>
+          <li><span class="e">💻</span>Windows app</li>
+          <li><span class="e">📱</span>Android</li>
+        </ul>
+      </div>
+    </div>
+    <p class="try-line"><a href="/workspace/releases/">Release notes</a> for every version.</p>
+  </section>
+
+  <!-- FAQ -->
+  <section class="block reveal-up" id="faq">
+    <div class="center"><div class="kicker">Questions</div><h2 class="big">Good questions.</h2></div>
+    <div class="faq">
+      <details><summary>Is it really free?</summary><p>Yes. Workspace is in beta and free, and the version you download stays free to use.</p></details>
+      <details><summary>Which agents does it work with?</summary><p>Any agent that reads and writes files on your Mac, like Claude Code and Codex. Workspace teaches them how it works, so they can make pages and databases for you.</p></details>
+      <details><summary>Where are my notes kept?</summary><p>In a folder on your Mac, as Markdown files and SQLite databases. Nothing is uploaded, there's no account, and you can open your files with any other app.</p></details>
+      <details><summary>Can I bring my notes from Obsidian or Notion?</summary><p>Importing from Obsidian, Notion and Airtable is next on the <a href="#roadmap">roadmap</a>.</p></details>
+      <details><summary>Does it work on Windows, an Intel Mac or my phone?</summary><p>Not yet. It needs a Mac with Apple silicon (M1 or newer). An iOS app is coming soon, and Windows and Android after that.</p></details>
+      <details><summary>Who makes it?</summary><p>Me, Brian. I'm building Workspace in NYC, mostly with a team of AI agents working in Workspace itself. I'd love to hear what you think: <a href="mailto:brian@brianhirsh.com?subject=Workspace">brian@brianhirsh.com</a>.</p></details>
+    </div>
+  </section>
+
+  <!-- FINAL CTA -->
+  <section class="final reveal-up">
+    <picture class="app-icon">
+      <source media="(prefers-color-scheme: dark)" srcset="/workspace/media/workspace-logo-dark.svg">
+      <img src="/workspace/media/workspace-logo-light.svg" alt="" width="64" height="64" decoding="async">
+    </picture>
+    <h2 class="big">Get Workspace for your Mac.</h2>
+    <p class="lede" style="margin:0 auto">Free, for Macs with Apple silicon.</p>
+    <div class="ctas">
+      <a class="btn for-mac" href="/workspace/download/">Download for Mac <span aria-hidden="true">→</span></a>
+      <a class="btn for-phone" href="/workspace/signup/">Email me the download link <span aria-hidden="true">→</span></a>
+    </div>
+    <p class="secondary for-mac">Want an email when there's a new build? <a href="/workspace/signup/">Sign up</a></p>
+  </section>
 
   <div class="footer">
     <a href="/">Brian</a> · NYC · 2026 · <a href="/workspace/releases/">Release notes</a> · <a href="/workspace/terms/">Terms</a>
@@ -319,48 +572,118 @@
 </div>
 
 <script>
+/* GATHER — as the section scrolls past, each chip flies from its spot around the window into its sidebar row, and the captions step through three lines. Positions are measured on resize, so it holds at any window size. With reduced motion the CSS shows the finished window and this does nothing. */
 (function () {
   'use strict';
+  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)');
+  var section = document.getElementById('gather');
+  var stage = document.getElementById('gatherStage');
+  var chips = Array.prototype.slice.call(stage.querySelectorAll('.chip'));
+  var caps = Array.prototype.slice.call(stage.querySelectorAll('.cap'));
+  var rows = {};
+  Array.prototype.forEach.call(stage.querySelectorAll('[data-row]'), function (r) { rows[r.dataset.row] = r; });
+  var winEmpty = document.getElementById('winEmpty');
+  var winFull = document.getElementById('winFull');
+  var counters = [['nPages', 24], ['nDbs', 3], ['nAgents', 3]].map(function (c) { return [document.getElementById(c[0]), c[1]]; });
+  var geo = [];
 
-  var video   = document.getElementById('film');
-  var stage   = document.getElementById('stage');
-  var playBtn = document.getElementById('playBtn');
+  function clamp(v) { return v < 0 ? 0 : v > 1 ? 1 : v; }
+  function ease(t) { return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2; }
 
-  // Two independent axes, four files.
-  //   theme  — prefers-color-scheme: day | night
-  //   shape  — viewport aspect ratio: wide (landscape) | vertical (portrait)
-  //
-  // Shape is chosen from the viewport's own aspect ratio rather than a user-agent
-  // sniff: it is what actually determines which cut fits the screen, it handles a
-  // narrow desktop window and a rotated tablet correctly, and it cannot go stale
-  // the way a device list does.
-  var darkQuery     = window.matchMedia('(prefers-color-scheme: dark)');
-  var portraitQuery = window.matchMedia('(max-aspect-ratio: 1/1)');
-
-  function chooseVariant() {
-    return {
-      theme: darkQuery.matches ? 'night' : 'day',
-      shape: portraitQuery.matches ? 'vertical' : 'wide'
-    };
+  function measure() {
+    var s = stage.getBoundingClientRect();
+    geo = chips.map(function (c) {
+      var w = c.offsetWidth, h = c.offsetHeight;
+      var sx = parseFloat(c.dataset.x) * (s.width - w);
+      var sy = parseFloat(c.dataset.y) * (s.height - h);
+      var r = rows[c.dataset.to].getBoundingClientRect();
+      return { sx: sx, sy: sy, tx: r.left - s.left, ty: r.top - s.top + (r.height - h) / 2, w: w, h: h, rw: r.width };
+    });
   }
 
+  function progress() {
+    var r = section.getBoundingClientRect();
+    var span = section.offsetHeight - window.innerHeight;
+    return span > 0 ? clamp(-r.top / span) : 1;
+  }
+
+  var lastCap = -1;
+  function render() {
+    if (reduce.matches) return;
+    var p = progress();
+    chips.forEach(function (c, i) {
+      var g = geo[i]; if (!g) return;
+      var start = 0.14 + i * 0.045;
+      var t = ease(clamp((p - start) / 0.32));
+      var x = g.sx + (g.tx - g.sx) * t;
+      var y = g.sy + (g.ty - g.sy) * t;
+      var sc = 1 - 0.25 * t;
+      c.style.transform = 'translate(' + x.toFixed(1) + 'px,' + y.toFixed(1) + 'px) scale(' + sc.toFixed(3) + ')';
+      c.style.transformOrigin = 'left center';
+      var fade = clamp((t - 0.82) / 0.18);
+      c.style.opacity = String(1 - fade);
+      var row = rows[c.dataset.to];
+      row.style.opacity = String(fade);
+      row.classList.toggle('lit', fade > 0.5 && t < 1 && p < 0.9);
+    });
+    var done = clamp((p - 0.7) / 0.15);
+    winEmpty.style.opacity = String(1 - done);
+    winEmpty.style.display = done >= 1 ? 'none' : '';
+    winFull.style.opacity = String(done);
+    counters.forEach(function (c) { c[0].textContent = String(Math.round(c[1] * done)); });
+    var cap = p < 0.22 ? 0 : p < 0.62 ? 1 : 2;
+    if (cap !== lastCap) { caps.forEach(function (el, i) { el.classList.toggle('on', i === cap); }); lastCap = cap; }
+  }
+
+  function finished() {
+    caps.forEach(function (el, i) { el.classList.toggle('on', i === 2); });
+    winEmpty.style.display = 'none'; winFull.style.opacity = '1';
+    counters.forEach(function (c) { c[0].textContent = String(c[1]); });
+  }
+
+  var ticking = false;
+  function onScroll() { if (!ticking) { ticking = true; requestAnimationFrame(function () { ticking = false; render(); }); } }
+  function setup() { if (reduce.matches) { finished(); return; } measure(); render(); }
+
+  window.addEventListener('scroll', onScroll, { passive: true });
+  window.addEventListener('resize', function () { setup(); });
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(setup);
+  setup();
+})();
+
+/* Sections fade up and the speed bars grow the first time they come into view. */
+(function () {
+  'use strict';
+  var els = document.querySelectorAll('.reveal-up, .reveal');
+  if (!('IntersectionObserver' in window)) { Array.prototype.forEach.call(els, function (e) { e.classList.add('in'); }); return; }
+  var io = new IntersectionObserver(function (entries) {
+    entries.forEach(function (e) { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } });
+  }, { threshold: 0.18 });
+  Array.prototype.forEach.call(els, function (e) { io.observe(e); });
+})();
+
+/* FILM — the same four cuts as before: day or night from the system theme, wide or vertical from the window's shape. Click to play, with sound. */
+(function () {
+  'use strict';
+  var video = document.getElementById('filmVideo');
+  var stage = document.getElementById('stage');
+  var playBtn = document.getElementById('playBtn');
+  var darkQuery = window.matchMedia('(prefers-color-scheme: dark)');
+  var portraitQuery = window.matchMedia('(max-aspect-ratio: 1/1)');
   var current = null;
 
-  function apply(variant, opts) {
+  function apply(opts) {
     opts = opts || {};
-    var name = variant.theme + '-' + variant.shape;
+    var name = (darkQuery.matches ? 'night' : 'day') + '-' + (portraitQuery.matches ? 'vertical' : 'wide');
     if (current === name) return;
     current = name;
-
-    // Hold position and playback state across a swap, so flipping the system
-    // theme or rotating the phone mid-film doesn't restart it.
     var wasPlaying = !video.paused && !video.ended;
     var at = video.currentTime || 0;
-
-    stage.style.aspectRatio = variant.shape === 'vertical' ? '9 / 16' : '16 / 9';
+    stage.style.aspectRatio = portraitQuery.matches ? '9 / 16' : '16 / 9';
+    stage.style.maxWidth = portraitQuery.matches ? '420px' : '';
+    stage.style.margin = portraitQuery.matches ? '0 auto' : '';
     video.poster = '/workspace/media/' + name + '.jpg';
-    video.src    = '/workspace/media/' + name + '.mp4';
-
+    video.src = '/workspace/media/' + name + '.mp4';
     if (opts.resume && (wasPlaying || at > 0)) {
       video.addEventListener('loadedmetadata', function once() {
         video.removeEventListener('loadedmetadata', once);
@@ -370,43 +693,18 @@
       video.load();
     }
   }
-
-  apply(chooseVariant());
-
-  // Re-evaluate when the system theme flips or the window/device is reshaped.
-  function onChange() { apply(chooseVariant(), { resume: true }); }
-
-  // addEventListener on MediaQueryList is unsupported in older Safari;
-  // addListener is the documented fallback.
+  apply();
   [darkQuery, portraitQuery].forEach(function (q) {
-    if (q.addEventListener) { q.addEventListener('change', onChange); }
-    else if (q.addListener) { q.addListener(onChange); }
+    var f = function () { apply({ resume: true }); };
+    if (q.addEventListener) q.addEventListener('change', f); else if (q.addListener) q.addListener(f);
   });
-
-  // ── Click to play, with sound ──
-  // The visitor's click is the user gesture browsers require before unmuted
-  // playback, so no muted-autoplay fallback is needed here.
   playBtn.addEventListener('click', function () {
-    video.controls = true;
-    video.muted = false;
-    video.volume = 1;
+    video.controls = true; video.muted = false; video.volume = 1;
     var p = video.play();
-    if (p && p.catch) {
-      p.catch(function () {
-        // Very rare with a real gesture, but if the browser still refuses
-        // unmuted playback, fall back to muted rather than doing nothing.
-        video.muted = true;
-        video.play().catch(function () {});
-      });
-    }
+    if (p && p.catch) p.catch(function () { video.muted = true; video.play().catch(function () {}); });
     playBtn.hidden = true;
   });
-
-  // Bring the overlay back once the film finishes, so it can be replayed.
-  video.addEventListener('ended', function () {
-    playBtn.hidden = false;
-    video.controls = false;
-  });
+  video.addEventListener('ended', function () { playBtn.hidden = false; video.controls = false; });
 })();
 </script>
 
