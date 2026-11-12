@@ -3,14 +3,14 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Workspace — files you and your agents share</title>
-<meta name="description" content="A Mac app where your AI agents work alongside you with full context, in pages and databases you both read.">
-<!-- Link previews (Marketing/Beta Signups/Link previews.md, 27 Oct 2026); the card is drawn by tools/make-og.mjs. -->
+<title>Workspace — see everything you and your agents are working on</title>
+<meta name="description" content="A free Mac app where you and your AI agents share the same pages, databases and files, so you can finally see everything that's going on.">
+<!-- The landing page (Brian, 12 Nov 2026): a hero whose headline word changes and whose scattered files drift around it; scrolling carries those same files into a window, which then shows a page and a database turning into a board. Then benefits, how it works, the film, the roadmap and questions. Link previews: Marketing/Beta Signups/Link previews.md; the card is drawn by tools/make-og.mjs. -->
 <link rel="canonical" href="https://www.brianhirsh.com/workspace/">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Brian Hirsh">
-<meta property="og:title" content="Workspace — files you and your agents share">
-<meta property="og:description" content="A Mac app where your AI agents work alongside you with full context, in pages and databases you both read.">
+<meta property="og:title" content="Workspace — see everything you and your agents are working on">
+<meta property="og:description" content="A free Mac app where you and your AI agents share the same pages, databases and files, so you can finally see everything that's going on.">
 <meta property="og:url" content="https://www.brianhirsh.com/workspace/">
 <meta property="og:image" content="https://www.brianhirsh.com/og/workspace.png">
 <meta property="og:image:type" content="image/png">
@@ -18,8 +18,8 @@
 <meta property="og:image:height" content="630">
 <meta property="og:image:alt" content="A place for you + agents to collaborate">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="Workspace — files you and your agents share">
-<meta name="twitter:description" content="A Mac app where your AI agents work alongside you with full context, in pages and databases you both read.">
+<meta name="twitter:title" content="Workspace — see everything you and your agents are working on">
+<meta name="twitter:description" content="A free Mac app where you and your AI agents share the same pages, databases and files, so you can finally see everything that's going on.">
 <meta name="twitter:image" content="https://www.brianhirsh.com/og/workspace.png">
 <meta name="twitter:image:alt" content="A place for you + agents to collaborate">
 <meta name="theme-color" content="#F4F1EC" media="(prefers-color-scheme: light)">
@@ -32,335 +32,1059 @@
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/workspace/workspace.css">
 <style>
-  .video-card {
-    padding: 0;
-    background: #000;
-    border-radius: var(--radius-lg);
-    overflow: hidden;
-    margin-bottom: 20px;
-    position: relative;
+  :root {
+    --win: #FFFFFF;
+    --win-side: #F2EFEA;
+    --win-bar: #EDEAE4;
+    --win-line: rgba(26, 26, 26, 0.08);
+    --chip: #FFFFFF;
+    --chip-shadow: 0 10px 30px rgba(26, 26, 26, 0.10), 0 1px 2px rgba(26, 26, 26, 0.06);
+    --win-shadow: 0 30px 80px rgba(26, 26, 26, 0.14), 0 2px 6px rgba(26, 26, 26, 0.06);
+    --soft: color-mix(in srgb, var(--accent) 10%, transparent);
+    --green: #2f7d52;
+    --red: #c2410c;
+    --blue: #3b6fd8;
+    --amber: #b7791f;
   }
-
-  .video-stage {
-    position: relative;
-    width: 100%;
-    background: #000;
-    /* Set from JS to match the chosen file, so there is no layout shift
-       when the poster loads. */
-    aspect-ratio: 16 / 9;
-    transition: aspect-ratio 0.3s ease;
-  }
-
-  .video-stage video {
-    width: 100%;
-    height: 100%;
-    display: block;
-    object-fit: contain;
-    background: #000;
-  }
-
-  /* ── Play overlay ── */
-  .play-overlay {
-    position: absolute;
-    inset: 0;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 18px;
-    border: none;
-    cursor: pointer;
-    background: linear-gradient(180deg, rgba(0,0,0,0.12) 0%, rgba(0,0,0,0.42) 100%);
-    transition: opacity 0.35s ease, visibility 0.35s ease;
-    font-family: inherit;
-    padding: 0;
-  }
-
-  .play-overlay[hidden] {
-    opacity: 0;
-    visibility: hidden;
-    display: flex; /* keep flex so the fade-out still lays out */
-    pointer-events: none;
-  }
-
-  .play-ring {
-    width: 84px;
-    height: 84px;
-    border-radius: 50%;
-    background: rgba(255, 255, 255, 0.94);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: 0 8px 34px rgba(0, 0, 0, 0.32);
-    transition: transform 0.25s ease, background 0.25s ease;
-  }
-
-  .play-overlay:hover .play-ring { transform: scale(1.07); background: #fff; }
-  .play-overlay:focus-visible { outline: 3px solid var(--accent); outline-offset: -6px; }
-
-  .play-ring svg {
-    width: 30px;
-    height: 30px;
-    margin-left: 5px; /* optically centre the triangle in the circle */
-    fill: #1A1A1A;
-  }
-
-  .play-label {
-    color: #fff;
-    font-size: 14px;
-    font-weight: 500;
-    letter-spacing: 1.4px;
-    text-transform: uppercase;
-    text-shadow: 0 1px 10px rgba(0, 0, 0, 0.5);
-  }
-
-  .video-note {
-    text-align: center;
-    font-size: 13px;
-    color: var(--text-muted);
-    font-weight: 300;
-    padding: 0 6px;
-    margin: -6px 0 34px;
-  }
-
-
-  /* ── Intro + actions ── */
-  .intro { text-align: center; margin-bottom: 34px; }
-
-  .app-icon {
-    display: block;
-    width: 96px;
-    height: 96px;
-    margin: 0 auto 18px;
-  }
-
-  .app-icon img { width: 100%; height: 100%; display: block; }
-  .intro .lede { margin: 0 auto; }
-
-  /* Same action as the card below the video, offered before a visitor has to
-     sit through 49 seconds to find it. Smaller, so the card still reads as the
-     primary call to action. */
-  .intro-cta {
-    padding: 12px 26px;
-    font-size: 14px;
-    gap: 8px;
-  }
-
-  /* Download for Mac and Try it now side by side; on a phone, one above the other. */
-  .intro-ctas { display: flex; justify-content: center; align-items: center; flex-wrap: wrap; gap: 12px; margin-top: 28px; }
-  /* Try it now is the quieter of the two: an outline in the page's own colours. */
-  .btn-quiet { color: var(--text-primary); background: transparent; box-shadow: inset 0 0 0 1px var(--border); }
   @media (prefers-color-scheme: dark) {
-    .btn-quiet { color: var(--text-primary); background: transparent; }
-  }
-
-  .eyebrow {
-    font-size: 13px;
-    font-weight: 500;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    color: var(--text-muted);
-    margin-bottom: 18px;
-  }
-
-  /* Download is the main action (9 Nov 2026, the build went public); the
-     new-build email is a quiet line under the cards. */
-  .actions { display: block; }
-
-  /* Two cards side by side, Download for Mac and Try it now; one column on a phone. */
-  .action-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; max-width: 980px; margin: 0 auto; }
-  .action-cards .action-card { max-width: none; margin: 0; }
-
-  .action-card {
-    display: block;
-    text-align: center;
-    max-width: 580px;
-    margin: 0 auto;
-    background: var(--card);
-    border-radius: var(--radius);
-    padding: 38px 34px;
-    text-decoration: none;
-    color: inherit;
-    border: 1px solid transparent;
-    box-shadow: var(--shadow);
-    transition: transform 0.25s ease, border-color 0.25s ease;
-  }
-
-  @media (hover: hover) {
-    .action-card:hover {
-      transform: translateY(-3px);
-      border-color: var(--border);
+    :root {
+      --win: #1F1E1C;
+      --win-side: #191817;
+      --win-bar: #232220;
+      --win-line: rgba(244, 241, 236, 0.09);
+      --chip: #262523;
+      --chip-shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
+      --win-shadow: 0 30px 80px rgba(0, 0, 0, 0.5);
+      --green: #7fce9f;
+      --red: #f0a070;
+      --blue: #7ea2f0;
+      --amber: #e8b45c;
     }
-    .action-card:hover .arrow { transform: translateX(5px); }
   }
 
-  .action-card h2 {
+  /* workspace.css sets overflow-x: hidden on html and body, which makes body a scroll container and stops position: sticky from working in the gather scroll. clip hides the same overflow without that. */
+  html, body { overflow-x: clip; }
+
+  .site-wrapper.wide-wrapper { max-width: 1120px; padding-bottom: 40px; }
+  nav { margin-bottom: 0; position: relative; z-index: 4; }
+  .nav-cta { padding: 9px 18px; font-size: 13px; }
+
+  /* ── HERO ── */
+  .hero { position: relative; text-align: center; min-height: max(620px, calc(100vh - 110px)); display: flex; flex-direction: column; justify-content: center; padding: 20px 0 40px; }
+  .hero > * { position: relative; z-index: 2; }
+  .hero .app-icon { display: block; width: 84px; height: 84px; margin: 0 auto 22px; }
+  .hero .app-icon img { width: 100%; height: 100%; display: block; }
+  .hero h1 {
     font-family: 'DM Serif Display', serif;
-    font-size: 28px;
     font-weight: 400;
-    letter-spacing: -0.5px;
-    /* inline-flex, not flex: across a full-width card, space-between would
-       fling the arrow to the far edge, away from the words it belongs to. */
-    display: inline-flex;
-    align-items: center;
-    gap: 12px;
+    font-size: clamp(40px, 6.6vw, 76px);
+    line-height: 1.02;
+    letter-spacing: -2px;
+    max-width: 14ch;
+    margin: 0 auto 22px;
+  }
+  .hero h1 em { font-style: italic; color: var(--accent); }
+  .rot { display: inline-block; transition: opacity 0.35s ease, transform 0.35s ease, filter 0.35s ease; }
+  .rot.out { opacity: 0; transform: translateY(-0.25em); filter: blur(4px); }
+  .rot.in-start { opacity: 0; transform: translateY(0.25em); filter: blur(4px); transition: none; }
+  .hero .lede { margin: 0 auto; font-size: 19px; max-width: 46ch; }
+  .ctas { display: flex; justify-content: center; align-items: center; flex-wrap: wrap; gap: 14px; margin-top: 30px; }
+  .btn-quiet { background: transparent; color: var(--text-primary); border: 1px solid var(--border); }
+  @media (prefers-color-scheme: dark) { .btn-quiet { background: transparent; color: var(--text-primary); } }
+  .fine { margin-top: 14px; font-size: 13px; color: var(--text-muted); font-weight: 300; }
+
+  /* A phone can't install a Mac app, so it is offered the link by email instead. */
+  .for-phone { display: none !important; }
+  @media (pointer: coarse) and (max-width: 900px) {
+    .for-mac { display: none !important; }
+    .for-phone { display: inline-flex !important; }
+    p.for-phone, div.for-phone { display: block !important; }
   }
 
-  .arrow {
-    color: var(--accent);
-    font-size: 21px;
-    transition: transform 0.25s ease;
+  /* ── FLYERS: the files drifting around the hero. They live in a fixed layer and the script places them every frame: around the headline at the top, carried by the scroll to the edges of the window, then into its sidebar. ── */
+  .flyers { position: fixed; inset: 0; pointer-events: none; z-index: 1; }
+  .chip {
+    position: absolute; top: 0; left: 0;
+    will-change: transform, opacity;
   }
-
-  .action-card p {
-    font-size: 15px;
-    color: var(--text-secondary);
-    font-weight: 300;
-    line-height: 1.6;
-    margin-top: 8px;
+  .chip-in {
+    display: flex; align-items: center; gap: 9px;
+    background: var(--chip); border: 1px solid var(--win-line); box-shadow: var(--chip-shadow);
+    border-radius: 12px; padding: 9px 13px; font-size: 13px; white-space: nowrap; color: var(--text-primary);
+    animation: float var(--d, 9s) ease-in-out infinite alternate; animation-delay: var(--delay, 0s);
   }
+  .chip-in .ic { font-size: 16px; }
+  .chip-in small { display: block; font-size: 11px; color: var(--text-muted); line-height: 1.2; }
+  .chip-in span { line-height: 1.25; }
+  @keyframes float { from { transform: translate(0, 0) rotate(-2deg); } to { transform: translate(var(--dx, 10px), var(--dy, -14px)) rotate(2deg); } }
 
-  .secondary-action {
-    text-align: center;
-    margin-top: 20px;
-    font-size: 14px;
-    font-weight: 300;
-    color: var(--text-muted);
+  /* ── GATHER: the window the files fly into, then a page, then a database that turns into a board ── */
+  .gather { position: relative; height: 470vh; }
+  .gather-stage {
+    position: sticky; top: 0; height: 100vh; min-height: 560px;
+    display: flex; align-items: center; justify-content: center;
+    overflow: hidden;
   }
-
-  .secondary-action a {
-    color: var(--text-secondary);
-    text-decoration: none;
-    font-weight: 500;
-    border-bottom: 1px solid var(--border);
-    padding-bottom: 2px;
-    transition: color 0.2s, border-color 0.2s;
+  .pane { transition: opacity 0.4s ease; }
+  .views span[role="button"] { cursor: pointer; }
+  .show-tabs { position: absolute; left: 50%; bottom: max(14px, 3.5vh); transform: translateX(-50%); z-index: 4; display: flex; gap: 4px; background: var(--card); border: 1px solid var(--border); border-radius: 100px; padding: 5px; box-shadow: var(--chip-shadow); opacity: 0; visibility: hidden; }
+  .show-tabs button { position: relative; overflow: hidden; border: none; background: transparent; font: inherit; font-size: 14px; font-weight: 500; color: var(--text-secondary); padding: 9px 18px; border-radius: 100px; cursor: pointer; transition: background 0.25s, color 0.25s; }
+  .show-tabs button.on { background: var(--text-primary); color: var(--bg); }
+  .show-tabs button::after { content: ''; position: absolute; left: 14px; right: 14px; bottom: 4px; height: 2px; border-radius: 2px; background: var(--accent); transform: scaleX(0); transform-origin: left; }
+  .show-tabs button.run::after { animation: fillbar 3.8s linear forwards; }
+  @keyframes fillbar { to { transform: scaleX(1); } }
+  .gather-captions { position: absolute; top: 5vh; left: 0; right: 0; text-align: center; z-index: 3; pointer-events: none; height: 120px; }
+  .cap {
+    position: absolute; left: 0; right: 0; margin: 0 auto; max-width: 640px; padding: 0 16px;
+    opacity: 0; transform: translateY(10px); transition: opacity 0.45s ease, transform 0.45s ease;
   }
+  .cap.on { opacity: 1; transform: none; }
+  .cap h2 { font-family: 'DM Serif Display', serif; font-weight: 400; font-size: clamp(26px, 3.6vw, 40px); letter-spacing: -1px; line-height: 1.1; }
+  .cap p { color: var(--text-secondary); font-weight: 300; font-size: 16px; margin-top: 8px; }
 
-  .secondary-action a:hover {
-    color: var(--text-primary);
-    border-color: var(--text-muted);
+  .win {
+    position: relative; z-index: 1;
+    width: min(900px, 94vw); height: min(520px, 60vh);
+    margin-top: 13vh;
+    background: var(--win); border-radius: 18px; box-shadow: var(--win-shadow);
+    border: 1px solid var(--win-line);
+    display: grid; grid-template-columns: 27% 1fr; grid-template-rows: 38px 1fr;
+    overflow: hidden; text-align: left;
   }
+  .win-bar { grid-column: 1 / -1; background: var(--win-bar); display: flex; align-items: center; gap: 8px; padding: 0 14px; border-bottom: 1px solid var(--win-line); }
+  .win-bar i { width: 11px; height: 11px; border-radius: 50%; border: 1px solid var(--text-muted); opacity: 0.6; }
+  .win-bar .tab { margin-left: 18px; font-size: 12px; color: var(--text-secondary); background: var(--win); padding: 5px 12px; border-radius: 7px 7px 0 0; align-self: flex-end; min-width: 90px; }
+  .win-side { background: var(--win-side); border-right: 1px solid var(--win-line); padding: 14px 10px; overflow: hidden; }
+  .win-side .vault { font-size: 11px; color: var(--text-muted); padding: 0 8px 8px; letter-spacing: 0.3px; }
+  .row { display: flex; align-items: center; gap: 8px; font-size: 13px; padding: 4px 8px; border-radius: 6px; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; opacity: 0; transition: background 0.3s; }
+  .row.folder { font-weight: 500; opacity: 1; }
+  .row.indent { padding-left: 24px; }
+  .row .ic { width: 16px; text-align: center; flex: none; font-size: 12px; }
+  .row.lit { background: var(--soft); }
+  .win-main { position: relative; overflow: hidden; }
+  .pane { position: absolute; inset: 0; padding: 26px 32px; overflow: hidden; }
+  .pane .crumb { font-size: 11px; color: var(--text-muted); margin-bottom: 12px; }
 
+  .pane-home h3 { font-weight: 600; font-size: clamp(20px, 2.6vw, 28px); letter-spacing: -0.5px; line-height: 1.15; margin-bottom: 12px; }
+  .pane-home p { font-size: 13.5px; color: var(--text-secondary); line-height: 1.6; max-width: 46ch; }
+  .counts { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 18px; }
+  .count { background: var(--win-side); border: 1px solid var(--win-line); border-radius: 10px; padding: 8px 12px; font-size: 12px; color: var(--text-secondary); }
+  .count b { display: block; font-size: 18px; color: var(--text-primary); font-weight: 600; }
+  .empty { color: var(--text-muted); font-size: 13px; }
+
+  /* The page: a cover, a title, and the Markdown a person or an agent writes. */
+  .pane-doc { padding: 0; }
+  .cover { height: 92px; background: linear-gradient(120deg, #f6c99f 0%, #e98a5a 45%, #b8460f 100%); position: relative; }
+  @media (prefers-color-scheme: dark) { .cover { background: linear-gradient(120deg, #6b3a1f 0%, #a24f24 50%, #e8823c 100%); } }
+  .doc { padding: 0 34px 20px; }
+  .doc .emoji { font-size: 40px; line-height: 1; margin-top: -24px; position: relative; }
+  .doc h3 { font-weight: 700; font-size: clamp(22px, 2.8vw, 30px); letter-spacing: -0.6px; margin: 8px 0 4px; }
+  .doc .meta { font-size: 11.5px; color: var(--text-muted); margin-bottom: 14px; display: flex; gap: 8px; align-items: center; }
+  .doc .meta .pill { background: color-mix(in srgb, var(--accent) 12%, transparent); color: var(--accent); border-radius: 100px; padding: 1px 8px; font-weight: 500; }
+  .doc p { font-size: 13.5px; line-height: 1.65; color: var(--text-secondary); max-width: 56ch; }
+  .doc p b { color: var(--text-primary); font-weight: 600; }
+  .doc p mark { background: color-mix(in srgb, var(--amber) 22%, transparent); color: var(--text-primary); border-radius: 3px; padding: 0 2px; }
+  .doc h4 { font-size: 14.5px; font-weight: 600; margin: 14px 0 6px; }
+  .doc ul.check { list-style: none; display: grid; gap: 5px; font-size: 13.5px; }
+  .doc ul.check li { display: flex; gap: 8px; align-items: center; color: var(--text-secondary); }
+  .doc ul.check li::before { content: ''; width: 13px; height: 13px; border: 1.5px solid var(--text-muted); border-radius: 4px; flex: none; }
+  .doc ul.check li.x { text-decoration: line-through; color: var(--text-muted); }
+  .doc ul.check li.x::before { background: var(--green); border-color: var(--green); }
+  .doc blockquote { margin-top: 14px; border-left: 3px solid var(--accent); padding: 4px 0 4px 12px; font-size: 13px; color: var(--text-secondary); font-style: italic; }
+
+  /* The database: one set of task elements, placed by the script anywhere between a table (m = 0) and a board (m = 1). */
+  .pane-db h3 { font-weight: 600; font-size: clamp(20px, 2.6vw, 26px); letter-spacing: -0.5px; margin-bottom: 10px; display: flex; align-items: center; gap: 10px; }
+  .views { display: flex; gap: 4px; margin-bottom: 14px; font-size: 12px; }
+  .views span { padding: 4px 10px; border-radius: 7px; color: var(--text-muted); border: 1px solid transparent; transition: all 0.3s; }
+  .views span.on { color: var(--text-primary); background: var(--win-side); border-color: var(--win-line); font-weight: 500; }
+  .db { position: relative; height: 252px; }
+  .db-head { position: absolute; left: 0; right: 0; top: 0; height: 28px; display: grid; grid-template-columns: 1fr 90px 80px; gap: 8px; align-items: center; font-size: 11px; color: var(--text-muted); letter-spacing: 0.4px; border-bottom: 1px solid var(--win-line); padding: 0 10px; }
+  .col-head { position: absolute; top: 0; height: 28px; display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; opacity: 0; white-space: nowrap; }
+  .col-head i { width: 8px; height: 8px; border-radius: 50%; }
+  .col-head em { font-style: normal; color: var(--text-muted); font-weight: 400; }
+  .col-bg { position: absolute; top: 32px; bottom: 0; border-radius: 12px; background: var(--win-side); opacity: 0; }
+  .task { position: absolute; top: 0; left: 0; overflow: hidden; font-size: 13px; }
+  .task .t-bg { position: absolute; inset: 0; background: var(--win); border: 1px solid var(--win-line); border-radius: 10px; box-shadow: 0 2px 8px rgba(26,26,26,0.06); opacity: 0; }
+  .task .t-line { position: absolute; left: 0; right: 0; bottom: 0; height: 1px; background: var(--win-line); }
+  .task .t-row { position: relative; display: grid; grid-template-columns: 1fr 90px 80px; gap: 8px; align-items: center; height: 36px; padding: 0 10px; }
+  .task .t-title { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .task .t-cells { display: contents; }
+  /* Past halfway to a board, a task drops its table cells and lays out as a card: title on top, status and owner under it. */
+  .task.is-card .t-row { display: block; height: auto; padding: 9px 10px 0; line-height: 18px; }
+  .task.is-card .t-title { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; white-space: normal; line-height: 1.3; }
+  .task.is-card .t-meta { position: relative; left: 0; top: 0; padding: 5px 10px 0; }
+  .task.is-card .t-cells { display: none; }
+  .task.is-card .t-title { font-weight: 500; }
+  .task .t-meta { position: absolute; left: 10px; top: 32px; display: flex; gap: 6px; align-items: center; font-size: 11px; color: var(--text-muted); opacity: 0; white-space: nowrap; }
+  .pill-s { font-size: 11px; border-radius: 100px; padding: 1px 8px; white-space: nowrap; justify-self: start; }
+  .pill-s.todo { background: color-mix(in srgb, var(--text-muted) 18%, transparent); color: var(--text-secondary); }
+  .pill-s.doing { background: color-mix(in srgb, var(--blue) 16%, transparent); color: var(--blue); }
+  .pill-s.done { background: color-mix(in srgb, var(--green) 16%, transparent); color: var(--green); }
+  .owner { font-size: 12px; color: var(--text-secondary); }
+
+  /* ── SECTIONS ── */
+  section.block { padding: 70px 0 10px; }
+  .kicker { font-size: 12px; font-weight: 600; letter-spacing: 2.5px; text-transform: uppercase; color: var(--accent); margin-bottom: 14px; }
+  h2.big { font-family: 'DM Serif Display', serif; font-weight: 400; font-size: clamp(32px, 4.4vw, 50px); line-height: 1.06; letter-spacing: -1.2px; margin-bottom: 16px; }
+  .center { text-align: center; }
+  .center .lede { margin: 0 auto; }
+
+  .benefit { display: grid; grid-template-columns: 1fr 1.1fr; gap: 56px; align-items: center; padding: 56px 0; }
+  .benefit.flip .b-text { order: 2; }
+  .benefit .lede { font-size: 17px; }
+  .b-points { list-style: none; margin-top: 20px; display: grid; gap: 10px; }
+  .b-points li { display: flex; gap: 10px; font-size: 15px; color: var(--text-secondary); font-weight: 300; }
+  .b-points li::before { content: '✓'; color: var(--accent); font-weight: 600; }
+  .b-points b { color: var(--text-primary); font-weight: 500; }
+
+  .panel { background: var(--win); border: 1px solid var(--win-line); border-radius: 18px; box-shadow: var(--win-shadow); overflow: hidden; }
+  .panel-head { display: flex; align-items: center; justify-content: space-between; padding: 14px 18px; border-bottom: 1px solid var(--win-line); font-size: 13px; font-weight: 600; }
+  .panel-head span { font-weight: 400; color: var(--text-muted); font-size: 12px; }
+  .change { display: grid; grid-template-columns: 34px 1fr auto; gap: 12px; align-items: center; padding: 13px 18px; border-bottom: 1px solid var(--win-line); font-size: 13.5px; }
+  .change:last-child { border-bottom: none; }
+  .who { width: 34px; height: 34px; border-radius: 10px; background: var(--win-side); display: flex; align-items: center; justify-content: center; font-size: 16px; }
+  .change small { display: block; color: var(--text-muted); font-size: 12px; }
+  .diff { font-size: 12px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .diff .add { color: var(--green); } .diff .del { color: var(--red); margin-left: 6px; }
+  .undo { font-size: 11px; color: var(--text-muted); border: 1px solid var(--win-line); border-radius: 6px; padding: 2px 7px; margin-left: 8px; }
+
+  .agents { padding: 18px; display: grid; gap: 12px; }
+  .agent-card { border: 1px solid var(--win-line); border-radius: 14px; padding: 14px 16px; display: grid; grid-template-columns: 40px 1fr; gap: 12px; align-items: start; }
+  .agent-card .who { width: 40px; height: 40px; font-size: 19px; }
+  .agent-card b { font-weight: 600; font-size: 14px; }
+  .agent-card p { font-size: 12.5px; color: var(--text-secondary); margin-top: 2px; line-height: 1.5; }
+  .tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+  .tag { font-size: 11px; background: var(--win-side); border: 1px solid var(--win-line); border-radius: 100px; padding: 2px 9px; color: var(--text-secondary); }
+  .working { display: inline-flex; align-items: center; gap: 6px; font-size: 11px; color: var(--green); margin-left: 6px; }
+  .working::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: currentColor; animation: pulse 1.4s ease-in-out infinite; }
+  @keyframes pulse { 50% { opacity: 0.3; } }
+
+  .speed { padding: 26px 24px; display: grid; gap: 26px; }
+  .metric .num { font-family: 'DM Serif Display', serif; font-size: 54px; line-height: 1; letter-spacing: -1.5px; }
+  .metric .num small { font-family: 'Outfit', sans-serif; font-size: 15px; letter-spacing: 0; color: var(--text-secondary); margin-left: 8px; }
+  .bars { display: grid; gap: 8px; margin-top: 14px; }
+  .bar { display: grid; grid-template-columns: 96px 1fr; align-items: center; gap: 10px; font-size: 12px; color: var(--text-secondary); }
+  .bar div { height: 10px; border-radius: 100px; background: var(--text-muted); opacity: 0.35; transform-origin: left; }
+  .bar.us div { background: var(--accent); opacity: 1; }
+  .reveal .bar div { transform: scaleX(0); transition: transform 1.1s cubic-bezier(.2,.7,.2,1); }
+  .reveal.in .bar div { transform: scaleX(1); }
+
+  .steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; margin-top: 36px; }
+  .step { background: var(--card); border-radius: var(--radius); padding: 30px 26px; box-shadow: var(--shadow); }
+  .step .n { width: 32px; height: 32px; border-radius: 50%; background: var(--soft); color: var(--accent); display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 14px; margin: 0 auto 16px; }
+  .step h3 { font-size: 18px; font-weight: 600; margin-bottom: 6px; }
+  .step p { font-size: 14.5px; color: var(--text-secondary); font-weight: 300; }
+  .ask { margin-top: 14px; background: var(--win-side); border: 1px solid var(--win-line); border-radius: 12px; padding: 10px 12px; font-size: 13px; color: var(--text-primary); font-family: ui-monospace, 'SF Mono', Menlo, monospace; }
+
+  .own { margin-top: 70px; background: var(--card); border-radius: var(--radius-lg); padding: 44px 48px; display: grid; grid-template-columns: 1.2fr 1fr; gap: 40px; align-items: center; box-shadow: var(--shadow); }
+  .own h2 { font-family: 'DM Serif Display', serif; font-weight: 400; font-size: clamp(28px, 3.4vw, 38px); line-height: 1.1; letter-spacing: -1px; margin-bottom: 12px; }
+  .files { font-family: ui-monospace, 'SF Mono', Menlo, monospace; font-size: 13px; line-height: 1.9; color: var(--text-secondary); background: var(--win-side); border: 1px solid var(--win-line); border-radius: 14px; padding: 18px 20px; }
+  .files b { color: var(--text-primary); font-weight: 500; }
+
+  .video-card { padding: 0; background: #000; border-radius: var(--radius-lg); overflow: hidden; margin: 34px auto 0; position: relative; max-width: 920px; }
+  .video-stage { position: relative; width: 100%; background: #000; aspect-ratio: 16 / 9; }
+  .video-stage video { width: 100%; height: 100%; display: block; object-fit: contain; background: #000; }
+  .play-overlay { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 18px; border: none; cursor: pointer; background: linear-gradient(180deg, rgba(0,0,0,0.12) 0%, rgba(0,0,0,0.42) 100%); transition: opacity 0.35s ease, visibility 0.35s ease; font-family: inherit; padding: 0; }
+  .play-overlay[hidden] { opacity: 0; visibility: hidden; display: flex; pointer-events: none; }
+  .play-ring { width: 84px; height: 84px; border-radius: 50%; background: rgba(255,255,255,0.94); display: flex; align-items: center; justify-content: center; box-shadow: 0 8px 34px rgba(0,0,0,0.32); transition: transform 0.25s ease; }
+  .play-overlay:hover .play-ring { transform: scale(1.07); }
+  .play-overlay:focus-visible { outline: 3px solid var(--accent); outline-offset: -6px; }
+  .play-ring svg { width: 30px; height: 30px; margin-left: 5px; fill: #1A1A1A; }
+  .play-label { color: #fff; font-size: 14px; font-weight: 500; letter-spacing: 1.4px; text-transform: uppercase; text-shadow: 0 1px 10px rgba(0,0,0,0.5); }
+  .try-line { text-align: center; margin-top: 22px; font-size: 15px; color: var(--text-secondary); font-weight: 300; }
+  .try-line a { color: var(--text-primary); font-weight: 500; }
+
+  .roadmap { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-top: 36px; }
+  .leg { background: var(--card); border-radius: 22px; padding: 22px 20px; box-shadow: var(--shadow); }
+  .leg h3 { font-size: 13px; font-weight: 600; letter-spacing: 1.6px; text-transform: uppercase; color: var(--text-muted); margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; }
+  .leg.shipped h3 { color: var(--green); }
+  .leg.next { outline: 2px solid var(--accent); outline-offset: -2px; }
+  .leg.next h3 { color: var(--accent); }
+  .leg ul { list-style: none; display: grid; gap: 9px; }
+  .leg li { font-size: 14px; line-height: 1.4; display: flex; gap: 8px; }
+  .leg li .e { flex: none; }
+  .leg .ver { font-size: 11px; color: var(--text-muted); font-weight: 400; letter-spacing: 0.5px; text-transform: none; }
+  .leg details summary { cursor: pointer; font-size: 13px; color: var(--text-muted); margin-top: 12px; list-style: none; }
+  .leg details summary::-webkit-details-marker { display: none; }
+  .leg details ul { margin-top: 10px; }
+
+  .faq { max-width: 760px; margin: 30px auto 0; }
+  .faq details { background: var(--card); border-radius: 18px; padding: 18px 24px; margin-bottom: 10px; box-shadow: var(--shadow); }
+  .faq summary { cursor: pointer; font-weight: 500; font-size: 16px; list-style: none; display: flex; justify-content: space-between; gap: 16px; }
+  .faq summary::-webkit-details-marker { display: none; }
+  .faq summary::after { content: '+'; color: var(--text-muted); font-size: 20px; line-height: 1; transition: transform 0.2s; }
+  .faq details[open] summary::after { transform: rotate(45deg); }
+  .faq details p { margin-top: 10px; color: var(--text-secondary); font-weight: 300; font-size: 15px; }
+  .faq a { color: var(--text-primary); }
+
+  .final { margin-top: 80px; background: var(--card); border-radius: var(--radius-lg); padding: 56px 40px; text-align: center; box-shadow: var(--shadow); }
+  .final .app-icon { display: block; width: 64px; height: 64px; margin: 0 auto 18px; }
+  .final .app-icon img { width: 100%; height: 100%; display: block; }
+  .final .secondary { margin-top: 18px; font-size: 14px; color: var(--text-secondary); font-weight: 300; }
+  .final .secondary a { color: var(--text-primary); }
+
+
+  /* Set up in a minute: each step has a small picture above it. */
+  .step { text-align: center; }
+  .viz { height: 132px; border-radius: 18px; background: var(--win-side); border: 1px solid var(--win-line); margin-bottom: 20px; display: flex; align-items: center; justify-content: center; gap: 16px; position: relative; overflow: hidden; }
+  .viz-app { width: 56px; height: 56px; filter: drop-shadow(0 6px 14px rgba(0,0,0,0.15)); }
+  .viz-arrow { font-size: 22px; color: var(--accent); animation: nudge 1.6s ease-in-out infinite; }
+  @keyframes nudge { 50% { transform: translateX(6px); } }
+  .viz-folder { display: flex; flex-direction: column; align-items: center; gap: 6px; font-size: 11px; color: var(--text-secondary); }
+  .viz-folder small { font-size: 11px; }
+  .fold { width: 58px; height: 44px; border-radius: 6px; background: linear-gradient(180deg, #7cb7f5, #4d97ec); position: relative; box-shadow: 0 6px 14px rgba(40,100,180,0.25); }
+  .fold::before { content: ''; position: absolute; left: 0; top: -7px; width: 24px; height: 10px; border-radius: 4px 4px 0 0; background: #6aacf2; }
+  .viz-folder.big .fold { width: 74px; height: 56px; }
+  .pop { position: absolute; font-size: 16px; background: var(--win); border: 1px solid var(--win-line); border-radius: 8px; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; box-shadow: var(--chip-shadow); animation: popf 3s ease-in-out infinite; }
+  .pop1 { left: calc(50% - 74px); top: 20px; } .pop2 { right: calc(50% - 76px); top: 30px; animation-delay: -1s; } .pop3 { left: calc(50% + 34px); bottom: 18px; animation-delay: -2s; }
+  @keyframes popf { 50% { transform: translateY(-6px); } }
+  .viz-chat { flex-direction: column; align-items: stretch; gap: 8px; padding: 14px; justify-content: center; }
+  .bub { font-size: 12px; line-height: 1.4; padding: 7px 11px; border-radius: 12px; max-width: 88%; text-align: left; }
+  .bub.me { align-self: flex-end; background: var(--text-primary); color: var(--bg); border-bottom-right-radius: 4px; }
+  .bub.ai { align-self: flex-start; background: var(--win); border: 1px solid var(--win-line); border-bottom-left-radius: 4px; }
+  .bub.ai b { color: var(--accent); font-weight: 600; margin-right: 4px; }
+  .bub u { text-decoration: none; background: var(--soft); border-radius: 4px; padding: 0 3px; }
+
+  /* Your files stay yours: a Finder window slides across to the same files in Workspace's left bar. */
+  .swap-tabs { display: inline-flex; gap: 4px; margin-top: 22px; background: var(--win-side); border: 1px solid var(--win-line); border-radius: 100px; padding: 4px; }
+  .swap-tabs button { border: none; background: transparent; font: inherit; font-size: 13px; font-weight: 500; color: var(--text-secondary); padding: 7px 14px; border-radius: 100px; cursor: pointer; }
+  .swap-tabs button.on { background: var(--text-primary); color: var(--bg); }
+  .swap { overflow: hidden; border-radius: 14px; }
+  .swap-track { display: flex; width: 200%; transition: transform 0.9s cubic-bezier(.6,.05,.2,1); }
+  .swap-track.ws { transform: translateX(-50%); }
+  .mini { width: 50%; background: var(--win); border: 1px solid var(--win-line); border-radius: 14px; overflow: hidden; }
+  .mini-bar { height: 30px; background: var(--win-bar); border-bottom: 1px solid var(--win-line); display: flex; align-items: center; gap: 6px; padding: 0 12px; }
+  .mini-bar i { width: 9px; height: 9px; border-radius: 50%; border: 1px solid var(--text-muted); opacity: 0.6; }
+  .mini-bar span { margin: 0 auto; font-size: 11.5px; color: var(--text-secondary); font-weight: 500; transform: translateX(-20px); }
+  .mini-body { display: grid; grid-template-columns: 36% 1fr; height: 214px; }
+  .f-side { background: var(--win-side); border-right: 1px solid var(--win-line); padding: 10px 8px; font-size: 11.5px; display: grid; align-content: start; gap: 2px; }
+  .f-side small { font-size: 10px; color: var(--text-muted); padding: 0 6px 4px; }
+  .f-side div { padding: 3px 6px; border-radius: 5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .f-side .on { background: var(--soft); }
+  .finder .f-side .on { background: color-mix(in srgb, #4d97ec 18%, transparent); }
+  .f-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px 6px; padding: 14px 10px; align-content: start; }
+  .f-item { display: flex; flex-direction: column; align-items: center; gap: 5px; font-size: 10.5px; color: var(--text-secondary); text-align: center; line-height: 1.2; word-break: break-word; }
+  .fi { width: 34px; height: 40px; position: relative; }
+  .fi.doc { background: #fff; border: 1px solid rgba(0,0,0,0.12); border-radius: 3px 10px 3px 3px; font-size: 8px; font-weight: 700; letter-spacing: 0; white-space: nowrap; color: #8a8580; display: flex; align-items: flex-end; justify-content: center; padding-bottom: 5px; box-shadow: 0 2px 4px rgba(0,0,0,0.08); }
+  .fi.folder { width: 42px; height: 32px; margin-top: 8px; border-radius: 4px; background: linear-gradient(180deg, #7cb7f5, #4d97ec); }
+  .fi.folder::before { content: ''; position: absolute; left: 0; top: -5px; width: 16px; height: 7px; border-radius: 3px 3px 0 0; background: #6aacf2; }
+  .fi.img { width: 38px; height: 30px; margin-top: 10px; border-radius: 3px; background: linear-gradient(135deg, #f6c99f, #e98a5a 60%, #7aa0c8); border: 2px solid #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.12); }
+  .w-page { padding: 14px 16px; display: grid; gap: 8px; align-content: start; font-size: 14px; }
+  .w-page .ln { height: 7px; border-radius: 4px; background: var(--win-line); }
+  .w-page .w90 { width: 90%; } .w-page .w70 { width: 70%; } .w-page .w80 { width: 80%; }
+  .w-page .chk { width: 60%; height: 9px; border-radius: 4px; background: var(--win-line); position: relative; margin-left: 16px; }
+  .w-page .chk::before { content: ''; position: absolute; left: -16px; top: -1px; width: 10px; height: 10px; border-radius: 3px; border: 1.5px solid var(--text-muted); }
+
+  .reveal-up { opacity: 0; transform: translateY(24px); transition: opacity 0.7s ease, transform 0.7s ease; }
+  .reveal-up.in { opacity: 1; transform: none; }
+
+  @media (max-width: 900px) {
+    .benefit, .benefit.flip { grid-template-columns: 1fr; gap: 28px; padding: 40px 0; }
+    .benefit.flip .b-text { order: 0; }
+    .steps { grid-template-columns: 1fr; }
+    .own { grid-template-columns: 1fr; padding: 34px 26px; }
+    .roadmap { grid-template-columns: 1fr 1fr; }
+  }
   @media (max-width: 680px) {
-    .intro-ctas { flex-direction: column; }
-    .action-cards { grid-template-columns: 1fr; }
-    .action-card { padding: 32px 24px; }
-    .action-card h2 { font-size: 25px; }
-    .play-ring { width: 68px; height: 68px; }
-    .play-ring svg { width: 25px; height: 25px; }
-    .video-note { margin-bottom: 26px; }
+    .hero .lede { font-size: 17px; }
+    .chip-in { font-size: 11.5px; padding: 7px 10px; }
+    .chip-in small { display: none; }
+    .win { grid-template-columns: 34% 1fr; height: 58vh; margin-top: 18vh; }
+    .pane { padding: 18px 16px; }
+    .pane-doc { padding: 0; }
+    .doc { padding: 0 16px 16px; }
+    .doc p, .doc ul.check { font-size: 12.5px; }
+    .cover { height: 64px; }
+    .row { font-size: 11.5px; padding: 3px 6px; }
+    .row.indent { padding-left: 14px; }
+    .db-head, .task .t-row { grid-template-columns: 1fr 74px; }
+    .db-head span:nth-child(3), .task .owner { display: none; }
+    .task { font-size: 11.5px; }
+    .views { font-size: 11px; white-space: nowrap; }
+    .views .v-cal, .col-head em { display: none; }
+    .col-head { font-size: 11px; }
+    .gather-captions { top: 3vh; }
+    .roadmap { grid-template-columns: 1fr; }
+    .final { padding: 40px 22px; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .flyers { display: none; }
+    .gather { height: auto; }
+    .gather-stage { position: relative; height: auto; min-height: 0; padding: 150px 0 40px; }
+    .cap { transition: none; }
+    .row { opacity: 1; }
+    .chip-in, .working::before { animation: none; }
+    .reveal-up, .reveal .bar div { opacity: 1; transform: none; transition: none; }
+    .rot { transition: none; }
   }
 </style>
 </head>
 <body>
 
+<!-- The drifting files. Each has a place around the headline (data-hx, data-hy: fractions of the hero), a place around the window when the scroll reaches it (data-x, data-y: fractions of the stage), and the sidebar row it lands on (data-to). -->
+<div class="flyers" id="flyers" aria-hidden="true">
+  <div class="chip" data-to="plan" data-m="0.02,0" data-hx="0.02" data-hy="0.12" data-x="0.06" data-y="0.30"><div class="chip-in" style="--d:8s;--dx:14px;--dy:-16px"><span class="ic">💬</span><span>Chat with Claude<small>the launch plan, 3 days ago</small></span></div></div>
+  <div class="chip" data-to="research" data-m="0.98,0" data-hx="0.98" data-hy="0.10" data-x="0.82" data-y="0.24"><div class="chip-in" style="--d:9.5s;--dx:-14px;--dy:16px;--delay:-4s"><span class="ic">🧩</span><span>research-v3 (artifact)<small>lost in a side panel</small></span></div></div>
+  <div class="chip" data-to="meeting" data-hx="0.03" data-hy="0.46" data-x="0.03" data-y="0.62"><div class="chip-in" style="--d:11s;--dx:-10px;--dy:18px;--delay:-3s"><span class="ic">📝</span><span>Meeting notes.docx<small>Downloads folder</small></span></div></div>
+  <div class="chip" data-to="clients" data-hx="0.97" data-hy="0.44" data-x="0.85" data-y="0.55"><div class="chip-in" style="--d:12s;--dx:12px;--dy:-14px;--delay:-6s"><span class="ic">📊</span><span>clients.csv<small>exported from a spreadsheet</small></span></div></div>
+  <div class="chip" data-to="tasks" data-m="0.02,1" data-hx="0.05" data-hy="0.84" data-x="0.18" data-y="0.86"><div class="chip-in" style="--d:9s;--dx:16px;--dy:-10px;--delay:-5s"><span class="ic">✅</span><span>todo.txt<small>Desktop</small></span></div></div>
+  <div class="chip" data-to="reading" data-hx="0.74" data-hy="0.97" data-x="0.66" data-y="0.88"><div class="chip-in" style="--d:10.5s;--dx:10px;--dy:-14px;--delay:-7s"><span class="ic">🔖</span><span>Reading list<small>another app</small></span></div></div>
+  <div class="chip" data-to="roles" data-m="0.98,1" data-hx="0.95" data-hy="0.80" data-x="0.70" data-y="0.40"><div class="chip-in" style="--d:8.5s;--dx:-16px;--dy:-12px;--delay:-1s"><span class="ic">⌨️</span><span>Codex session<small>the refactor plan</small></span></div></div>
+  <div class="chip" data-to="skills" data-hx="0.22" data-hy="0.02" data-x="0.14" data-y="0.46"><div class="chip-in" style="--d:10s;--dx:-12px;--dy:12px;--delay:-2s"><span class="ic">🧰</span><span>deploy-skill.md<small>somewhere in ~/.claude</small></span></div></div>
+  <div class="chip" data-to="agentsmd" data-hx="0.76" data-hy="0.02" data-x="0.88" data-y="0.74"><div class="chip-in" style="--d:9.8s;--dx:12px;--dy:14px;--delay:-8s"><span class="ic">📄</span><span>CLAUDE.md<small>one per project</small></span></div></div>
+  <div class="chip" data-to="shots" data-hx="0.26" data-hy="0.97" data-x="0.40" data-y="0.94"><div class="chip-in" style="--d:9s;--dx:-12px;--dy:-10px;--delay:-2.5s"><span class="ic">🖼️</span><span>Screenshot 2026-11-03.png<small>Desktop</small></span></div></div>
+</div>
+
 <div class="site-wrapper wide-wrapper">
 
   <nav>
     <a href="/" class="logo">Brian <span class="logo-italic">Hirsh</span></a>
-    <ul class="nav-links">
-      <li><a href="/workspace/download/">Download</a></li>
-    </ul>
+    <a class="btn nav-cta for-mac" href="/workspace/download/">Download for Mac</a>
+    <a class="btn nav-cta for-phone" href="/workspace/signup/">Get the link</a>
   </nav>
 
-  <div class="intro fade-up">
-    <div class="eyebrow">Beta</div>
+  <header class="hero fade-up" id="hero">
     <picture class="app-icon">
       <source media="(prefers-color-scheme: dark)" srcset="/workspace/media/workspace-logo-dark.svg">
-      <img src="/workspace/media/workspace-logo-light.svg" alt="" width="96" height="96" decoding="async">
+      <img src="/workspace/media/workspace-logo-light.svg" alt="Workspace" width="84" height="84" decoding="async">
     </picture>
-    <h1 class="page-title">Workspace</h1>
-    <p class="lede">An agentic workspace for your Mac — built so AI can work alongside you with full context, not just answer questions in a side panel.</p>
-    <div class="intro-ctas">
-      <a class="btn intro-cta" href="/workspace/download/">Download for Mac <span aria-hidden="true">→</span></a>
-      <a class="btn intro-cta btn-quiet" href="/workspace/try/">Try it now <span aria-hidden="true">→</span></a>
+    <h1>Finally, see <em class="rot" id="rot">everything</em> you and your agents are working on.</h1>
+    <p class="lede">Workspace is a Mac app where you and your AI agents share the same pages, databases and files. Nothing gets lost in a chat again, and you can see every change.</p>
+    <div class="ctas">
+      <a class="btn for-mac" href="/workspace/download/">Download for Mac <span aria-hidden="true">→</span></a>
+      <a class="btn for-phone" href="/workspace/signup/">Email me the download link <span aria-hidden="true">→</span></a>
+      <a class="btn btn-quiet" href="#film">Watch the film</a>
     </div>
-  </div>
+    <p class="fine for-mac">Free · for Macs with Apple silicon</p>
+    <p class="fine for-phone">Workspace is a free Mac app. Leave your email and open the link on your Mac.</p>
+  </header>
 
-  <!-- VIDEO -->
-  <div class="video-card fade-up" style="animation-delay:0.12s">
-    <div class="video-stage" id="stage">
-      <video id="film" playsinline preload="none" controls-list="nodownload"></video>
-      <button class="play-overlay" id="playBtn" type="button" aria-label="Play the Workspace film, with sound">
-        <span class="play-ring">
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>
-        </span>
-        <span class="play-label">Play with sound</span>
-      </button>
+  <section class="gather" id="gather" aria-label="Your scattered work, gathered into Workspace">
+    <div class="gather-stage" id="gatherStage">
+      <div class="gather-captions" aria-live="polite">
+        <div class="cap on" data-cap="0"><h2>Your work is everywhere.</h2><p>Notes in one app, plans in another, and your agent's best work buried in a chat from last Tuesday.</p></div>
+        <div class="cap" data-cap="1"><h2>Bring it all into one place.</h2><p>Your notes, databases, files and everything your agents make, together in one folder on your Mac.</p></div>
+        <div class="cap" data-cap="2"><h2>Now you can see all of it.</h2><p>Every page, every database, every change, for you and your agents.</p></div>
+        <div class="cap" data-cap="3"><h2>A beautiful place to write.</h2><p>Pages are Markdown files, with headings, checklists, pictures and more, written by you or your agents.</p></div>
+        <div class="cap" data-cap="4"><h2>Databases that do the heavy lifting.</h2><p>Relations, lookups and rollups, and every view you need. Turn a table into a board in one click.</p></div>
+      </div>
+
+      <div class="win" id="win">
+        <div class="win-bar"><i></i><i></i><i></i><div class="tab" id="winTab">Home</div></div>
+        <div class="win-side">
+          <div class="vault">Your vault</div>
+          <div class="row folder"><span class="ic">▾</span>Projects</div>
+          <div class="row indent" data-row="plan"><span class="ic">📄</span>Launch plan</div>
+          <div class="row indent" data-row="research"><span class="ic">📄</span>Research</div>
+          <div class="row indent" data-row="meeting"><span class="ic">📄</span>Meeting notes</div>
+          <div class="row folder"><span class="ic">▾</span>Databases</div>
+          <div class="row indent" data-row="clients"><span class="ic">▦</span>Clients</div>
+          <div class="row indent" data-row="tasks"><span class="ic">▦</span>Tasks</div>
+          <div class="row indent" data-row="reading"><span class="ic">▦</span>Reading list</div>
+          <div class="row folder"><span class="ic">▾</span>Agents</div>
+          <div class="row indent" data-row="roles"><span class="ic">🤖</span>Roles</div>
+          <div class="row indent" data-row="skills"><span class="ic">🧰</span>Skills</div>
+          <div class="row indent" data-row="agentsmd"><span class="ic">📄</span>AGENTS.md</div>
+          <div class="row folder"><span class="ic">▾</span>Files</div>
+          <div class="row indent" data-row="shots"><span class="ic">🖼️</span>Screenshots</div>
+        </div>
+        <div class="win-main">
+          <div class="pane pane-home" id="paneHome">
+            <div class="crumb">Your vault › Home</div>
+            <h3>Home</h3>
+            <p id="winEmpty" class="empty">Nothing here yet.</p>
+            <div id="winFull" style="opacity:0">
+              <p>Everything you and your agents work on, in one place. Your agents read and write these same pages, and every change they make shows up here.</p>
+              <div class="counts">
+                <div class="count"><b id="nPages">0</b>pages</div>
+                <div class="count"><b id="nDbs">0</b>databases</div>
+                <div class="count"><b id="nAgents">0</b>agent roles</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="pane pane-doc" id="paneDoc" style="opacity:0">
+            <div class="cover"></div>
+            <div class="doc">
+              <div class="emoji">🚀</div>
+              <h3>Launch plan</h3>
+              <div class="meta"><span class="pill">Claude</span> edited 2 min ago · Projects</div>
+              <p>Get Workspace in front of <b>200 people</b> by December. <mark>Lead with the speed numbers</mark>; they get the most clicks.</p>
+              <h4>This week</h4>
+              <ul class="check">
+                <li class="x">Email the beta list</li>
+                <li>Write the Show HN post</li>
+                <li>Record a 60-second demo</li>
+              </ul>
+              <blockquote>Everything here is a plain Markdown file in your folder.</blockquote>
+            </div>
+          </div>
+
+          <div class="pane pane-db" id="paneDb" style="opacity:0">
+            <div class="crumb">Your vault › Databases › Tasks</div>
+            <h3>Tasks</h3>
+            <div class="views"><span class="on" id="vTable" role="button">▦ Table</span><span id="vBoard" role="button">▥ Board</span><span class="v-cal">▤ Calendar</span></div>
+            <div class="db" id="db">
+              <div class="db-head" id="dbHead"><span>TASK</span><span>STATUS</span><span>OWNER</span></div>
+              <div class="col-bg" data-col="0"></div><div class="col-bg" data-col="1"></div><div class="col-bg" data-col="2"></div>
+              <div class="col-head" data-col="0"><i style="background:var(--text-muted)"></i>To do <em>2</em></div>
+              <div class="col-head" data-col="1"><i style="background:var(--blue)"></i>Doing <em>2</em></div>
+              <div class="col-head" data-col="2"><i style="background:var(--green)"></i>Done <em>2</em></div>
+              <div class="task" data-col="2"><div class="t-bg"></div><div class="t-line"></div><div class="t-row"><span class="t-title">Email the beta list</span><span class="t-cells"><span class="pill-s done">Done</span><span class="owner">You</span></span></div><div class="t-meta"><span class="pill-s done">Done</span>You</div></div>
+              <div class="task" data-col="1"><div class="t-bg"></div><div class="t-line"></div><div class="t-row"><span class="t-title">Write the Show HN post</span><span class="t-cells"><span class="pill-s doing">Doing</span><span class="owner">Claude</span></span></div><div class="t-meta"><span class="pill-s doing">Doing</span>Claude</div></div>
+              <div class="task" data-col="0"><div class="t-bg"></div><div class="t-line"></div><div class="t-row"><span class="t-title">Record a 60-second demo</span><span class="t-cells"><span class="pill-s todo">To do</span><span class="owner">Codex</span></span></div><div class="t-meta"><span class="pill-s todo">To do</span>Codex</div></div>
+              <div class="task" data-col="2"><div class="t-bg"></div><div class="t-line"></div><div class="t-row"><span class="t-title">Update the roadmap</span><span class="t-cells"><span class="pill-s done">Done</span><span class="owner">Claude</span></span></div><div class="t-meta"><span class="pill-s done">Done</span>Claude</div></div>
+              <div class="task" data-col="1"><div class="t-bg"></div><div class="t-line"></div><div class="t-row"><span class="t-title">Design the landing page</span><span class="t-cells"><span class="pill-s doing">Doing</span><span class="owner">You</span></span></div><div class="t-meta"><span class="pill-s doing">Doing</span>You</div></div>
+              <div class="task" data-col="0"><div class="t-bg"></div><div class="t-line"></div><div class="t-row"><span class="t-title">Reply to beta feedback</span><span class="t-cells"><span class="pill-s todo">To do</span><span class="owner">Claude</span></span></div><div class="t-meta"><span class="pill-s todo">To do</span>Claude</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="show-tabs" id="showTabs" role="tablist" aria-label="Show in the window">
+        <button type="button" class="on" data-view="page" role="tab" aria-selected="true">📄 Page</button>
+        <button type="button" data-view="table" role="tab" aria-selected="false">▦ Table</button>
+        <button type="button" data-view="board" role="tab" aria-selected="false">▥ Board</button>
+      </div>
     </div>
-  </div>
+  </section>
 
-  <div class="video-note fade-up" style="animation-delay:0.18s">
-    <span>49 seconds, with sound.</span>
-  </div>
-
-  <!-- ACTIONS -->
-  <div class="actions fade-up" style="animation-delay:0.24s">
-    <div class="action-cards">
-      <a class="action-card" href="/workspace/download/">
-        <h2>Download for Mac <span class="arrow">→</span></h2>
-        <p>A free beta for Macs with Apple silicon. Early and rough, but useful and powerful.</p>
-      </a>
-      <a class="action-card" href="/workspace/try/">
-        <h2>Try it now <span class="arrow">→</span></h2>
-        <p>See Workspace with your own work in it, in your browser.</p>
-      </a>
+  <!-- BENEFITS -->
+  <section class="benefit reveal-up">
+    <div class="b-text">
+      <div class="kicker">See everything</div>
+      <h2 class="big">Know what's going on, finally.</h2>
+      <p class="lede">No more wondering what your agents did while you were away. Workspace shows every page and row they touched, with the exact changes, and you can undo any of it.</p>
+      <ul class="b-points">
+        <li><span><b>Changes</b>: see exactly what changed while agents worked</span></li>
+        <li><span><b>Version history</b>: go back to any earlier version of a page</span></li>
+        <li><span><b>One place</b>: notes, databases, files and plans, side by side</span></li>
+      </ul>
     </div>
-    <p class="secondary-action">
-      Want an email when there's a new build? <a href="/workspace/signup/">Sign up →</a>
-    </p>
-  </div>
+    <div class="panel" aria-hidden="true">
+      <div class="panel-head">While you were away <span>since 9:12 am</span></div>
+      <div class="change"><div class="who">🤖</div><div>Claude edited <b>Launch plan</b><small>Researcher · 14 min ago</small></div><div class="diff"><span class="add">+12</span><span class="del">−3</span><span class="undo">Undo</span></div></div>
+      <div class="change"><div class="who">🤖</div><div>Codex added 4 rows to <b>Clients</b><small>Builder · 38 min ago</small></div><div class="diff"><span class="add">+4 rows</span><span class="undo">Undo</span></div></div>
+      <div class="change"><div class="who">🤖</div><div>Claude made a new page, <b>Competitor notes</b><small>Researcher · 1 hr ago</small></div><div class="diff"><span class="add">new</span><span class="undo">Undo</span></div></div>
+      <div class="change"><div class="who">🙂</div><div>You edited <b>Meeting notes</b><small>2 hr ago</small></div><div class="diff"><span class="add">+5</span><span class="del">−1</span></div></div>
+    </div>
+  </section>
+
+  <section class="benefit flip reveal-up">
+    <div class="b-text">
+      <div class="kicker">Work together</div>
+      <h2 class="big">One shared space for you and your agents.</h2>
+      <p class="lede">Your agents read and write the same pages and databases you do, right in your folder. No copying and pasting between chats, and no context lost when a session ends.</p>
+      <ul class="b-points">
+        <li><span><b>Roles</b>: reuse how each agent works, improving as it learns</span></li>
+        <li><span><b>Skills</b>: every skill and instruction, kept in one place</span></li>
+        <li><span><b>Your agents</b>: works with Claude Code, Codex and other agents that use files</span></li>
+      </ul>
+    </div>
+    <div class="panel" aria-hidden="true">
+      <div class="panel-head">Agents <span>3 roles</span></div>
+      <div class="agents">
+        <div class="agent-card"><div class="who">🔎</div><div><b>Researcher</b><span class="working">working</span><p>Reads the Research folder, writes findings into Competitor notes.</p><div class="tags"><span class="tag">Claude Code</span><span class="tag">web-search skill</span></div></div></div>
+        <div class="agent-card"><div class="who">🛠️</div><div><b>Builder</b><p>Takes tasks from the Tasks database and marks them done when they're finished.</p><div class="tags"><span class="tag">Codex</span><span class="tag">deploy skill</span></div></div></div>
+        <div class="agent-card"><div class="who">✍️</div><div><b>Writer</b><p>Drafts posts in your voice from the Launch plan. Learned: "keep it short".</p><div class="tags"><span class="tag">Claude Code</span><span class="tag">3 learnings</span></div></div></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="benefit reveal-up">
+    <div class="b-text">
+      <div class="kicker">Blazing fast</div>
+      <h2 class="big">Fast for you. Fast for your agents.</h2>
+      <p class="lede">Everything is a file on your Mac, so there's no waiting on a server. Pages open instantly, and your agents read them directly instead of going through a slow connector, using fewer tokens on every task.</p>
+    </div>
+    <div class="panel reveal" id="speed" aria-label="Compared with the Notion MCP: 10 times faster and 35 percent fewer tokens">
+      <div class="speed">
+        <div class="metric">
+          <div class="num">10×<small>faster than the Notion MCP</small></div>
+          <div class="bars"><div class="bar"><span>Notion MCP</span><div style="width:100%"></div></div><div class="bar us"><span>Workspace</span><div style="width:10%"></div></div></div>
+        </div>
+        <div class="metric">
+          <div class="num">35%<small>fewer tokens</small></div>
+          <div class="bars"><div class="bar"><span>Notion MCP</span><div style="width:100%"></div></div><div class="bar us"><span>Workspace</span><div style="width:65%"></div></div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- HOW IT WORKS -->
+  <section class="block center reveal-up">
+    <div class="kicker">How it works</div>
+    <h2 class="big">Set up in a minute.</h2>
+    <div class="steps">
+      <div class="step">
+        <div class="viz viz-dl" aria-hidden="true">
+          <img class="viz-app" src="/workspace/media/workspace-logo-light.svg" alt="" width="56" height="56">
+          <span class="viz-arrow">→</span>
+          <span class="viz-folder"><span class="fold"></span><small>Applications</small></span>
+        </div>
+        <div class="n">1</div><h3>Download Workspace</h3><p>Free, for Macs with Apple silicon. Drag it into Applications and open it.</p>
+      </div>
+      <div class="step">
+        <div class="viz viz-vault" aria-hidden="true">
+          <span class="viz-folder big"><span class="fold"></span><small>My vault</small></span>
+          <span class="pop pop1">📄</span><span class="pop pop2">▦</span><span class="pop pop3">🖼️</span>
+        </div>
+        <div class="n">2</div><h3>Open a folder</h3><p>Start fresh, or pick a folder you already keep notes in.</p>
+      </div>
+      <div class="step">
+        <div class="viz viz-chat" aria-hidden="true">
+          <div class="bub me">Set up a project for my launch, with a tasks database.</div>
+          <div class="bub ai"><b>Claude</b> Done: made <u>Launch plan</u> and <u>Tasks</u>.</div>
+        </div>
+        <div class="n">3</div><h3>Ask your agent</h3><p>Workspace teaches your agents how it works, so you can just ask.</p>
+      </div>
+    </div>
+
+    <div class="own reveal-up" id="own" style="text-align:left">
+      <div>
+        <h2>Your files stay yours.</h2>
+        <p class="lede">They're just files on your Mac: Markdown pages and SQLite databases in a normal folder. Open them in Finder, in any other app, or in Workspace. No account, and your notes stay on your Mac.</p>
+        <div class="swap-tabs" role="tablist" aria-label="Show the files in">
+          <button type="button" class="on" data-side="0" role="tab" aria-selected="true">In Finder</button>
+          <button type="button" data-side="1" role="tab" aria-selected="false">In Workspace</button>
+        </div>
+      </div>
+      <div class="swap" aria-hidden="true">
+        <div class="swap-track" id="swapTrack">
+          <div class="mini finder">
+            <div class="mini-bar"><i></i><i></i><i></i><span>My vault</span></div>
+            <div class="mini-body">
+              <div class="f-side"><small>Favorites</small><div>🖥️ Desktop</div><div>📄 Documents</div><div class="on">📁 My vault</div><div>⬇️ Downloads</div></div>
+              <div class="f-grid">
+                <div class="f-item"><span class="fi doc">MD</span>Launch plan.md</div>
+                <div class="f-item"><span class="fi doc">MD</span>Research.md</div>
+                <div class="f-item"><span class="fi folder"></span>Tasks</div>
+                <div class="f-item"><span class="fi folder"></span>Clients</div>
+                <div class="f-item"><span class="fi doc">MD</span>AGENTS.md</div>
+                <div class="f-item"><span class="fi img"></span>Screenshot.png</div>
+              </div>
+            </div>
+          </div>
+          <div class="mini wsp">
+            <div class="mini-bar"><i></i><i></i><i></i><span>Workspace</span></div>
+            <div class="mini-body">
+              <div class="f-side ws"><small>My vault</small><div class="on">📄 Launch plan</div><div>📄 Research</div><div>▦ Tasks</div><div>▦ Clients</div><div>📄 AGENTS.md</div><div>🖼️ Screenshot</div></div>
+              <div class="w-page"><b>🚀 Launch plan</b><span class="ln w90"></span><span class="ln w70"></span><span class="ln w80"></span><span class="chk"></span><span class="chk"></span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FILM -->
+  <section class="block center reveal-up" id="film">
+    <div class="kicker">The film</div>
+    <h2 class="big">See it in 49 seconds.</h2>
+    <div class="video-card">
+      <div class="video-stage" id="stage">
+        <video id="filmVideo" playsinline preload="none" controls-list="nodownload"></video>
+        <button class="play-overlay" id="playBtn" type="button" aria-label="Play the Workspace film, with sound">
+          <span class="play-ring"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg></span>
+          <span class="play-label">Play with sound</span>
+        </button>
+      </div>
+    </div>
+    <p class="try-line for-mac">Not ready to download? <a href="/workspace/try/">Try it in your browser</a> with your own work in it.</p>
+  </section>
+
+  <!-- ROADMAP: keep in step with the release notes (workspace/releases/index.html says to update it at each release). -->
+  <section class="block center reveal-up" id="roadmap">
+    <div class="kicker">Roadmap</div>
+    <h2 class="big">Where it's going.</h2>
+    <p class="lede">I ship a new version every week or two. Here's what's done and what's coming.</p>
+    <div class="roadmap" style="text-align:left">
+      <div class="leg shipped">
+        <h3>Shipped <span class="ver">v1.2</span></h3>
+        <ul>
+          <li><span class="e">🎓</span>Teach your AI agents Workspace</li>
+          <li><span class="e">🧩</span>Your agents make pages and databases for you</li>
+          <li><span class="e">📋</span>Templates for pages and databases</li>
+          <li><span class="e">🔗</span>Lookup and rollup columns</li>
+          <li><span class="e">🎬</span>Video and audio play in the app</li>
+        </ul>
+        <details>
+          <summary>Earlier: v1.0 and v1.1 ▾</summary>
+          <ul>
+            <li><span class="e">💪</span>Powerful relational databases</li>
+            <li><span class="e">🦋</span>Beautiful markdown writing</li>
+            <li><span class="e">💻</span>Open code, HTML, photos and documents</li>
+            <li><span class="e">↩️</span>Version history</li>
+            <li><span class="e">🤖</span>Agent roles, skills and learnings</li>
+            <li><span class="e">🤖</span>What agents changed here</li>
+            <li><span class="e">🏗️</span>Automatic updating</li>
+          </ul>
+        </details>
+      </div>
+      <div class="leg next">
+        <h3>Next</h3>
+        <ul>
+          <li><span class="e">📥</span>Import from Obsidian, Notion and Airtable</li>
+          <li><span class="e">📊</span>Import CSV, Excel, Google Docs and Sheets</li>
+          <li><span class="e">🔍</span>Better search (⌘K), with previews and filters</li>
+          <li><span class="e">🗂️</span>Drag files out and Quick Look, like Finder</li>
+        </ul>
+      </div>
+      <div class="leg">
+        <h3>Soon</h3>
+        <ul>
+          <li><span class="e">🤖</span>Agent workflows, with a visual editor</li>
+          <li><span class="e">📱</span>iOS app</li>
+          <li><span class="e">🔄</span>Live syncing</li>
+          <li><span class="e">📅</span>Calendar and timeline views</li>
+        </ul>
+      </div>
+      <div class="leg">
+        <h3>Future</h3>
+        <ul>
+          <li><span class="e">💻</span>Windows app</li>
+          <li><span class="e">📱</span>Android</li>
+        </ul>
+      </div>
+    </div>
+    <p class="try-line"><a href="/workspace/releases/">Release notes</a> for every version.</p>
+  </section>
+
+  <!-- FAQ -->
+  <section class="block reveal-up" id="faq">
+    <div class="center"><div class="kicker">Questions</div><h2 class="big">Good questions.</h2></div>
+    <div class="faq">
+      <details><summary>Is it really free?</summary><p>Yes. Workspace is in beta and free, and the version you download stays free to use.</p></details>
+      <details><summary>Which agents does it work with?</summary><p>Any agent that reads and writes files on your Mac, like Claude Code and Codex. Workspace teaches them how it works, so they can make pages and databases for you.</p></details>
+      <details><summary>Where are my notes kept?</summary><p>In a normal folder on your Mac, as Markdown files and SQLite databases. There's no account, your notes stay on your Mac, and you can open your files with any other app.</p></details>
+      <details><summary>Can I bring my notes from Obsidian or Notion?</summary><p>Importing from Obsidian, Notion and Airtable is next on the <a href="#roadmap">roadmap</a>.</p></details>
+      <details><summary>Does it work on Windows, an Intel Mac or my phone?</summary><p>Not yet. It needs a Mac with Apple silicon (M1 or newer). An iOS app is coming soon, and Windows and Android after that.</p></details>
+      <details><summary>Who makes it?</summary><p>Me, Brian. I'm building Workspace in NYC, mostly with a team of AI agents working in Workspace itself. I'd love to hear what you think: <a href="mailto:brian@brianhirsh.com?subject=Workspace">brian@brianhirsh.com</a>.</p></details>
+    </div>
+  </section>
+
+  <!-- FINAL CTA -->
+  <section class="final reveal-up">
+    <picture class="app-icon">
+      <source media="(prefers-color-scheme: dark)" srcset="/workspace/media/workspace-logo-dark.svg">
+      <img src="/workspace/media/workspace-logo-light.svg" alt="" width="64" height="64" decoding="async">
+    </picture>
+    <h2 class="big">Get Workspace for your Mac.</h2>
+    <p class="lede" style="margin:0 auto">Free, for Macs with Apple silicon.</p>
+    <div class="ctas">
+      <a class="btn for-mac" href="/workspace/download/">Download for Mac <span aria-hidden="true">→</span></a>
+      <a class="btn for-phone" href="/workspace/signup/">Email me the download link <span aria-hidden="true">→</span></a>
+    </div>
+    <p class="secondary for-mac">Want an email when there's a new build? <a href="/workspace/signup/">Sign up</a></p>
+  </section>
 
   <div class="footer">
     <a href="/">Brian</a> · NYC · 2026 · <a href="/workspace/releases/">Release notes</a> · <a href="/workspace/terms/">Terms</a>
   </div>
 
 </div>
-
 <script>
+/* HEADLINE — the italic word changes every 2.2 seconds. */
 (function () {
   'use strict';
+  var el = document.getElementById('rot');
+  var WORDS = ['everything', 'every page', 'every task', 'every change', 'every file', 'every chat'];
+  var i = 0;
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  setInterval(function () {
+    if (document.hidden) return;
+    el.classList.add('out');
+    setTimeout(function () {
+      i = (i + 1) % WORDS.length; el.textContent = WORDS[i];
+      el.classList.remove('out'); el.classList.add('in-start');
+      void el.offsetWidth; el.classList.remove('in-start');
+    }, 350);
+  }, 2200);
+})();
 
-  var video   = document.getElementById('film');
-  var stage   = document.getElementById('stage');
-  var playBtn = document.getElementById('playBtn');
+/* FLYERS AND GATHER — all driven by the scroll position, so scrolling back plays it backwards.
+   a: 0 at the top of the page, 1 when the window's section reaches the top and sticks. The files go from their places around the headline (carried up with the page) to their places around the window.
+   p: 0 to 1 across the sticky section. The files fly into their sidebar rows (p 0–0.5), Home fills in, then the window shows the Launch plan page, then the Tasks database as a table, which turns into a board (m 0–1). */
+(function () {
+  'use strict';
+  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)');
+  var hero = document.getElementById('hero');
+  var section = document.getElementById('gather');
+  var stage = document.getElementById('gatherStage');
+  var layer = document.getElementById('flyers');
+  var chips = Array.prototype.slice.call(layer.querySelectorAll('.chip'));
+  var caps = Array.prototype.slice.call(stage.querySelectorAll('.cap'));
+  var rows = {};
+  Array.prototype.forEach.call(stage.querySelectorAll('[data-row]'), function (r) { rows[r.dataset.row] = r; });
+  var winTab = document.getElementById('winTab');
+  var paneHome = document.getElementById('paneHome'), paneDoc = document.getElementById('paneDoc'), paneDb = document.getElementById('paneDb');
+  var winEmpty = document.getElementById('winEmpty'), winFull = document.getElementById('winFull');
+  var counters = [['nPages', 24], ['nDbs', 3], ['nAgents', 3]].map(function (c) { return [document.getElementById(c[0]), c[1]]; });
+  var db = document.getElementById('db'), dbHead = document.getElementById('dbHead');
+  var vTable = document.getElementById('vTable'), vBoard = document.getElementById('vBoard');
+  var tasks = Array.prototype.slice.call(db.querySelectorAll('.task'));
+  var colHeads = Array.prototype.slice.call(db.querySelectorAll('.col-head'));
+  var colBgs = Array.prototype.slice.call(db.querySelectorAll('.col-bg'));
+  var geo = [], dbGeo = null, gatherTop = 1;
 
-  // Two independent axes, four files.
-  //   theme  — prefers-color-scheme: day | night
-  //   shape  — viewport aspect ratio: wide (landscape) | vertical (portrait)
-  //
-  // Shape is chosen from the viewport's own aspect ratio rather than a user-agent
-  // sniff: it is what actually determines which cut fits the screen, it handles a
-  // narrow desktop window and a rotated tablet correctly, and it cannot go stale
-  // the way a device list does.
-  var darkQuery     = window.matchMedia('(prefers-color-scheme: dark)');
-  var portraitQuery = window.matchMedia('(max-aspect-ratio: 1/1)');
+  function clamp(v) { return v < 0 ? 0 : v > 1 ? 1 : v; }
+  function ease(t) { return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2; }
+  function lerp(a, b, t) { return a + (b - a) * t; }
+  function win(p, a, b) { return clamp((p - a) / (b - a)); }
 
-  function chooseVariant() {
-    return {
-      theme: darkQuery.matches ? 'night' : 'day',
-      shape: portraitQuery.matches ? 'vertical' : 'wide'
-    };
+  function measure() {
+    var sy = window.scrollY;
+    var s = stage.getBoundingClientRect();
+    var h = hero.getBoundingClientRect();
+    gatherTop = Math.max(1, section.getBoundingClientRect().top + sy);
+    // On a phone there is no room beside the headline: four files sit above and below it (data-m), and the rest appear as the scroll begins.
+    var phone = window.innerWidth < 680;
+    geo = chips.map(function (c) {
+      var w = c.offsetWidth, ht = c.offsetHeight;
+      var r = rows[c.dataset.to].getBoundingClientRect();
+      var hx = parseFloat(c.dataset.hx), hy = parseFloat(c.dataset.hy), late = false;
+      if (phone) { if (c.dataset.m) { var m = c.dataset.m.split(','); hx = +m[0]; hy = +m[1]; } else late = true; }
+      return {
+        hx: h.left + hx * (h.width - w),
+        hy: h.top + sy + hy * (h.height - ht),
+        ox: parseFloat(c.dataset.x) * (s.width - w),
+        oy: parseFloat(c.dataset.y) * (s.height - ht),
+        rx: r.left - s.left, ry: r.top - s.top + (r.height - ht) / 2,
+        late: late
+      };
+    });
+    measureDb();
   }
 
+  // Table and board places for every task, inside the database box. Measured again whenever the box changes width (the phone sidebar folds away).
+  function measureDb() {
+    var W = db.clientWidth, gap = 10, colW = (W - 2 * gap) / 3, perCol = [0, 0, 0];
+    var narrow = W < 420, cardH = narrow ? 74 : 58;
+    dbGeo = {
+      W: W, colW: colW, gap: gap,
+      t: tasks.map(function (t, i) {
+        var col = +t.dataset.col, k = perCol[col]++;
+        return { tx: 0, ty: 28 + i * 36, tw: W, th: 36, bx: col * (colW + gap) + 6, by: 38 + k * (cardH + 8), bw: colW - 12, bh: cardH };
+      })
+    };
+    colHeads.forEach(function (el) { var c = +el.dataset.col; el.style.left = (c * (colW + gap) + 8) + 'px'; el.style.width = (colW - 8) + 'px'; });
+    colBgs.forEach(function (el) { var c = +el.dataset.col; el.style.left = (c * (colW + gap)) + 'px'; el.style.width = colW + 'px'; });
+  }
+
+  function progress() {
+    var r = section.getBoundingClientRect();
+    var span = section.offsetHeight - window.innerHeight;
+    return span > 0 ? clamp(-r.top / span) : 1;
+  }
+
+  var winEl = document.getElementById('win'), winSide = winEl.querySelector('.win-side');
+  var lastCap = -1;
+  function render() {
+    if (reduce.matches || !geo.length) return;
+    var sy = window.scrollY;
+    var s = stage.getBoundingClientRect();
+    var a = ease(clamp(sy / gatherTop));
+    var p = progress();
+    var lit = {};
+
+    // The files.
+    layer.style.zIndex = a > 0.35 ? '3' : '1';
+    chips.forEach(function (c, i) {
+      var g = geo[i];
+      var bx = g.late ? s.left + g.ox : lerp(g.hx, s.left + g.ox, a);
+      var by = g.late ? s.top + g.oy : lerp(g.hy - sy, s.top + g.oy, a);
+      var t = ease(win(p, 0.02 + i * 0.034, 0.2 + i * 0.034));
+      var x = lerp(bx, s.left + g.rx, t), y = lerp(by, s.top + g.ry, t);
+      c.style.transform = 'translate(' + x.toFixed(1) + 'px,' + y.toFixed(1) + 'px) scale(' + (1 - 0.25 * t).toFixed(3) + ')';
+      c.style.transformOrigin = 'left center';
+      var fade = clamp((t - 0.82) / 0.18);
+      c.style.opacity = String((1 - fade) * (g.late ? a : 1));
+      rows[c.dataset.to].style.opacity = String(fade);
+      if (fade > 0.5 && t < 1) lit[c.dataset.to] = true;
+    });
+
+    // Home fills in.
+    var full = win(p, 0.46, 0.54);
+    winEmpty.style.display = full >= 1 ? 'none' : '';
+    winEmpty.style.opacity = String(1 - full);
+    winFull.style.opacity = String(full);
+    counters.forEach(function (c) { c[0].textContent = String(Math.round(c[1] * full)); });
+
+    // Past Home the window becomes a showcase of a page, a table and a board.
+    sf = win(p, 0.58, 0.64);
+    chipLit = lit;
+    setShowcase(sf >= 0.5);
+    applyPanes();
+    var cap = p < 0.1 ? 0 : p < 0.4 ? 1 : sf < 0.5 ? 2 : view === 'page' ? 3 : 4;
+    if (cap !== lastCap) { caps.forEach(function (el, i) { el.classList.toggle('on', i === cap); }); lastCap = cap; }
+  }
+
+  /* SHOWCASE — the buttons under the window (and the view tabs inside it) pick Page, Table or Board; while the showcase is on screen they also move on by themselves every 3.8 seconds. Clicking one picks it and restarts the count. */
+  var VIEWS = ['page', 'table', 'board'], view = 'page', sf = 0, chipLit = {}, active = false, timer = null;
+  var showTabs = document.getElementById('showTabs');
+  var tabBtns = Array.prototype.slice.call(showTabs.querySelectorAll('button'));
+  var m = 0, mFrom = 0, mTo = 0, mStart = 0, mRaf = null, mSnap = null;
+
+  function applyPanes() {
+    var phone = window.innerWidth < 680;
+    var sideCol = phone ? 34 * (1 - sf) : null;
+    winEl.style.gridTemplateColumns = sideCol === null ? '' : sideCol.toFixed(2) + '% 1fr';
+    winSide.style.padding = sideCol !== null && sideCol < 2 ? '0' : '';
+    winSide.style.borderRight = sideCol !== null && sideCol < 2 ? 'none' : '';
+    if (dbGeo && db.clientWidth !== dbGeo.W) { measureDb(); drawDb(); }
+    paneHome.style.opacity = String(1 - sf);
+    paneDoc.style.opacity = String(view === 'page' ? sf : 0);
+    paneDb.style.opacity = String(view === 'page' ? 0 : sf);
+    paneDoc.style.pointerEvents = paneDb.style.pointerEvents = 'none';
+    if (view !== 'page') paneDb.style.pointerEvents = sf > 0.5 ? 'auto' : 'none';
+    showTabs.style.opacity = String(sf);
+    showTabs.style.visibility = sf > 0.02 ? 'visible' : 'hidden';
+    showTabs.style.pointerEvents = sf > 0.5 ? 'auto' : 'none';
+    var lit = {};
+    Object.keys(chipLit).forEach(function (k) { lit[k] = true; });
+    if (sf > 0.5) { if (view === 'page') { lit.plan = true; winTab.textContent = 'Launch plan'; } else { lit.tasks = true; winTab.textContent = 'Tasks'; } }
+    else winTab.textContent = 'Home';
+    Object.keys(rows).forEach(function (k) { rows[k].classList.toggle('lit', !!lit[k]); });
+  }
+
+  function drawDb() {
+    if (!dbGeo) return;
+    vTable.classList.toggle('on', view !== 'board'); vBoard.classList.toggle('on', view === 'board');
+    dbHead.style.opacity = String(1 - clamp(m * 2));
+    colHeads.forEach(function (el) { el.style.opacity = String(clamp(m * 2 - 1)); });
+    colBgs.forEach(function (el) { el.style.opacity = String(m); });
+    tasks.forEach(function (el, i) {
+      var g = dbGeo.t[i];
+      el.style.left = lerp(g.tx, g.bx, m).toFixed(1) + 'px';
+      el.style.top = lerp(g.ty, g.by, m).toFixed(1) + 'px';
+      el.style.width = lerp(g.tw, g.bw, m).toFixed(1) + 'px';
+      el.style.height = lerp(g.th, g.bh, m).toFixed(1) + 'px';
+      el.querySelector('.t-bg').style.opacity = String(m);
+      el.querySelector('.t-line').style.opacity = String(1 - m);
+      Array.prototype.forEach.call(el.querySelectorAll('.t-cells > *'), function (x) { x.style.opacity = String(1 - clamp(m * 2)); });
+      el.querySelector('.t-meta').style.opacity = String(clamp(m * 2 - 1));
+      el.classList.toggle('is-card', m >= 0.5);
+    });
+  }
+
+  // The table slides into a board (and back) over 0.8 s. If animation frames are paused (a background tab), it snaps there instead.
+  function animateM(target) {
+    if (reduce.matches) { m = target; drawDb(); return; }
+    mFrom = m; mTo = target; mStart = performance.now();
+    cancelAnimationFrame(mRaf); clearTimeout(mSnap);
+    (function step(now) {
+      var t = clamp((now - mStart) / 800);
+      m = lerp(mFrom, mTo, ease(t)); drawDb();
+      if (t < 1) mRaf = requestAnimationFrame(step);
+    })(mStart);
+    mSnap = setTimeout(function () { if (m !== mTo) { m = mTo; drawDb(); } }, 1000);
+  }
+
+  function select(v) {
+    view = v;
+    tabBtns.forEach(function (b) {
+      var on = b.dataset.view === v;
+      b.classList.toggle('on', on); b.setAttribute('aria-selected', String(on));
+      b.classList.remove('run'); void b.offsetWidth; if (on && active && !reduce.matches) b.classList.add('run');
+    });
+    animateM(v === 'board' ? 1 : 0);
+    applyPanes();
+    if (sf >= 0.5) { var cap = v === 'page' ? 3 : 4; if (cap !== lastCap) { caps.forEach(function (el, i) { el.classList.toggle('on', i === cap); }); lastCap = cap; } }
+    restart();
+  }
+  function restart() {
+    clearInterval(timer); timer = null;
+    if (active && !reduce.matches) timer = setInterval(function () { select(VIEWS[(VIEWS.indexOf(view) + 1) % VIEWS.length]); }, 3800);
+  }
+  function setShowcase(on) {
+    if (on === active) return;
+    active = on;
+    if (on) select(view); else { clearInterval(timer); timer = null; tabBtns.forEach(function (b) { b.classList.remove('run'); }); }
+  }
+  tabBtns.forEach(function (b) { b.addEventListener('click', function () { select(b.dataset.view); }); });
+  vTable.addEventListener('click', function () { select('table'); });
+  vBoard.addEventListener('click', function () { select('board'); });
+
+  function finished() {
+    caps.forEach(function (el, i) { el.classList.toggle('on', i === 2); });
+    winEmpty.style.display = 'none'; winFull.style.opacity = '1';
+    counters.forEach(function (c) { c[0].textContent = String(c[1]); });
+    measure();
+    Object.keys(rows).forEach(function (k) { rows[k].style.opacity = '1'; });
+    sf = 1; active = true; select('page'); drawDb();
+  }
+
+  var ticking = false;
+  function onScroll() { if (!ticking) { ticking = true; requestAnimationFrame(function () { ticking = false; render(); }); } }
+  function setup() {
+    if (reduce.matches) { finished(); return; }
+    // Measure with every file at its untransformed size and the database laid out.
+    measure(); drawDb(); render();
+  }
+  window.addEventListener('scroll', onScroll, { passive: true });
+  window.addEventListener('resize', setup);
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(setup);
+  window.addEventListener('load', setup);
+  setup();
+})();
+
+/* YOUR FILES — the Finder window slides across to the same files in Workspace's left bar, and back, every 3.5 seconds while it's on screen. The two buttons pick a side and restart the count. */
+(function () {
+  'use strict';
+  var track = document.getElementById('swapTrack');
+  var own = document.getElementById('own');
+  var btns = Array.prototype.slice.call(own.querySelectorAll('.swap-tabs button'));
+  var side = 0, timer = null, seen = false;
+  var still = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  function show(n) {
+    side = n; track.classList.toggle('ws', n === 1);
+    btns.forEach(function (b) { var on = +b.dataset.side === n; b.classList.toggle('on', on); b.setAttribute('aria-selected', String(on)); });
+  }
+  function restart() { clearInterval(timer); timer = null; if (seen && !still) timer = setInterval(function () { show(1 - side); }, 3500); }
+  btns.forEach(function (b) { b.addEventListener('click', function () { show(+b.dataset.side); restart(); }); });
+  if (!('IntersectionObserver' in window)) return;
+  new IntersectionObserver(function (es) {
+    es.forEach(function (e) {
+      if (e.isIntersecting && !seen) { seen = true; setTimeout(function () { show(1); restart(); }, 1200); }
+      else if (!e.isIntersecting && seen) { clearInterval(timer); timer = null; seen = false; }
+    });
+  }, { threshold: 0.4 }).observe(own);
+})();
+
+/* Sections fade up and the speed bars grow the first time they come into view. */
+(function () {
+  'use strict';
+  var els = document.querySelectorAll('.reveal-up, .reveal');
+  if (!('IntersectionObserver' in window)) { Array.prototype.forEach.call(els, function (e) { e.classList.add('in'); }); return; }
+  var io = new IntersectionObserver(function (entries) {
+    entries.forEach(function (e) { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } });
+  }, { threshold: 0.18 });
+  Array.prototype.forEach.call(els, function (e) { io.observe(e); });
+})();
+
+/* FILM — the same four cuts as before: day or night from the system theme, wide or vertical from the window's shape. Click to play, with sound. */
+(function () {
+  'use strict';
+  var video = document.getElementById('filmVideo');
+  var stage = document.getElementById('stage');
+  var playBtn = document.getElementById('playBtn');
+  var darkQuery = window.matchMedia('(prefers-color-scheme: dark)');
+  var portraitQuery = window.matchMedia('(max-aspect-ratio: 1/1)');
   var current = null;
 
-  function apply(variant, opts) {
+  function apply(opts) {
     opts = opts || {};
-    var name = variant.theme + '-' + variant.shape;
+    var name = (darkQuery.matches ? 'night' : 'day') + '-' + (portraitQuery.matches ? 'vertical' : 'wide');
     if (current === name) return;
     current = name;
-
-    // Hold position and playback state across a swap, so flipping the system
-    // theme or rotating the phone mid-film doesn't restart it.
     var wasPlaying = !video.paused && !video.ended;
     var at = video.currentTime || 0;
-
-    stage.style.aspectRatio = variant.shape === 'vertical' ? '9 / 16' : '16 / 9';
+    stage.style.aspectRatio = portraitQuery.matches ? '9 / 16' : '16 / 9';
+    stage.style.maxWidth = portraitQuery.matches ? '420px' : '';
+    stage.style.margin = portraitQuery.matches ? '0 auto' : '';
     video.poster = '/workspace/media/' + name + '.jpg';
-    video.src    = '/workspace/media/' + name + '.mp4';
-
+    video.src = '/workspace/media/' + name + '.mp4';
     if (opts.resume && (wasPlaying || at > 0)) {
       video.addEventListener('loadedmetadata', function once() {
         video.removeEventListener('loadedmetadata', once);
@@ -370,43 +1094,18 @@
       video.load();
     }
   }
-
-  apply(chooseVariant());
-
-  // Re-evaluate when the system theme flips or the window/device is reshaped.
-  function onChange() { apply(chooseVariant(), { resume: true }); }
-
-  // addEventListener on MediaQueryList is unsupported in older Safari;
-  // addListener is the documented fallback.
+  apply();
   [darkQuery, portraitQuery].forEach(function (q) {
-    if (q.addEventListener) { q.addEventListener('change', onChange); }
-    else if (q.addListener) { q.addListener(onChange); }
+    var f = function () { apply({ resume: true }); };
+    if (q.addEventListener) q.addEventListener('change', f); else if (q.addListener) q.addListener(f);
   });
-
-  // ── Click to play, with sound ──
-  // The visitor's click is the user gesture browsers require before unmuted
-  // playback, so no muted-autoplay fallback is needed here.
   playBtn.addEventListener('click', function () {
-    video.controls = true;
-    video.muted = false;
-    video.volume = 1;
+    video.controls = true; video.muted = false; video.volume = 1;
     var p = video.play();
-    if (p && p.catch) {
-      p.catch(function () {
-        // Very rare with a real gesture, but if the browser still refuses
-        // unmuted playback, fall back to muted rather than doing nothing.
-        video.muted = true;
-        video.play().catch(function () {});
-      });
-    }
+    if (p && p.catch) p.catch(function () { video.muted = true; video.play().catch(function () {}); });
     playBtn.hidden = true;
   });
-
-  // Bring the overlay back once the film finishes, so it can be replayed.
-  video.addEventListener('ended', function () {
-    playBtn.hidden = false;
-    video.controls = false;
-  });
+  video.addEventListener('ended', function () { playBtn.hidden = false; video.controls = false; });
 })();
 </script>
 
