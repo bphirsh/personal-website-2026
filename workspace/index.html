@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Workspace — see everything you and your agents are working on</title>
 <meta name="description" content="A free Mac app where you and your AI agents share the same pages, databases and files, so you can finally see everything that's going on.">
-<!-- The landing page (Brian, 12 Nov 2026): benefits first, a scroll where scattered work gathers into one window, then proof, the film, the roadmap and questions. Link previews: Marketing/Beta Signups/Link previews.md; the card is drawn by tools/make-og.mjs. -->
+<!-- The landing page (Brian, 12 Nov 2026): a hero whose headline word changes and whose scattered files drift around it; scrolling carries those same files into a window, which then shows a page and a database turning into a board. Then benefits, how it works, the film, the roadmap and questions. Link previews: Marketing/Beta Signups/Link previews.md; the card is drawn by tools/make-og.mjs. -->
 <link rel="canonical" href="https://www.brianhirsh.com/workspace/">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Brian Hirsh">
@@ -43,6 +43,8 @@
     --soft: color-mix(in srgb, var(--accent) 10%, transparent);
     --green: #2f7d52;
     --red: #c2410c;
+    --blue: #3b6fd8;
+    --amber: #b7791f;
   }
   @media (prefers-color-scheme: dark) {
     :root {
@@ -55,6 +57,8 @@
       --win-shadow: 0 30px 80px rgba(0, 0, 0, 0.5);
       --green: #7fce9f;
       --red: #f0a070;
+      --blue: #7ea2f0;
+      --amber: #e8b45c;
     }
   }
 
@@ -62,11 +66,12 @@
   html, body { overflow-x: clip; }
 
   .site-wrapper.wide-wrapper { max-width: 1120px; padding-bottom: 40px; }
-  nav { margin-bottom: 20px; }
+  nav { margin-bottom: 0; position: relative; z-index: 4; }
   .nav-cta { padding: 9px 18px; font-size: 13px; }
 
   /* ── HERO ── */
-  .hero { text-align: center; padding: 36px 0 10px; }
+  .hero { position: relative; text-align: center; min-height: max(620px, calc(100vh - 110px)); display: flex; flex-direction: column; justify-content: center; padding: 20px 0 40px; }
+  .hero > * { position: relative; z-index: 2; }
   .hero .app-icon { display: block; width: 84px; height: 84px; margin: 0 auto 22px; }
   .hero .app-icon img { width: 100%; height: 100%; display: block; }
   .hero h1 {
@@ -79,6 +84,9 @@
     margin: 0 auto 22px;
   }
   .hero h1 em { font-style: italic; color: var(--accent); }
+  .rot { display: inline-block; transition: opacity 0.35s ease, transform 0.35s ease, filter 0.35s ease; }
+  .rot.out { opacity: 0; transform: translateY(-0.25em); filter: blur(4px); }
+  .rot.in-start { opacity: 0; transform: translateY(0.25em); filter: blur(4px); transition: none; }
   .hero .lede { margin: 0 auto; font-size: 19px; max-width: 46ch; }
   .ctas { display: flex; justify-content: center; align-items: center; flex-wrap: wrap; gap: 14px; margin-top: 30px; }
   .btn-quiet { background: transparent; color: var(--text-primary); border: 1px solid var(--border); }
@@ -93,19 +101,33 @@
     p.for-phone, div.for-phone { display: block !important; }
   }
 
-  /* ── GATHER: scattered work flies into one window as you scroll ── */
-  .gather { position: relative; height: 340vh; margin-top: 10px; }
+  /* ── FLYERS: the files drifting around the hero. They live in a fixed layer and the script places them every frame: around the headline at the top, carried by the scroll to the edges of the window, then into its sidebar. ── */
+  .flyers { position: fixed; inset: 0; pointer-events: none; z-index: 1; }
+  .chip {
+    position: absolute; top: 0; left: 0;
+    will-change: transform, opacity;
+  }
+  .chip-in {
+    display: flex; align-items: center; gap: 9px;
+    background: var(--chip); border: 1px solid var(--win-line); box-shadow: var(--chip-shadow);
+    border-radius: 12px; padding: 9px 13px; font-size: 13px; white-space: nowrap; color: var(--text-primary);
+    animation: float var(--d, 9s) ease-in-out infinite alternate; animation-delay: var(--delay, 0s);
+  }
+  .chip-in .ic { font-size: 16px; }
+  .chip-in small { display: block; font-size: 11px; color: var(--text-muted); line-height: 1.2; }
+  .chip-in span { line-height: 1.25; }
+  @keyframes float { from { transform: translate(0, 0) rotate(-2deg); } to { transform: translate(var(--dx, 10px), var(--dy, -14px)) rotate(2deg); } }
+
+  /* ── GATHER: the window the files fly into, then a page, then a database that turns into a board ── */
+  .gather { position: relative; height: 640vh; }
   .gather-stage {
     position: sticky; top: 0; height: 100vh; min-height: 560px;
     display: flex; align-items: center; justify-content: center;
     overflow: hidden;
   }
-  .gather-captions {
-    position: absolute; top: 5vh; left: 0; right: 0; text-align: center; z-index: 3;
-    pointer-events: none; height: 120px;
-  }
+  .gather-captions { position: absolute; top: 5vh; left: 0; right: 0; text-align: center; z-index: 3; pointer-events: none; height: 120px; }
   .cap {
-    position: absolute; left: 0; right: 0; margin: 0 auto; max-width: 620px; padding: 0 16px;
+    position: absolute; left: 0; right: 0; margin: 0 auto; max-width: 640px; padding: 0 16px;
     opacity: 0; transform: translateY(10px); transition: opacity 0.45s ease, transform 0.45s ease;
   }
   .cap.on { opacity: 1; transform: none; }
@@ -114,16 +136,16 @@
 
   .win {
     position: relative; z-index: 1;
-    width: min(880px, 94vw); height: min(520px, 62vh);
-    margin-top: 12vh;
+    width: min(900px, 94vw); height: min(540px, 64vh);
+    margin-top: 13vh;
     background: var(--win); border-radius: 18px; box-shadow: var(--win-shadow);
     border: 1px solid var(--win-line);
-    display: grid; grid-template-columns: 30% 1fr; grid-template-rows: 38px 1fr;
+    display: grid; grid-template-columns: 27% 1fr; grid-template-rows: 38px 1fr;
     overflow: hidden; text-align: left;
   }
   .win-bar { grid-column: 1 / -1; background: var(--win-bar); display: flex; align-items: center; gap: 8px; padding: 0 14px; border-bottom: 1px solid var(--win-line); }
   .win-bar i { width: 11px; height: 11px; border-radius: 50%; border: 1px solid var(--text-muted); opacity: 0.6; }
-  .win-bar .tab { margin-left: 18px; font-size: 12px; color: var(--text-secondary); background: var(--win); padding: 5px 12px; border-radius: 7px 7px 0 0; align-self: flex-end; }
+  .win-bar .tab { margin-left: 18px; font-size: 12px; color: var(--text-secondary); background: var(--win); padding: 5px 12px; border-radius: 7px 7px 0 0; align-self: flex-end; min-width: 90px; }
   .win-side { background: var(--win-side); border-right: 1px solid var(--win-line); padding: 14px 10px; overflow: hidden; }
   .win-side .vault { font-size: 11px; color: var(--text-muted); padding: 0 8px 8px; letter-spacing: 0.3px; }
   .row { display: flex; align-items: center; gap: 8px; font-size: 13px; padding: 4px 8px; border-radius: 6px; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; opacity: 0; transition: background 0.3s; }
@@ -131,25 +153,66 @@
   .row.indent { padding-left: 24px; }
   .row .ic { width: 16px; text-align: center; flex: none; font-size: 12px; }
   .row.lit { background: var(--soft); }
-  .win-page { padding: 26px 30px; overflow: hidden; }
-  .win-page .crumb { font-size: 11px; color: var(--text-muted); margin-bottom: 12px; }
-  .win-page h3 { font-family: 'Outfit', sans-serif; font-weight: 600; font-size: clamp(20px, 2.6vw, 28px); letter-spacing: -0.5px; line-height: 1.15; margin-bottom: 12px; }
-  .win-page p { font-size: 13.5px; color: var(--text-secondary); line-height: 1.6; max-width: 46ch; }
-  .win-page .counts { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 18px; }
-  .win-page .count { background: var(--win-side); border: 1px solid var(--win-line); border-radius: 10px; padding: 8px 12px; font-size: 12px; color: var(--text-secondary); }
-  .win-page .count b { display: block; font-size: 18px; color: var(--text-primary); font-weight: 600; }
-  .win-page .empty { color: var(--text-muted); font-size: 13px; }
+  .win-main { position: relative; overflow: hidden; }
+  .pane { position: absolute; inset: 0; padding: 26px 32px; overflow: hidden; }
+  .pane .crumb { font-size: 11px; color: var(--text-muted); margin-bottom: 12px; }
 
-  .chip {
-    position: absolute; top: 0; left: 0; z-index: 2;
-    display: flex; align-items: center; gap: 9px;
-    background: var(--chip); border: 1px solid var(--win-line); box-shadow: var(--chip-shadow);
-    border-radius: 12px; padding: 9px 13px; font-size: 13px; white-space: nowrap;
-    will-change: transform, opacity; pointer-events: none;
-  }
-  .chip .ic { font-size: 16px; }
-  .chip small { display: block; font-size: 11px; color: var(--text-muted); line-height: 1.2; }
-  .chip span { line-height: 1.25; }
+  .pane-home h3 { font-weight: 600; font-size: clamp(20px, 2.6vw, 28px); letter-spacing: -0.5px; line-height: 1.15; margin-bottom: 12px; }
+  .pane-home p { font-size: 13.5px; color: var(--text-secondary); line-height: 1.6; max-width: 46ch; }
+  .counts { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 18px; }
+  .count { background: var(--win-side); border: 1px solid var(--win-line); border-radius: 10px; padding: 8px 12px; font-size: 12px; color: var(--text-secondary); }
+  .count b { display: block; font-size: 18px; color: var(--text-primary); font-weight: 600; }
+  .empty { color: var(--text-muted); font-size: 13px; }
+
+  /* The page: a cover, a title, and the Markdown a person or an agent writes. */
+  .pane-doc { padding: 0; }
+  .cover { height: 92px; background: linear-gradient(120deg, #f6c99f 0%, #e98a5a 45%, #b8460f 100%); position: relative; }
+  @media (prefers-color-scheme: dark) { .cover { background: linear-gradient(120deg, #6b3a1f 0%, #a24f24 50%, #e8823c 100%); } }
+  .doc { padding: 0 34px 20px; }
+  .doc .emoji { font-size: 40px; line-height: 1; margin-top: -24px; position: relative; }
+  .doc h3 { font-weight: 700; font-size: clamp(22px, 2.8vw, 30px); letter-spacing: -0.6px; margin: 8px 0 4px; }
+  .doc .meta { font-size: 11.5px; color: var(--text-muted); margin-bottom: 14px; display: flex; gap: 8px; align-items: center; }
+  .doc .meta .pill { background: color-mix(in srgb, var(--accent) 12%, transparent); color: var(--accent); border-radius: 100px; padding: 1px 8px; font-weight: 500; }
+  .doc p { font-size: 13.5px; line-height: 1.65; color: var(--text-secondary); max-width: 56ch; }
+  .doc p b { color: var(--text-primary); font-weight: 600; }
+  .doc p mark { background: color-mix(in srgb, var(--amber) 22%, transparent); color: var(--text-primary); border-radius: 3px; padding: 0 2px; }
+  .doc h4 { font-size: 14.5px; font-weight: 600; margin: 14px 0 6px; }
+  .doc ul.check { list-style: none; display: grid; gap: 5px; font-size: 13.5px; }
+  .doc ul.check li { display: flex; gap: 8px; align-items: center; color: var(--text-secondary); }
+  .doc ul.check li::before { content: ''; width: 13px; height: 13px; border: 1.5px solid var(--text-muted); border-radius: 4px; flex: none; }
+  .doc ul.check li.x { text-decoration: line-through; color: var(--text-muted); }
+  .doc ul.check li.x::before { background: var(--green); border-color: var(--green); }
+  .doc blockquote { margin-top: 14px; border-left: 3px solid var(--accent); padding: 4px 0 4px 12px; font-size: 13px; color: var(--text-secondary); font-style: italic; }
+
+  /* The database: one set of task elements, placed by the script anywhere between a table (m = 0) and a board (m = 1). */
+  .pane-db h3 { font-weight: 600; font-size: clamp(20px, 2.6vw, 26px); letter-spacing: -0.5px; margin-bottom: 10px; display: flex; align-items: center; gap: 10px; }
+  .views { display: flex; gap: 4px; margin-bottom: 14px; font-size: 12px; }
+  .views span { padding: 4px 10px; border-radius: 7px; color: var(--text-muted); border: 1px solid transparent; transition: all 0.3s; }
+  .views span.on { color: var(--text-primary); background: var(--win-side); border-color: var(--win-line); font-weight: 500; }
+  .db { position: relative; height: 252px; }
+  .db-head { position: absolute; left: 0; right: 0; top: 0; height: 28px; display: grid; grid-template-columns: 1fr 90px 80px; gap: 8px; align-items: center; font-size: 11px; color: var(--text-muted); letter-spacing: 0.4px; border-bottom: 1px solid var(--win-line); padding: 0 10px; }
+  .col-head { position: absolute; top: 0; height: 28px; display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; opacity: 0; white-space: nowrap; }
+  .col-head i { width: 8px; height: 8px; border-radius: 50%; }
+  .col-head em { font-style: normal; color: var(--text-muted); font-weight: 400; }
+  .col-bg { position: absolute; top: 32px; bottom: 0; border-radius: 12px; background: var(--win-side); opacity: 0; }
+  .task { position: absolute; top: 0; left: 0; overflow: hidden; font-size: 13px; }
+  .task .t-bg { position: absolute; inset: 0; background: var(--win); border: 1px solid var(--win-line); border-radius: 10px; box-shadow: 0 2px 8px rgba(26,26,26,0.06); opacity: 0; }
+  .task .t-line { position: absolute; left: 0; right: 0; bottom: 0; height: 1px; background: var(--win-line); }
+  .task .t-row { position: relative; display: grid; grid-template-columns: 1fr 90px 80px; gap: 8px; align-items: center; height: 36px; padding: 0 10px; }
+  .task .t-title { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .task .t-cells { display: contents; }
+  /* Past halfway to a board, a task drops its table cells and lays out as a card: title on top, status and owner under it. */
+  .task.is-card .t-row { display: block; height: auto; padding: 9px 10px 0; line-height: 18px; }
+  .task.is-card .t-title { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; white-space: normal; line-height: 1.3; }
+  .task.is-card .t-meta { position: relative; left: 0; top: 0; padding: 5px 10px 0; }
+  .task.is-card .t-cells { display: none; }
+  .task.is-card .t-title { font-weight: 500; }
+  .task .t-meta { position: absolute; left: 10px; top: 32px; display: flex; gap: 6px; align-items: center; font-size: 11px; color: var(--text-muted); opacity: 0; white-space: nowrap; }
+  .pill-s { font-size: 11px; border-radius: 100px; padding: 1px 8px; white-space: nowrap; justify-self: start; }
+  .pill-s.todo { background: color-mix(in srgb, var(--text-muted) 18%, transparent); color: var(--text-secondary); }
+  .pill-s.doing { background: color-mix(in srgb, var(--blue) 16%, transparent); color: var(--blue); }
+  .pill-s.done { background: color-mix(in srgb, var(--green) 16%, transparent); color: var(--green); }
+  .owner { font-size: 12px; color: var(--text-secondary); }
 
   /* ── SECTIONS ── */
   section.block { padding: 70px 0 10px; }
@@ -198,10 +261,9 @@
   .reveal .bar div { transform: scaleX(0); transition: transform 1.1s cubic-bezier(.2,.7,.2,1); }
   .reveal.in .bar div { transform: scaleX(1); }
 
-  /* ── HOW IT WORKS ── */
   .steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; margin-top: 36px; }
   .step { background: var(--card); border-radius: var(--radius); padding: 30px 26px; box-shadow: var(--shadow); }
-  .step .n { width: 32px; height: 32px; border-radius: 50%; background: var(--soft); color: var(--accent); display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 14px; margin-bottom: 16px; }
+  .step .n { width: 32px; height: 32px; border-radius: 50%; background: var(--soft); color: var(--accent); display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 14px; margin: 0 auto 16px; }
   .step h3 { font-size: 18px; font-weight: 600; margin-bottom: 6px; }
   .step p { font-size: 14.5px; color: var(--text-secondary); font-weight: 300; }
   .ask { margin-top: 14px; background: var(--win-side); border: 1px solid var(--win-line); border-radius: 12px; padding: 10px 12px; font-size: 13px; color: var(--text-primary); font-family: ui-monospace, 'SF Mono', Menlo, monospace; }
@@ -211,7 +273,6 @@
   .files { font-family: ui-monospace, 'SF Mono', Menlo, monospace; font-size: 13px; line-height: 1.9; color: var(--text-secondary); background: var(--win-side); border: 1px solid var(--win-line); border-radius: 14px; padding: 18px 20px; }
   .files b { color: var(--text-primary); font-weight: 500; }
 
-  /* ── FILM (the same four cuts the old page chose between) ── */
   .video-card { padding: 0; background: #000; border-radius: var(--radius-lg); overflow: hidden; margin: 34px auto 0; position: relative; max-width: 920px; }
   .video-stage { position: relative; width: 100%; background: #000; aspect-ratio: 16 / 9; }
   .video-stage video { width: 100%; height: 100%; display: block; object-fit: contain; background: #000; }
@@ -225,7 +286,6 @@
   .try-line { text-align: center; margin-top: 22px; font-size: 15px; color: var(--text-secondary); font-weight: 300; }
   .try-line a { color: var(--text-primary); font-weight: 500; }
 
-  /* ── ROADMAP ── */
   .roadmap { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-top: 36px; }
   .leg { background: var(--card); border-radius: 22px; padding: 22px 20px; box-shadow: var(--shadow); }
   .leg h3 { font-size: 13px; font-weight: 600; letter-spacing: 1.6px; text-transform: uppercase; color: var(--text-muted); margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; }
@@ -240,7 +300,6 @@
   .leg details summary::-webkit-details-marker { display: none; }
   .leg details ul { margin-top: 10px; }
 
-  /* ── FAQ ── */
   .faq { max-width: 760px; margin: 30px auto 0; }
   .faq details { background: var(--card); border-radius: 18px; padding: 18px 24px; margin-bottom: 10px; box-shadow: var(--shadow); }
   .faq summary { cursor: pointer; font-weight: 500; font-size: 16px; list-style: none; display: flex; justify-content: space-between; gap: 16px; }
@@ -250,7 +309,6 @@
   .faq details p { margin-top: 10px; color: var(--text-secondary); font-weight: 300; font-size: 15px; }
   .faq a { color: var(--text-primary); }
 
-  /* ── FINAL CTA ── */
   .final { margin-top: 80px; background: var(--card); border-radius: var(--radius-lg); padding: 56px 40px; text-align: center; box-shadow: var(--shadow); }
   .final .app-icon { display: block; width: 64px; height: 64px; margin: 0 auto 18px; }
   .final .app-icon img { width: 100%; height: 100%; display: block; }
@@ -268,32 +326,55 @@
     .roadmap { grid-template-columns: 1fr 1fr; }
   }
   @media (max-width: 680px) {
-    .hero { padding-top: 16px; }
     .hero .lede { font-size: 17px; }
-    .win { grid-template-columns: 40% 1fr; height: 56vh; margin-top: 18vh; }
-    .win-page { padding: 18px 16px; }
-    .win-page p { font-size: 12.5px; }
+    .chip-in { font-size: 11.5px; padding: 7px 10px; }
+    .chip-in small { display: none; }
+    .win { grid-template-columns: 34% 1fr; height: 58vh; margin-top: 18vh; }
+    .pane { padding: 18px 16px; }
+    .pane-doc { padding: 0; }
+    .doc { padding: 0 16px 16px; }
+    .doc p, .doc ul.check { font-size: 12.5px; }
+    .cover { height: 64px; }
     .row { font-size: 11.5px; padding: 3px 6px; }
-    .row.indent { padding-left: 16px; }
-    .chip { font-size: 11.5px; padding: 7px 10px; }
-    .chip small { display: none; }
+    .row.indent { padding-left: 14px; }
+    .db-head, .task .t-row { grid-template-columns: 1fr 74px; }
+    .db-head span:nth-child(3), .task .owner { display: none; }
+    .task { font-size: 11.5px; }
+    .views { font-size: 11px; white-space: nowrap; }
+    .views .v-cal, .col-head em { display: none; }
+    .col-head { font-size: 11px; }
     .gather-captions { top: 3vh; }
     .roadmap { grid-template-columns: 1fr; }
     .final { padding: 40px 22px; }
   }
 
   @media (prefers-reduced-motion: reduce) {
+    .flyers { display: none; }
     .gather { height: auto; }
     .gather-stage { position: relative; height: auto; min-height: 0; padding: 150px 0 40px; }
     .cap { transition: none; }
-    .chip { display: none; }
     .row { opacity: 1; }
+    .chip-in, .working::before { animation: none; }
     .reveal-up, .reveal .bar div { opacity: 1; transform: none; transition: none; }
-    .working::before { animation: none; }
+    .rot { transition: none; }
   }
 </style>
 </head>
 <body>
+
+<!-- The drifting files. Each has a place around the headline (data-hx, data-hy: fractions of the hero), a place around the window when the scroll reaches it (data-x, data-y: fractions of the stage), and the sidebar row it lands on (data-to). -->
+<div class="flyers" id="flyers" aria-hidden="true">
+  <div class="chip" data-to="plan" data-m="0.02,0" data-hx="0.02" data-hy="0.12" data-x="0.06" data-y="0.30"><div class="chip-in" style="--d:8s;--dx:14px;--dy:-16px"><span class="ic">💬</span><span>Chat with Claude<small>the launch plan, 3 days ago</small></span></div></div>
+  <div class="chip" data-to="research" data-m="0.98,0" data-hx="0.98" data-hy="0.10" data-x="0.82" data-y="0.24"><div class="chip-in" style="--d:9.5s;--dx:-14px;--dy:16px;--delay:-4s"><span class="ic">🧩</span><span>research-v3 (artifact)<small>lost in a side panel</small></span></div></div>
+  <div class="chip" data-to="meeting" data-hx="0.03" data-hy="0.46" data-x="0.03" data-y="0.62"><div class="chip-in" style="--d:11s;--dx:-10px;--dy:18px;--delay:-3s"><span class="ic">📝</span><span>Meeting notes.docx<small>Downloads folder</small></span></div></div>
+  <div class="chip" data-to="clients" data-hx="0.97" data-hy="0.44" data-x="0.85" data-y="0.55"><div class="chip-in" style="--d:12s;--dx:12px;--dy:-14px;--delay:-6s"><span class="ic">📊</span><span>clients.csv<small>exported from a spreadsheet</small></span></div></div>
+  <div class="chip" data-to="tasks" data-m="0.02,1" data-hx="0.05" data-hy="0.84" data-x="0.18" data-y="0.86"><div class="chip-in" style="--d:9s;--dx:16px;--dy:-10px;--delay:-5s"><span class="ic">✅</span><span>todo.txt<small>Desktop</small></span></div></div>
+  <div class="chip" data-to="reading" data-hx="0.74" data-hy="0.97" data-x="0.66" data-y="0.88"><div class="chip-in" style="--d:10.5s;--dx:10px;--dy:-14px;--delay:-7s"><span class="ic">🔖</span><span>Reading list<small>another app</small></span></div></div>
+  <div class="chip" data-to="roles" data-m="0.98,1" data-hx="0.95" data-hy="0.80" data-x="0.70" data-y="0.40"><div class="chip-in" style="--d:8.5s;--dx:-16px;--dy:-12px;--delay:-1s"><span class="ic">⌨️</span><span>Codex session<small>the refactor plan</small></span></div></div>
+  <div class="chip" data-to="skills" data-hx="0.22" data-hy="0.02" data-x="0.14" data-y="0.46"><div class="chip-in" style="--d:10s;--dx:-12px;--dy:12px;--delay:-2s"><span class="ic">🧰</span><span>deploy-skill.md<small>somewhere in ~/.claude</small></span></div></div>
+  <div class="chip" data-to="agentsmd" data-hx="0.76" data-hy="0.02" data-x="0.88" data-y="0.74"><div class="chip-in" style="--d:9.8s;--dx:12px;--dy:14px;--delay:-8s"><span class="ic">📄</span><span>CLAUDE.md<small>one per project</small></span></div></div>
+  <div class="chip" data-to="shots" data-hx="0.26" data-hy="0.97" data-x="0.40" data-y="0.94"><div class="chip-in" style="--d:9s;--dx:-12px;--dy:-10px;--delay:-2.5s"><span class="ic">🖼️</span><span>Screenshot 2026-11-03.png<small>Desktop</small></span></div></div>
+</div>
 
 <div class="site-wrapper wide-wrapper">
 
@@ -303,12 +384,12 @@
     <a class="btn nav-cta for-phone" href="/workspace/signup/">Get the link</a>
   </nav>
 
-  <header class="hero fade-up">
+  <header class="hero fade-up" id="hero">
     <picture class="app-icon">
       <source media="(prefers-color-scheme: dark)" srcset="/workspace/media/workspace-logo-dark.svg">
       <img src="/workspace/media/workspace-logo-light.svg" alt="Workspace" width="84" height="84" decoding="async">
     </picture>
-    <h1>Finally, see <em>everything</em> you and your agents are working on.</h1>
+    <h1>Finally, see <em class="rot" id="rot">everything</em> you and your agents are working on.</h1>
     <p class="lede">Workspace is a Mac app where you and your AI agents share the same pages, databases and files. Nothing gets lost in a chat again, and you can see every change.</p>
     <div class="ctas">
       <a class="btn for-mac" href="/workspace/download/">Download for Mac <span aria-hidden="true">→</span></a>
@@ -319,17 +400,18 @@
     <p class="fine for-phone">Workspace is a free Mac app. Leave your email and open the link on your Mac.</p>
   </header>
 
-  <!-- GATHER: the scroll where scattered work flies into the window. Each .chip has data-to naming the sidebar row it lands on. -->
   <section class="gather" id="gather" aria-label="Your scattered work, gathered into Workspace">
     <div class="gather-stage" id="gatherStage">
       <div class="gather-captions" aria-live="polite">
         <div class="cap on" data-cap="0"><h2>Your work is everywhere.</h2><p>Notes in one app, plans in another, and your agent's best work buried in a chat from last Tuesday.</p></div>
         <div class="cap" data-cap="1"><h2>Bring it all into one place.</h2><p>Your notes, databases, files and everything your agents make, together in one folder on your Mac.</p></div>
         <div class="cap" data-cap="2"><h2>Now you can see all of it.</h2><p>Every page, every database, every change, for you and your agents.</p></div>
+        <div class="cap" data-cap="3"><h2>A beautiful place to write.</h2><p>Pages are Markdown files, with headings, checklists, pictures and more, written by you or your agents.</p></div>
+        <div class="cap" data-cap="4"><h2>Databases that do the heavy lifting.</h2><p>Relations, lookups and rollups, and every view you need. Turn a table into a board in one click.</p></div>
       </div>
 
       <div class="win" id="win" aria-hidden="true">
-        <div class="win-bar"><i></i><i></i><i></i><div class="tab">Home</div></div>
+        <div class="win-bar"><i></i><i></i><i></i><div class="tab" id="winTab">Home</div></div>
         <div class="win-side">
           <div class="vault">Your vault</div>
           <div class="row folder"><span class="ic">▾</span>Projects</div>
@@ -347,31 +429,58 @@
           <div class="row folder"><span class="ic">▾</span>Files</div>
           <div class="row indent" data-row="shots"><span class="ic">🖼️</span>Screenshots</div>
         </div>
-        <div class="win-page">
-          <div class="crumb">Your vault › Home</div>
-          <h3 id="winTitle">Home</h3>
-          <p id="winEmpty" class="empty">Nothing here yet.</p>
-          <div id="winFull" style="opacity:0">
-            <p>Everything you and your agents work on, in one place. Your agents read and write these same pages, and every change they make shows up here.</p>
-            <div class="counts">
-              <div class="count"><b id="nPages">0</b>pages</div>
-              <div class="count"><b id="nDbs">0</b>databases</div>
-              <div class="count"><b id="nAgents">0</b>agent roles</div>
+        <div class="win-main">
+          <div class="pane pane-home" id="paneHome">
+            <div class="crumb">Your vault › Home</div>
+            <h3>Home</h3>
+            <p id="winEmpty" class="empty">Nothing here yet.</p>
+            <div id="winFull" style="opacity:0">
+              <p>Everything you and your agents work on, in one place. Your agents read and write these same pages, and every change they make shows up here.</p>
+              <div class="counts">
+                <div class="count"><b id="nPages">0</b>pages</div>
+                <div class="count"><b id="nDbs">0</b>databases</div>
+                <div class="count"><b id="nAgents">0</b>agent roles</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="pane pane-doc" id="paneDoc" style="opacity:0">
+            <div class="cover"></div>
+            <div class="doc">
+              <div class="emoji">🚀</div>
+              <h3>Launch plan</h3>
+              <div class="meta"><span class="pill">Claude</span> edited 2 min ago · Projects</div>
+              <p>Get Workspace in front of <b>200 people</b> by December. <mark>Lead with the speed numbers</mark>; they get the most clicks.</p>
+              <h4>This week</h4>
+              <ul class="check">
+                <li class="x">Email the beta list</li>
+                <li>Write the Show HN post</li>
+                <li>Record a 60-second demo</li>
+              </ul>
+              <blockquote>Everything here is a plain Markdown file in your folder.</blockquote>
+            </div>
+          </div>
+
+          <div class="pane pane-db" id="paneDb" style="opacity:0">
+            <div class="crumb">Your vault › Databases › Tasks</div>
+            <h3>Tasks</h3>
+            <div class="views"><span class="on" id="vTable">▦ Table</span><span id="vBoard">▥ Board</span><span class="v-cal">▤ Calendar</span></div>
+            <div class="db" id="db">
+              <div class="db-head" id="dbHead"><span>TASK</span><span>STATUS</span><span>OWNER</span></div>
+              <div class="col-bg" data-col="0"></div><div class="col-bg" data-col="1"></div><div class="col-bg" data-col="2"></div>
+              <div class="col-head" data-col="0"><i style="background:var(--text-muted)"></i>To do <em>2</em></div>
+              <div class="col-head" data-col="1"><i style="background:var(--blue)"></i>Doing <em>2</em></div>
+              <div class="col-head" data-col="2"><i style="background:var(--green)"></i>Done <em>2</em></div>
+              <div class="task" data-col="2"><div class="t-bg"></div><div class="t-line"></div><div class="t-row"><span class="t-title">Email the beta list</span><span class="t-cells"><span class="pill-s done">Done</span><span class="owner">You</span></span></div><div class="t-meta"><span class="pill-s done">Done</span>You</div></div>
+              <div class="task" data-col="1"><div class="t-bg"></div><div class="t-line"></div><div class="t-row"><span class="t-title">Write the Show HN post</span><span class="t-cells"><span class="pill-s doing">Doing</span><span class="owner">Claude</span></span></div><div class="t-meta"><span class="pill-s doing">Doing</span>Claude</div></div>
+              <div class="task" data-col="0"><div class="t-bg"></div><div class="t-line"></div><div class="t-row"><span class="t-title">Record a 60-second demo</span><span class="t-cells"><span class="pill-s todo">To do</span><span class="owner">Codex</span></span></div><div class="t-meta"><span class="pill-s todo">To do</span>Codex</div></div>
+              <div class="task" data-col="2"><div class="t-bg"></div><div class="t-line"></div><div class="t-row"><span class="t-title">Update the roadmap</span><span class="t-cells"><span class="pill-s done">Done</span><span class="owner">Claude</span></span></div><div class="t-meta"><span class="pill-s done">Done</span>Claude</div></div>
+              <div class="task" data-col="1"><div class="t-bg"></div><div class="t-line"></div><div class="t-row"><span class="t-title">Design the landing page</span><span class="t-cells"><span class="pill-s doing">Doing</span><span class="owner">You</span></span></div><div class="t-meta"><span class="pill-s doing">Doing</span>You</div></div>
+              <div class="task" data-col="0"><div class="t-bg"></div><div class="t-line"></div><div class="t-row"><span class="t-title">Reply to beta feedback</span><span class="t-cells"><span class="pill-s todo">To do</span><span class="owner">Claude</span></span></div><div class="t-meta"><span class="pill-s todo">To do</span>Claude</div></div>
             </div>
           </div>
         </div>
       </div>
-
-      <div class="chip" data-to="plan" data-x="0.06" data-y="0.30"><span class="ic">💬</span><span>Chat with Claude<small>the launch plan, 3 days ago</small></span></div>
-      <div class="chip" data-to="research" data-x="0.80" data-y="0.26"><span class="ic">🧩</span><span>research-v3 (artifact)<small>lost in a side panel</small></span></div>
-      <div class="chip" data-to="meeting" data-x="0.03" data-y="0.62"><span class="ic">📝</span><span>Meeting notes.docx<small>Downloads folder</small></span></div>
-      <div class="chip" data-to="clients" data-x="0.84" data-y="0.55"><span class="ic">📊</span><span>clients.csv<small>exported from a spreadsheet</small></span></div>
-      <div class="chip" data-to="tasks" data-x="0.18" data-y="0.86"><span class="ic">✅</span><span>todo.txt<small>Desktop</small></span></div>
-      <div class="chip" data-to="reading" data-x="0.66" data-y="0.88"><span class="ic">🔖</span><span>Reading list<small>another app</small></span></div>
-      <div class="chip" data-to="roles" data-x="0.70" data-y="0.40"><span class="ic">⌨️</span><span>Codex session<small>the refactor plan</small></span></div>
-      <div class="chip" data-to="skills" data-x="0.14" data-y="0.46"><span class="ic">🧰</span><span>deploy-skill.md<small>somewhere in ~/.claude</small></span></div>
-      <div class="chip" data-to="agentsmd" data-x="0.88" data-y="0.74"><span class="ic">📄</span><span>CLAUDE.md<small>one per project</small></span></div>
-      <div class="chip" data-to="shots" data-x="0.40" data-y="0.94"><span class="ic">🖼️</span><span>Screenshot 2026-11-03.png<small>Desktop</small></span></div>
     </div>
   </section>
 
@@ -570,35 +679,92 @@
   </div>
 
 </div>
-
 <script>
-/* GATHER — as the section scrolls past, each chip flies from its spot around the window into its sidebar row, and the captions step through three lines. Positions are measured on resize, so it holds at any window size. With reduced motion the CSS shows the finished window and this does nothing. */
+/* HEADLINE — the italic word changes every 2.2 seconds. */
+(function () {
+  'use strict';
+  var el = document.getElementById('rot');
+  var WORDS = ['everything', 'every page', 'every task', 'every change', 'every file', 'every chat'];
+  var i = 0;
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  setInterval(function () {
+    if (document.hidden) return;
+    el.classList.add('out');
+    setTimeout(function () {
+      i = (i + 1) % WORDS.length; el.textContent = WORDS[i];
+      el.classList.remove('out'); el.classList.add('in-start');
+      void el.offsetWidth; el.classList.remove('in-start');
+    }, 350);
+  }, 2200);
+})();
+
+/* FLYERS AND GATHER — all driven by the scroll position, so scrolling back plays it backwards.
+   a: 0 at the top of the page, 1 when the window's section reaches the top and sticks. The files go from their places around the headline (carried up with the page) to their places around the window.
+   p: 0 to 1 across the sticky section. The files fly into their sidebar rows (p 0–0.5), Home fills in, then the window shows the Launch plan page, then the Tasks database as a table, which turns into a board (m 0–1). */
 (function () {
   'use strict';
   var reduce = window.matchMedia('(prefers-reduced-motion: reduce)');
+  var hero = document.getElementById('hero');
   var section = document.getElementById('gather');
   var stage = document.getElementById('gatherStage');
-  var chips = Array.prototype.slice.call(stage.querySelectorAll('.chip'));
+  var layer = document.getElementById('flyers');
+  var chips = Array.prototype.slice.call(layer.querySelectorAll('.chip'));
   var caps = Array.prototype.slice.call(stage.querySelectorAll('.cap'));
   var rows = {};
   Array.prototype.forEach.call(stage.querySelectorAll('[data-row]'), function (r) { rows[r.dataset.row] = r; });
-  var winEmpty = document.getElementById('winEmpty');
-  var winFull = document.getElementById('winFull');
+  var winTab = document.getElementById('winTab');
+  var paneHome = document.getElementById('paneHome'), paneDoc = document.getElementById('paneDoc'), paneDb = document.getElementById('paneDb');
+  var winEmpty = document.getElementById('winEmpty'), winFull = document.getElementById('winFull');
   var counters = [['nPages', 24], ['nDbs', 3], ['nAgents', 3]].map(function (c) { return [document.getElementById(c[0]), c[1]]; });
-  var geo = [];
+  var db = document.getElementById('db'), dbHead = document.getElementById('dbHead');
+  var vTable = document.getElementById('vTable'), vBoard = document.getElementById('vBoard');
+  var tasks = Array.prototype.slice.call(db.querySelectorAll('.task'));
+  var colHeads = Array.prototype.slice.call(db.querySelectorAll('.col-head'));
+  var colBgs = Array.prototype.slice.call(db.querySelectorAll('.col-bg'));
+  var geo = [], dbGeo = null, gatherTop = 1;
 
   function clamp(v) { return v < 0 ? 0 : v > 1 ? 1 : v; }
   function ease(t) { return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2; }
+  function lerp(a, b, t) { return a + (b - a) * t; }
+  function win(p, a, b) { return clamp((p - a) / (b - a)); }
 
   function measure() {
+    var sy = window.scrollY;
     var s = stage.getBoundingClientRect();
+    var h = hero.getBoundingClientRect();
+    gatherTop = Math.max(1, section.getBoundingClientRect().top + sy);
+    // On a phone there is no room beside the headline: four files sit above and below it (data-m), and the rest appear as the scroll begins.
+    var phone = window.innerWidth < 680;
     geo = chips.map(function (c) {
-      var w = c.offsetWidth, h = c.offsetHeight;
-      var sx = parseFloat(c.dataset.x) * (s.width - w);
-      var sy = parseFloat(c.dataset.y) * (s.height - h);
+      var w = c.offsetWidth, ht = c.offsetHeight;
       var r = rows[c.dataset.to].getBoundingClientRect();
-      return { sx: sx, sy: sy, tx: r.left - s.left, ty: r.top - s.top + (r.height - h) / 2, w: w, h: h, rw: r.width };
+      var hx = parseFloat(c.dataset.hx), hy = parseFloat(c.dataset.hy), late = false;
+      if (phone) { if (c.dataset.m) { var m = c.dataset.m.split(','); hx = +m[0]; hy = +m[1]; } else late = true; }
+      return {
+        hx: h.left + hx * (h.width - w),
+        hy: h.top + sy + hy * (h.height - ht),
+        ox: parseFloat(c.dataset.x) * (s.width - w),
+        oy: parseFloat(c.dataset.y) * (s.height - ht),
+        rx: r.left - s.left, ry: r.top - s.top + (r.height - ht) / 2,
+        late: late
+      };
     });
+    measureDb();
+  }
+
+  // Table and board places for every task, inside the database box. Measured again whenever the box changes width (the phone sidebar folds away).
+  function measureDb() {
+    var W = db.clientWidth, gap = 10, colW = (W - 2 * gap) / 3, perCol = [0, 0, 0];
+    var narrow = W < 420, cardH = narrow ? 74 : 58;
+    dbGeo = {
+      W: W, colW: colW, gap: gap,
+      t: tasks.map(function (t, i) {
+        var col = +t.dataset.col, k = perCol[col]++;
+        return { tx: 0, ty: 28 + i * 36, tw: W, th: 36, bx: col * (colW + gap) + 6, by: 38 + k * (cardH + 8), bw: colW - 12, bh: cardH };
+      })
+    };
+    colHeads.forEach(function (el) { var c = +el.dataset.col; el.style.left = (c * (colW + gap) + 8) + 'px'; el.style.width = (colW - 8) + 'px'; });
+    colBgs.forEach(function (el) { var c = +el.dataset.col; el.style.left = (c * (colW + gap)) + 'px'; el.style.width = colW + 'px'; });
   }
 
   function progress() {
@@ -607,31 +773,76 @@
     return span > 0 ? clamp(-r.top / span) : 1;
   }
 
+  var winEl = document.getElementById('win'), winSide = winEl.querySelector('.win-side');
   var lastCap = -1;
   function render() {
-    if (reduce.matches) return;
+    if (reduce.matches || !geo.length) return;
+    var sy = window.scrollY;
+    var s = stage.getBoundingClientRect();
+    var a = ease(clamp(sy / gatherTop));
     var p = progress();
+    var lit = {};
+
+    // The files.
+    layer.style.zIndex = a > 0.35 ? '3' : '1';
     chips.forEach(function (c, i) {
-      var g = geo[i]; if (!g) return;
-      var start = 0.14 + i * 0.045;
-      var t = ease(clamp((p - start) / 0.32));
-      var x = g.sx + (g.tx - g.sx) * t;
-      var y = g.sy + (g.ty - g.sy) * t;
-      var sc = 1 - 0.25 * t;
-      c.style.transform = 'translate(' + x.toFixed(1) + 'px,' + y.toFixed(1) + 'px) scale(' + sc.toFixed(3) + ')';
+      var g = geo[i];
+      var bx = g.late ? s.left + g.ox : lerp(g.hx, s.left + g.ox, a);
+      var by = g.late ? s.top + g.oy : lerp(g.hy - sy, s.top + g.oy, a);
+      var t = ease(win(p, 0.02 + i * 0.034, 0.2 + i * 0.034));
+      var x = lerp(bx, s.left + g.rx, t), y = lerp(by, s.top + g.ry, t);
+      c.style.transform = 'translate(' + x.toFixed(1) + 'px,' + y.toFixed(1) + 'px) scale(' + (1 - 0.25 * t).toFixed(3) + ')';
       c.style.transformOrigin = 'left center';
       var fade = clamp((t - 0.82) / 0.18);
-      c.style.opacity = String(1 - fade);
-      var row = rows[c.dataset.to];
-      row.style.opacity = String(fade);
-      row.classList.toggle('lit', fade > 0.5 && t < 1 && p < 0.9);
+      c.style.opacity = String((1 - fade) * (g.late ? a : 1));
+      rows[c.dataset.to].style.opacity = String(fade);
+      if (fade > 0.5 && t < 1) lit[c.dataset.to] = true;
     });
-    var done = clamp((p - 0.7) / 0.15);
-    winEmpty.style.opacity = String(1 - done);
-    winEmpty.style.display = done >= 1 ? 'none' : '';
-    winFull.style.opacity = String(done);
-    counters.forEach(function (c) { c[0].textContent = String(Math.round(c[1] * done)); });
-    var cap = p < 0.22 ? 0 : p < 0.62 ? 1 : 2;
+
+    // Home fills in, then the page, then the database.
+    var full = win(p, 0.46, 0.54);
+    winEmpty.style.display = full >= 1 ? 'none' : '';
+    winEmpty.style.opacity = String(1 - full);
+    winFull.style.opacity = String(full);
+    counters.forEach(function (c) { c[0].textContent = String(Math.round(c[1] * full)); });
+    var toDoc = win(p, 0.58, 0.63), toDb = win(p, 0.73, 0.78);
+    // On a phone the sidebar folds away once the window leaves Home, so the page and the board get the whole width.
+    var sideCol = window.innerWidth < 680 ? 34 * (1 - toDoc) : null;
+    winEl.style.gridTemplateColumns = sideCol === null ? '' : sideCol.toFixed(2) + '% 1fr';
+    winSide.style.padding = sideCol !== null && sideCol < 2 ? '0' : '';
+    winSide.style.borderRight = sideCol !== null && sideCol < 2 ? 'none' : '';
+    if (dbGeo && db.clientWidth !== dbGeo.W) measureDb();
+    paneHome.style.opacity = String(1 - toDoc);
+    paneDoc.style.opacity = String(toDoc * (1 - toDb));
+    paneDoc.style.transform = 'translateY(' + ((1 - toDoc) * 14).toFixed(1) + 'px)';
+    paneDb.style.opacity = String(toDb);
+    paneDb.style.transform = 'translateY(' + ((1 - toDb) * 14).toFixed(1) + 'px)';
+    if (toDb > 0.5) { lit.tasks = true; winTab.textContent = 'Tasks'; }
+    else if (toDoc > 0.5) { lit.plan = true; winTab.textContent = 'Launch plan'; }
+    else winTab.textContent = 'Home';
+    Object.keys(rows).forEach(function (k) { rows[k].classList.toggle('lit', !!lit[k]); });
+
+    // Table to board.
+    var m = ease(win(p, 0.84, 0.95));
+    vTable.classList.toggle('on', m < 0.5); vBoard.classList.toggle('on', m >= 0.5);
+    dbHead.style.opacity = String(1 - clamp(m * 2));
+    colHeads.forEach(function (el) { el.style.opacity = String(clamp(m * 2 - 1)); });
+    colBgs.forEach(function (el) { el.style.opacity = String(m); });
+    tasks.forEach(function (el, i) {
+      var g = dbGeo.t[i];
+      el.style.left = lerp(g.tx, g.bx, m).toFixed(1) + 'px';
+      el.style.top = lerp(g.ty, g.by, m).toFixed(1) + 'px';
+      el.style.width = lerp(g.tw, g.bw, m).toFixed(1) + 'px';
+      el.style.height = lerp(g.th, g.bh, m).toFixed(1) + 'px';
+      el.querySelector('.t-bg').style.opacity = String(m);
+      el.querySelector('.t-line').style.opacity = String(1 - m);
+      el.querySelector('.t-cells').style.opacity = String(1 - clamp(m * 2));
+      Array.prototype.forEach.call(el.querySelectorAll('.t-cells > *'), function (x) { x.style.opacity = String(1 - clamp(m * 2)); });
+      el.querySelector('.t-meta').style.opacity = String(clamp(m * 2 - 1));
+      el.classList.toggle('is-card', m >= 0.5);
+    });
+
+    var cap = p < 0.1 ? 0 : p < 0.4 ? 1 : p < 0.58 ? 2 : p < 0.74 ? 3 : 4;
     if (cap !== lastCap) { caps.forEach(function (el, i) { el.classList.toggle('on', i === cap); }); lastCap = cap; }
   }
 
@@ -639,15 +850,21 @@
     caps.forEach(function (el, i) { el.classList.toggle('on', i === 2); });
     winEmpty.style.display = 'none'; winFull.style.opacity = '1';
     counters.forEach(function (c) { c[0].textContent = String(c[1]); });
+    measure();
+    tasks.forEach(function (el, i) { var g = dbGeo.t[i]; el.style.left = '0px'; el.style.top = g.ty + 'px'; el.style.width = g.tw + 'px'; el.style.height = g.th + 'px'; });
   }
 
   var ticking = false;
   function onScroll() { if (!ticking) { ticking = true; requestAnimationFrame(function () { ticking = false; render(); }); } }
-  function setup() { if (reduce.matches) { finished(); return; } measure(); render(); }
-
+  function setup() {
+    if (reduce.matches) { finished(); return; }
+    // Measure with every file at its untransformed size and the database laid out.
+    measure(); render();
+  }
   window.addEventListener('scroll', onScroll, { passive: true });
-  window.addEventListener('resize', function () { setup(); });
+  window.addEventListener('resize', setup);
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(setup);
+  window.addEventListener('load', setup);
   setup();
 })();
 
