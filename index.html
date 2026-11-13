@@ -235,6 +235,34 @@
     .workspace-card img { width: 64px; height: 64px; }
   }
 
+  /* ── PROJECTS ── deliberately much smaller than the Workspace card above. */
+  .projects-card { padding: 32px 36px; }
+  .projects-card .section-label { margin-bottom: 16px; }
+  .project-link {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin: 0 -14px;
+    padding: 12px 14px;
+    border-radius: 18px;
+    text-decoration: none;
+    color: var(--text-primary);
+    transition: background 0.2s;
+  }
+  .project-link:hover { background: var(--bg); }
+  .project-link:focus-visible { outline: 2px solid var(--text-primary); outline-offset: 2px; }
+  .project-link img { width: 48px; height: 48px; flex-shrink: 0; }
+  .project-name { font-size: 17px; font-weight: 600; line-height: 1.3; }
+  .project-desc { font-size: 15px; line-height: 1.5; color: var(--text-secondary); }
+  .project-arrow { margin-left: auto; padding-left: 8px; font-weight: 600; color: var(--accent); transition: transform 0.2s; }
+  .project-link:hover .project-arrow { transform: translateX(3px); }
+
+  @media (max-width: 680px) {
+    .card.projects-card { padding: 28px 24px; }
+    .project-link { gap: 14px; margin: 0 -10px; padding: 10px; }
+    .project-link img { width: 44px; height: 44px; }
+  }
+
   /* ── JOURNEY SECTION ── */
   .section-label {
     font-size: 12px;
@@ -831,7 +859,7 @@
 
   /* Say hello as a row of icon buttons, evenly sized (28 Oct 2026). */
   /* Four in one row at any width: 64px each where there's room, narrower on a phone. */
-  .connect-icons { display: grid; grid-template-columns: repeat(4, minmax(0, 64px)); gap: 12px; }
+  .connect-icons { display: grid; grid-template-columns: repeat(5, minmax(0, 64px)); gap: 12px; }
   .connect-icon {
     aspect-ratio: 1;
     display: grid; place-items: center;
@@ -953,7 +981,7 @@
       align-items: center;
       gap: 14px;
     }
-    nav .nav-links { gap: 18px; justify-content: center; }
+    nav .nav-links { gap: 8px 18px; flex-wrap: wrap; justify-content: center; }
     nav .nav-links a { font-size: 13px; }
   }
 </style>
@@ -967,6 +995,7 @@
     <div class="logo">Brian <span class="logo-italic">Hirsh</span></div>
     <ul class="nav-links">
       <li><a href="#journey">Journey</a></li>
+      <li><a href="#projects">Projects</a></li>
       <li><a href="#about">About</a></li>
       <li><a href="#writing">Blog</a></li>
       <li><a href="#now">Now</a></li>
@@ -1046,6 +1075,19 @@
     </div>
   </div>
 
+  <!-- PROJECTS -->
+  <div class="card card-white fade-in projects-card" id="projects">
+    <div class="section-label">Projects</div>
+    <a class="project-link" href="/better-tab-manager/">
+      <img src="/better-tab-manager/media/icon-128.png" alt="" width="48" height="48" loading="lazy" decoding="async">
+      <div>
+        <div class="project-name">Better Tab Manager</div>
+        <div class="project-desc">A Chrome extension that stores your open tabs in one click.</div>
+      </div>
+      <span class="project-arrow" aria-hidden="true">→</span>
+    </a>
+  </div>
+
   <!-- ABOUT + INTERESTS -->
   <div class="two-col" id="about">
     <div class="card card-warm fade-in">
@@ -1118,14 +1160,14 @@
   <div class="card card-white fade-in">
     <div class="stack-card-label">Current Stack</div>
     <div class="stack-code"><span class="punct">{</span>
-<div class="stack-line"><span class="sk"><span class="key">"agents"</span><span class="punct">: </span></span><span class="sv"><span class="punct">[</span><span class="str">"OpenClaw"</span><span class="punct">, </span><span class="str">"Claude Code"</span><span class="punct">],</span></span></div><div class="stack-line"><span class="sk"><span class="key">"models"</span><span class="punct">: </span></span><span class="sv"><span class="punct">[</span><span class="str">"claude-opus-5-5"</span><span class="punct">, </span><span class="str">"claude-sonnet-5"</span><span class="punct">, </span><span class="str">"claude-fable-5-1"</span><span class="punct">, </span><span class="str">"gemini-3.8-flash"</span><span class="punct">, </span><span class="str">"deepseek-v4.1-flash"</span><span class="punct">, </span><span class="str">"qwen3.8-max"</span><span class="punct">],</span></span></div><div class="stack-line"><span class="sk"><span class="key">"workspace"</span><span class="punct">: </span></span><span class="sv"><span class="str">"stealth startup"</span><span class="punct">,</span></span></div><div class="stack-line"><span class="sk"><span class="key">"files"</span><span class="punct">: </span></span><span class="sv"><span class="punct">[</span><span class="str">".md"</span><span class="punct">, </span><span class="str">".sqlite"</span><span class="punct">, </span><span class="str">".mjs"</span><span class="punct">],</span></span></div><div class="stack-line"><span class="sk"><span class="key">"chat"</span><span class="punct">: </span></span><span class="sv"><span class="punct">[</span><span class="str">"Telegram"</span><span class="punct">, </span><span class="str">"WhatsApp"</span><span class="punct">, </span><span class="str">"WeChat"</span><span class="punct">],</span></span></div><div class="stack-line"><span class="sk"><span class="key">"automation"</span><span class="punct">: </span></span><span class="sv"><span class="str">"n8n"</span><span class="punct">,</span></span></div><div class="stack-line"><span class="sk"><span class="key">"infra"</span><span class="punct">: </span></span><span class="sv"><span class="punct">[</span><span class="str">"Mac Mini"</span><span class="punct">, </span><span class="str">"MacBook Pro"</span><span class="punct">, </span><span class="str">"Raspberry Pi 4"</span><span class="punct">],</span></span></div><div class="stack-line"><span class="sk"><span class="key">"memory"</span><span class="punct">: </span></span><span class="sv"><span class="str">"Qdrant"</span></span></div><span class="punct">}</span></div>
+<div class="stack-line"><span class="sk"><span class="key">"agents"</span><span class="punct">: </span></span><span class="sv"><span class="punct">[</span><span class="str">"OpenClaw"</span><span class="punct">, </span><span class="str">"Claude Code"</span><span class="punct">],</span></span></div><div class="stack-line"><span class="sk"><span class="key">"models"</span><span class="punct">: </span></span><span class="sv"><span class="punct">[</span><span class="str">"claude-opus-5-5"</span><span class="punct">, </span><span class="str">"claude-sonnet-5"</span><span class="punct">, </span><span class="str">"claude-fable-5-1"</span><span class="punct">, </span><span class="str">"gemini-3.8-flash"</span><span class="punct">, </span><span class="str">"deepseek-v4.1-flash"</span><span class="punct">, </span><span class="str">"qwen3.8-max"</span><span class="punct">],</span></span></div><div class="stack-line"><span class="sk"><span class="key">"workspace"</span><span class="punct">: </span></span><span class="sv"><span class="str">"Workspace"</span><span class="punct">,</span></span></div><div class="stack-line"><span class="sk"><span class="key">"files"</span><span class="punct">: </span></span><span class="sv"><span class="punct">[</span><span class="str">".md"</span><span class="punct">, </span><span class="str">".sqlite"</span><span class="punct">, </span><span class="str">".mjs"</span><span class="punct">],</span></span></div><div class="stack-line"><span class="sk"><span class="key">"chat"</span><span class="punct">: </span></span><span class="sv"><span class="punct">[</span><span class="str">"Telegram"</span><span class="punct">, </span><span class="str">"WhatsApp"</span><span class="punct">, </span><span class="str">"WeChat"</span><span class="punct">],</span></span></div><div class="stack-line"><span class="sk"><span class="key">"automation"</span><span class="punct">: </span></span><span class="sv"><span class="str">"n8n"</span><span class="punct">,</span></span></div><div class="stack-line"><span class="sk"><span class="key">"infra"</span><span class="punct">: </span></span><span class="sv"><span class="punct">[</span><span class="str">"Mac Mini"</span><span class="punct">, </span><span class="str">"MacBook Pro"</span><span class="punct">, </span><span class="str">"Raspberry Pi 4"</span><span class="punct">],</span></span></div><div class="stack-line"><span class="sk"><span class="key">"memory"</span><span class="punct">: </span></span><span class="sv"><span class="str">"Qdrant"</span></span></div><span class="punct">}</span></div>
   </div>
 
   <!-- CONNECT -->
   <div class="card card-white fade-in" id="connect">
     <div class="connect-heading">Say hello</div>
     <p class="connect-sub">I'm always happy to connect — especially if you're building something.</p>
-    <!-- A row of icons (Brian, 28 Oct 2026). Each mark is used unaltered and served from this site, so no service is contacted until you click: the envelope is drawn here; LinkedIn's [in] logo (black) from brand.linkedin.com's own download, used as a link to the profile in a row of social icons, as its guidelines allow; Instagram's glyph (black) from Meta's brand resource center (IG brand asset pack 2023), used to link to the profile without implying partnership; Substack's mark from Simple Icons 16.36.0, CC0. -->
+    <!-- A row of icons (Brian, 28 Oct 2026). Each mark is used unaltered and served from this site, so no service is contacted until you click: the envelope is drawn here; LinkedIn's [in] logo (black) from brand.linkedin.com's own download, used as a link to the profile in a row of social icons, as its guidelines allow; Instagram's glyph (black) from Meta's brand resource center (IG brand asset pack 2023), used to link to the profile without implying partnership; Substack's mark from Simple Icons 16.36.0, CC0; GitHub's mark (black) is Primer Octicons' mark-github, MIT, used to link to the profile as GitHub's logo guidelines allow (added 13 Nov 2026). -->
     <div class="connect-icons">
       <a href="mailto:brian@brianhirsh.com" class="connect-icon" aria-label="Email" title="Email">
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18v12H3zM3 6l9 7 9-7" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linejoin="round"/></svg>
@@ -1138,6 +1180,9 @@
       </a>
       <a href="https://brianhirsh.substack.com/" class="connect-icon" aria-label="Substack" title="Substack" target="_blank" rel="noopener">
         <img src="/icons/substack.svg" alt="" width="22" height="22">
+      </a>
+      <a href="https://github.com/bphirsh" class="connect-icon" aria-label="GitHub" title="GitHub" target="_blank" rel="noopener">
+        <img src="/icons/github.svg" alt="" width="24" height="24">
       </a>
     </div>
   </div>
