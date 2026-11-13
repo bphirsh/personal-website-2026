@@ -57,6 +57,25 @@
   nav .nav-links a { text-decoration: none; color: var(--text-secondary); font-size: 14px; font-weight: 500; letter-spacing: 0.3px; transition: color 0.3s; }
   nav .nav-links a:hover { color: var(--text-primary); }
 
+  /* Projects menu — the same as the homepage's. */
+  .nav-menu { position: relative; }
+  .nav-menu-btn { display: inline-flex; align-items: center; gap: 5px; padding: 0; border: 0; background: none; font: inherit; font-size: 14px; font-weight: 500; letter-spacing: 0.3px; color: var(--text-secondary); cursor: pointer; transition: color 0.3s; }
+  .nav-menu-btn:hover, .nav-menu.open .nav-menu-btn { color: var(--text-primary); }
+  .nav-menu-btn:focus-visible { outline: 2px solid var(--text-primary); outline-offset: 4px; border-radius: 4px; }
+  .nav-menu-btn .chev { width: 9px; height: 6px; transition: transform 0.2s; }
+  .nav-menu.open .chev { transform: rotate(180deg); }
+  .nav-menu-list { position: absolute; top: 100%; left: 50%; z-index: 50; min-width: 230px; margin-top: 12px; padding: 8px; background: var(--card); border-radius: 18px; box-shadow: 0 16px 40px rgba(26, 26, 26, 0.12), 0 2px 6px rgba(26, 26, 26, 0.06); opacity: 0; visibility: hidden; transform: translate(var(--menu-x, -50%), -4px); transition: opacity 0.18s, transform 0.18s, visibility 0s linear 0.18s; }
+  .nav-menu-list::before { content: ''; position: absolute; left: 0; right: 0; top: -14px; height: 14px; }
+  .nav-menu.open .nav-menu-list { opacity: 1; visibility: visible; transform: translate(var(--menu-x, -50%), 0); transition: opacity 0.18s, transform 0.18s; }
+  @media (hover: hover) {
+    .nav-menu:hover .nav-menu-list { opacity: 1; visibility: visible; transform: translate(var(--menu-x, -50%), 0); transition: opacity 0.18s, transform 0.18s; }
+    .nav-menu:hover .chev { transform: rotate(180deg); }
+    .nav-menu:hover .nav-menu-btn { color: var(--text-primary); }
+  }
+  nav .nav-links .nav-menu-list a { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 12px; font-size: 15px; font-weight: 500; letter-spacing: 0; color: var(--text-primary); white-space: nowrap; transition: background 0.15s; }
+  nav .nav-links .nav-menu-list a:hover, nav .nav-links .nav-menu-list a:focus-visible, nav .nav-links .nav-menu-list a[aria-current] { background: var(--bg); outline: none; }
+  .nav-menu-list img { width: 26px; height: 26px; flex-shrink: 0; }
+
   /* ── CARDS ── */
   .card { border-radius: var(--radius-lg); padding: 48px; margin-bottom: 20px; }
   .card-white { background: var(--card); }
@@ -111,6 +130,9 @@
     nav { flex-direction: column; align-items: center; gap: 14px; }
     nav .nav-links { gap: 18px; justify-content: center; }
     nav .nav-links a { font-size: 13px; }
+    nav .nav-links .nav-menu-btn { font-size: 13px; }
+    /* Projects sits left of centre on a phone, so open the menu from the button's left edge rather than centred on it. */
+    .nav-menu-list { left: -12px; --menu-x: 0; }
     .hero .app-icon { width: 60px; height: 60px; margin-bottom: 22px; }
     .hero .lede { font-size: 17px; }
     .shots { gap: 36px; }
@@ -128,7 +150,13 @@
   <nav>
     <a class="logo" href="/">Brian <span class="logo-italic">Hirsh</span></a>
     <ul class="nav-links">
-      <li><a href="/#projects">Projects</a></li>
+      <li class="nav-menu">
+        <button type="button" class="nav-menu-btn" aria-expanded="false" aria-controls="projects-menu">Projects<svg class="chev" viewBox="0 0 10 6" aria-hidden="true"><path d="M1 1l4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+        <div class="nav-menu-list" id="projects-menu">
+          <a href="/workspace/"><img src="/workspace/media/workspace-logo-light.svg" alt="" width="26" height="26">Workspace</a>
+          <a href="/better-tab-manager/" aria-current="page"><img src="/better-tab-manager/media/icon-128.png" alt="" width="26" height="26">Better Tab Manager</a>
+        </div>
+      </li>
       <li><a href="/#connect">Connect</a></li>
     </ul>
   </nav>
@@ -140,7 +168,7 @@
     <p class="lede">Store and restore your tabs in one click. Turn a window full of tabs into one tidy list, then bring back a single tab or the whole list whenever you need it.</p>
     <div class="actions">
       <a class="btn" href="https://chromewebstore.google.com/detail/better-tab-manager/lplhelpfpdmcoplgcdpiibdefmkfcfip" target="_blank" rel="noopener">Add to Chrome</a>
-      <a class="text-link" href="https://github.com/bphirsh/even-better-onetab" target="_blank" rel="noopener">View the source <span class="arrow" aria-hidden="true">→</span></a>
+      <a class="text-link" href="https://github.com/bphirsh/better-tab-manager" target="_blank" rel="noopener">View the source <span class="arrow" aria-hidden="true">→</span></a>
     </div>
     <p class="fine">Works in Chrome and Brave. No account needed.</p>
   </header>
@@ -180,13 +208,13 @@
       <div class="section-label">Privacy</div>
       <h2>Your tabs stay yours</h2>
       <p>Your lists live in your browser. There are no analytics, no tracking, no ads and no server of ours — the developer never sees your data. Sync is off until you turn it on, and then it only goes to places you control.</p>
-      <a class="text-link" href="https://bphirsh.github.io/even-better-onetab/privacy/" target="_blank" rel="noopener">Read the privacy policy <span class="arrow" aria-hidden="true">→</span></a>
+      <a class="text-link" href="https://bphirsh.github.io/better-tab-manager/privacy/" target="_blank" rel="noopener">Read the privacy policy <span class="arrow" aria-hidden="true">→</span></a>
     </section>
     <section class="card card-green fade-in">
       <div class="section-label">Open source</div>
       <h2>A modern rebuild</h2>
       <p>Better Tab Manager is a ground-up rebuild of Better OneTab, which stopped being updated around 2020 and no longer runs in today's Chrome. It's free and MIT licensed.</p>
-      <a class="text-link" href="https://github.com/bphirsh/even-better-onetab" target="_blank" rel="noopener">Source on GitHub <span class="arrow" aria-hidden="true">→</span></a>
+      <a class="text-link" href="https://github.com/bphirsh/better-tab-manager" target="_blank" rel="noopener">Source on GitHub <span class="arrow" aria-hidden="true">→</span></a>
     </section>
   </div>
 
@@ -201,6 +229,16 @@
     });
   }, { threshold: 0.12 });
   document.querySelectorAll('.fade-in').forEach((el) => observer.observe(el));
+
+  // Projects menu: hover opens it for a mouse (CSS); a click or tap toggles it; a click elsewhere, Escape or tabbing away closes it.
+  document.querySelectorAll('.nav-menu').forEach((menu) => {
+    const btn = menu.querySelector('.nav-menu-btn');
+    const set = (open) => { menu.classList.toggle('open', open); btn.setAttribute('aria-expanded', String(open)); };
+    btn.addEventListener('click', (e) => { e.stopPropagation(); set(!menu.classList.contains('open')); });
+    document.addEventListener('click', (e) => { if (!menu.contains(e.target)) set(false); });
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && menu.classList.contains('open')) { set(false); btn.focus(); } });
+    menu.addEventListener('focusout', (e) => { if (e.relatedTarget && !menu.contains(e.relatedTarget)) set(false); });
+  });
 </script>
 </body>
 </html>
