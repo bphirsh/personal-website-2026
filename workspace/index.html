@@ -381,7 +381,9 @@
   .rm-hint { margin-right: auto; font-size: 13px; color: var(--text-muted); font-weight: 300; }
   .rm-arrow { width: 36px; height: 36px; border-radius: 50%; border: 1px solid var(--border); background: var(--card); color: var(--text-primary); font-size: 20px; line-height: 1; cursor: pointer; box-shadow: var(--shadow); }
   .rm-arrow:disabled { opacity: 0.35; cursor: default; }
-  .roadmap { display: grid; grid-auto-flow: column; grid-auto-columns: calc((100% - 42px) / 4); gap: 14px; overflow-x: auto; scroll-snap-type: x mandatory; scroll-behavior: smooth; padding: 2px 2px 14px; scrollbar-width: thin; align-items: start; }
+  .roadmap::-webkit-scrollbar { display: none; }
+  /* Edge to edge: the row runs the full width of the screen, so earlier and later cards show going off the left and right, while its padding keeps the cards in view lined up with the page's content (1080px wide, or the screen less 20px each side). */
+  .roadmap { --rm-pad: max(20px, calc((100vw - 1080px) / 2)); --rm-w: calc(100vw - 2 * var(--rm-pad)); display: grid; grid-auto-flow: column; grid-auto-columns: calc((var(--rm-w) - 42px) / 4); gap: 14px; overflow-x: auto; scroll-snap-type: x mandatory; scroll-padding-inline: var(--rm-pad); scroll-behavior: smooth; margin: 0 calc(50% - 50vw); padding: 2px var(--rm-pad) 14px; scrollbar-width: none; align-items: start; }
   .roadmap > .leg { scroll-snap-align: start; }
   .leg.latest { box-shadow: 0 0 0 1px color-mix(in srgb, var(--green) 45%, transparent), var(--shadow); }
   .leg { background: var(--card); border-radius: 22px; padding: 22px 20px; box-shadow: var(--shadow); }
@@ -493,7 +495,7 @@
     .benefit.flip .b-text { order: 0; }
     .steps { grid-template-columns: 1fr; }
     .own { grid-template-columns: 1fr; padding: 34px 26px; }
-    .roadmap { grid-auto-columns: calc((100% - 14px) / 2); }
+    .roadmap { grid-auto-columns: calc((var(--rm-w) - 14px) / 2); }
   }
   @media (max-width: 680px) {
     .hero .lede { font-size: 17px; }
@@ -519,7 +521,7 @@
     .views .v-list, .col-head em { display: none; }
     .col-head { font-size: 11px; }
     .gather-captions { top: 3vh; }
-    .roadmap { grid-auto-columns: 84%; }
+    .roadmap { grid-auto-columns: calc(var(--rm-w) * 0.84); }
     .rm-hint { font-size: 12px; }
     .final { padding: 40px 22px; }
   }
@@ -846,7 +848,7 @@
     <div class="kicker">Roadmap</div>
     <h2 class="big">Where it's going.</h2>
     <p class="lede">I ship a new version every week or two. Here's what's done and what's coming.</p>
-    <!-- One card per shipped version, oldest on the left, then Next, Soon and Future. It starts at v1.0 and glides to the latest version (#rmLatest) the first time it is fully on screen; scroll or use the arrows to go back. Each version's "More in" list has the medium-sized changes; every change is on the release notes page. -->
+    <!-- One card per shipped version, oldest on the left, then Next, Soon and Future. It rolls from v1.0 to the latest version (#rmLatest) as the page scrolls it up to the middle of the screen; scroll or use the arrows to go back. Each version's "More in" list has the medium-sized changes; every change is on the release notes page. -->
     <div class="rm-wrap" style="text-align:left">
       <div class="rm-nav"><span class="rm-hint">← Scroll back for earlier versions</span><button type="button" class="rm-arrow" id="rmPrev" aria-label="Earlier">‹</button><button type="button" class="rm-arrow" id="rmNext" aria-label="Later">›</button></div>
       <div class="roadmap" id="roadmapTrack" tabindex="0" aria-label="Roadmap, oldest version first">
@@ -1256,48 +1258,40 @@
   }, { threshold: 0.4 }).observe(own);
 })();
 
-/* ROADMAP — it starts at the oldest version, and the first time the whole track is on screen it glides across to the latest, so visitors see there is history to scroll back to. The arrows move one card. */
+/* ROADMAP — it moves with the page: as the row comes up from the bottom of the screen it rolls from v1.0 towards the latest version, and it arrives (and stops) when the row is in the middle of the screen, so visitors see there is history to scroll back to. Scrolling the page back up rolls it back. Once the visitor scrolls the row or uses the arrows, it is theirs and stops following the page. */
 (function () {
   'use strict';
   var track = document.getElementById('roadmapTrack'), latest = document.getElementById('rmLatest');
   var prev = document.getElementById('rmPrev'), next = document.getElementById('rmNext');
   if (!track || !latest) return;
-  var arrived = false, touched = false;
+  var linked = !window.matchMedia('(prefers-reduced-motion: reduce)').matches, ticking = false;
   function step() { var c = track.querySelector('.leg'); return c ? c.getBoundingClientRect().width + 14 : 300; }
   function update() { prev.disabled = track.scrollLeft < 4; next.disabled = track.scrollLeft > track.scrollWidth - track.clientWidth - 4; }
   function target() { return Math.min(latest.offsetLeft - track.firstElementChild.offsetLeft, track.scrollWidth - track.clientWidth); }
-  function jump(x) { var b = track.style.scrollBehavior; track.style.scrollBehavior = 'auto'; track.scrollLeft = x; track.style.scrollBehavior = b; update(); }
-  function glide() {
-    if (arrived) return; arrived = true;
-    if (touched) return;
-    var to = target(), from = track.scrollLeft;
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) { jump(to); return; }
-    track.style.scrollSnapType = 'none'; track.style.scrollBehavior = 'auto';
-    var t0 = performance.now(), dur = 1500, done = false;
-    function finish() { if (done) return; done = true; track.scrollLeft = to; track.style.scrollSnapType = ''; track.style.scrollBehavior = ''; update(); }
-    (function frame(now) {
-      if (done || touched) { finish(); return; }
-      var t = Math.min(1, (now - t0) / dur), e = t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
-      track.scrollLeft = from + (to - from) * e;
-      if (t < 1) requestAnimationFrame(frame); else finish();
-    })(t0);
-    setTimeout(finish, dur + 400); // a background tab pauses animation frames: land there anyway
-  }
-  ['pointerdown', 'wheel', 'touchstart', 'keydown'].forEach(function (ev) { track.addEventListener(ev, function () { touched = true; }, { passive: true }); });
-  prev.addEventListener('click', function () { touched = true; track.scrollBy({ left: -step() }); });
-  next.addEventListener('click', function () { touched = true; track.scrollBy({ left: step() }); });
-  track.addEventListener('scroll', update, { passive: true });
-  window.addEventListener('resize', function () { if (arrived && !touched) jump(target()); else update(); });
-  jump(0);
-  // Once the whole track is on screen (or as much of it as fits), glide.
-  function check() {
-    if (arrived) return;
+  function follow() {
+    ticking = false;
+    if (!linked) return;
     var r = track.getBoundingClientRect(), vh = window.innerHeight;
-    var seen = Math.min(r.bottom, vh) - Math.max(r.top, 0);
-    if (r.height > 0 && seen >= Math.min(r.height, vh) * 0.9) { window.removeEventListener('scroll', check); setTimeout(glide, 250); }
+    // 0 when the row's top reaches the bottom of the screen, 1 when the row's middle reaches the middle of the screen.
+    var start = vh, end = vh / 2 - r.height / 2;
+    var p = Math.min(1, Math.max(0, (start - r.top) / (start - end)));
+    var e = 1 - Math.pow(1 - p, 2);
+    track.scrollLeft = target() * e;
+    update();
   }
-  window.addEventListener('scroll', check, { passive: true });
-  check();
+  function release() {
+    if (!linked) return;
+    linked = false; track.style.scrollSnapType = ''; track.style.scrollBehavior = '';
+  }
+  if (linked) { track.style.scrollSnapType = 'none'; track.style.scrollBehavior = 'auto'; }
+  else { track.style.scrollBehavior = 'auto'; track.scrollLeft = target(); track.style.scrollBehavior = ''; }
+  ['pointerdown', 'wheel', 'touchstart', 'keydown'].forEach(function (ev) { track.addEventListener(ev, release, { passive: true }); });
+  prev.addEventListener('click', function () { release(); track.scrollBy({ left: -step() }); });
+  next.addEventListener('click', function () { release(); track.scrollBy({ left: step() }); });
+  track.addEventListener('scroll', update, { passive: true });
+  window.addEventListener('scroll', function () { if (linked && !ticking) { ticking = true; requestAnimationFrame(follow); setTimeout(function () { if (ticking) follow(); }, 120); } }, { passive: true });
+  window.addEventListener('resize', function () { if (linked) follow(); else update(); });
+  follow();
 })();
 
 /* Sections fade up and the speed bars grow the first time they come into view. */
