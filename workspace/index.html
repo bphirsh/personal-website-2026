@@ -31,6 +31,56 @@
 <link rel="manifest" href="/workspace/site.webmanifest">
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/workspace/workspace.css">
+<!-- THEMES: the app's own eight themes, each with a day and a night, generated from v0/code/src/renderer/src/theme/themes/*.json (the same tokens the app uses). The buttons at the top pick one; the whole page and the drawn app windows follow. Day/night follows the Mac until the visitor picks one. Kept in this visitor's browser only. -->
+<script>
+(function () {
+  'use strict';
+  var K=["bg","surface","surface-sunken","fg","fg-secondary","fg-faint","border","accent","accent-soft","on-accent","hover","selection","chart-1","chart-2","chart-3","chart-4"];
+  var T={default:["Default","#FAF9F7,#FFFFFF,#F2F0EC,#1F1E1C,#6B6862,#807C74,#E8E5E0,#AD5531,#FAF0EA,#FFFFFF,#F1EEE9,#F3E0D5,#2A78D6,#EB6834,#1BAF7A,#EDA100","#1A1917,#232120,#151412,#EDEAE4,#A6A199,#8A857D,#302D2A,#D98A63,#3A2A21,#1A1917,#2A2725,#4A3527,#3987E5,#D95926,#199E70,#C98500"],
+  ink:["Ink","#F5F2EA,#F7F7F5,#EEE9DE,#232018,#675E47,#747980,#E5DFD1,#3167AD,#EAF1FA,#FFFFFF,#EDE8DB,#D5E2F3,#2A78D6,#EB6834,#1BAF7A,#EDA100","#14181D,#1C2027,#101317,#E1E7F0,#9EA5AB,#82898F,#252B35,#6BA9DB,#253441,#14181D,#20262F,#2B4051,#3987E5,#D95926,#199E70,#C98500"],
+  fjord:["Fjord","#ECEFF4,#F6F8FB,#E3E8EF,#2E3440,#4C566A,#7B8394,#D8DEE9,#4A6F9C,#DDE6F1,#FFFFFF,#E2E7EE,#CFDCEC,#2A78D6,#EB6834,#1BAF7A,#EDA100","#2E3440,#353C4A,#272C36,#ECEFF4,#B4BCCA,#7B8394,#434C5E,#88C0D0,#3A4A57,#2E3440,#3B4252,#45556A,#3987E5,#D95926,#199E70,#C98500"],
+  sorbet:["Sorbet","#EFF1F5,#F8F9FB,#E6E9EF,#4C4F69,#5F6279,#8C8FA1,#DCE0E8,#7A30D9,#EAE0FA,#FFFFFF,#E6E9EF,#DDD0F5,#2A78D6,#EB6834,#1BAF7A,#EDA100","#1E1E2E,#24243A,#181825,#CDD6F4,#A6ADC8,#7F849C,#313244,#CBA6F7,#33294A,#1E1E2E,#2A2A3E,#45395E,#3987E5,#D95926,#199E70,#C98500"],
+  bloom:["Bloom","#FAF4ED,#FFFAF3,#F2E9E1,#46425F,#686480,#9893A5,#E8DFD7,#A2566C,#F5E3E3,#FFFFFF,#F2EAE2,#EDD6D8,#2A78D6,#EB6834,#1BAF7A,#EDA100","#191724,#1F1D2E,#15131F,#E0DEF4,#A29EBC,#6E6A86,#2A2740,#EBBCBA,#2E2633,#191724,#24213A,#403D52,#3987E5,#D95926,#199E70,#C98500"],
+  ember:["Ember","#FBF1C7,#FDF6D9,#F2E5BC,#3C3836,#5F5650,#928374,#EBDBB2,#AF3A03,#F7E0BC,#FFFFFF,#F4E8BE,#F0D6A6,#2A78D6,#EB6834,#1BAF7A,#EDA100","#282828,#32302F,#1D2021,#EBDBB2,#BDAE93,#928374,#3C3836,#FE8019,#3E2F22,#282828,#3A3735,#504945,#3987E5,#D95926,#199E70,#C98500"],
+  moss:["Moss","#F4F0D9,#FBF8E8,#EAE6CC,#3F4A4F,#5E6A5A,#8A9483,#DDD8BC,#5E7314,#E4E9C6,#FFFFFF,#EBE7CF,#DCE4B8,#2A78D6,#EB6834,#1BAF7A,#EDA100","#2D353B,#343F44,#272E33,#D3C6AA,#A3AE9F,#7A8478,#475258,#A7C080,#3C4841,#2D353B,#374247,#485743,#3987E5,#D95926,#199E70,#C98500"],
+  stark:["Stark","#FFFFFF,#FFFFFF,#F0F0F0,#000000,#383838,#6E6E6E,#9A9A9A,#0040A8,#DCE8FA,#FFFFFF,#EDEDED,#B8D3FA,#2A78D6,#EB6834,#1BAF7A,#EDA100","#000000,#0E0E0E,#000000,#FFFFFF,#D4D4D4,#8F8F8F,#707070,#7CC0FF,#0F2A45,#000000,#1C1C1C,#1E4A7A,#3987E5,#D95926,#199E70,#C98500"]};
+  var store = { name: 'default', mode: 'auto' };
+  try { var s = JSON.parse(localStorage.getItem('ws-theme') || 'null'); if (s && T[s.name]) store.name = s.name; if (s && /^(auto|day|night)$/.test(s.mode)) store.mode = s.mode; } catch (e) {}
+  var dark = window.matchMedia('(prefers-color-scheme: dark)');
+  function night() { return store.mode === 'auto' ? dark.matches : store.mode === 'night'; }
+  function tokens(name, isNight) { var v = T[name][isNight ? 2 : 1].split(','), o = {}; K.forEach(function (k, i) { o[k] = v[i]; }); return o; }
+  function apply() {
+    var n = night(), t = tokens(store.name, n), r = document.documentElement, st = r.style;
+    var map = {
+      '--bg': t.bg, '--card': t.surface, '--field-bg': t.surface, '--text-primary': t.fg, '--text-secondary': t['fg-secondary'], '--text-muted': t['fg-faint'],
+      '--accent': t.accent, '--border': t.border, '--win': t.surface, '--win-side': t['surface-sunken'], '--win-bar': t['surface-sunken'], '--win-line': t.border,
+      '--chip': t.surface, '--soft': t['accent-soft'], '--on-accent': t['on-accent'], '--hover': t.hover, '--selection': t.selection,
+      '--blue': t['chart-1'], '--red': t['chart-2'], '--green': t['chart-3'], '--amber': t['chart-4'],
+      '--chip-shadow': n ? '0 10px 30px rgba(0,0,0,0.45)' : '0 10px 30px rgba(26,26,26,0.10), 0 1px 2px rgba(26,26,26,0.06)',
+      '--win-shadow': n ? '0 30px 80px rgba(0,0,0,0.5)' : '0 30px 80px rgba(26,26,26,0.14), 0 2px 6px rgba(26,26,26,0.06)'
+    };
+    Object.keys(map).forEach(function (k) { st.setProperty(k, map[k]); });
+    r.dataset.theme = n ? 'dark' : 'light';
+    r.dataset.themeName = store.name;
+    r.style.colorScheme = n ? 'dark' : 'light';
+    var metas = document.querySelectorAll('meta[name="theme-color"]');
+    Array.prototype.forEach.call(metas, function (m) { m.setAttribute('content', t.bg); m.removeAttribute('media'); });
+    // The logo pictures pick their light or dark file by the theme, not the Mac.
+    Array.prototype.forEach.call(document.querySelectorAll('picture source[data-dark]'), function (s) { s.media = n ? 'all' : 'not all'; });
+    document.dispatchEvent(new CustomEvent('wstheme'));
+  }
+  function save() { try { localStorage.setItem('ws-theme', JSON.stringify(store)); } catch (e) {} }
+  window.wsTheme = {
+    T: T, tokens: tokens, night: night, current: function () { return store.name; }, mode: function () { return store.mode; },
+    set: function (name) { if (T[name]) { store.name = name; save(); apply(); } },
+    setMode: function (m) { store.mode = m; save(); apply(); }
+  };
+  var f = function () { if (store.mode === 'auto') apply(); };
+  if (dark.addEventListener) dark.addEventListener('change', f); else if (dark.addListener) dark.addListener(f);
+  apply();
+  document.addEventListener('DOMContentLoaded', apply);
+})();
+</script>
 <style>
   :root {
     --win: #FFFFFF;
@@ -68,6 +118,33 @@
   .site-wrapper.wide-wrapper { max-width: 1120px; padding-bottom: 40px; }
   nav { margin-bottom: 0; position: relative; z-index: 4; }
   .nav-cta { padding: 9px 18px; font-size: 13px; }
+  /* The filled buttons take the theme's text colour as their ground and its page colour as their label, in every theme. */
+  .btn { background: var(--text-primary); color: var(--bg); }
+  .btn-quiet { background: transparent; color: var(--text-primary); }
+
+  /* THEME BAR: the app's eight themes as swatches, the chosen one ringed, then its name and day or night. */
+  .theme-bar { display: flex; align-items: center; gap: 10px; padding: 5px 6px 5px 8px; background: var(--card); border: 1px solid var(--border); border-radius: 100px; box-shadow: var(--shadow); }
+  .th-swatches { display: flex; gap: 5px; }
+  .th-swatches button { display: block; padding: 0; border: none; background: none; cursor: pointer; border-radius: 6px; outline-offset: 2px; transition: transform 0.15s; }
+  .th-swatches button:hover { transform: translateY(-1px); }
+  .th-swatches svg { display: block; width: 40px; height: 20px; border-radius: 5px; box-shadow: 0 0 0 1px var(--border); }
+  .th-swatches button[aria-pressed="true"] svg { box-shadow: 0 0 0 2px var(--accent); }
+  .th-name { font-size: 12.5px; font-weight: 500; color: var(--text-secondary); min-width: 52px; }
+  .th-mode { display: flex; gap: 2px; background: var(--win-side); border-radius: 100px; padding: 2px; }
+  .th-mode button { width: 28px; height: 24px; border: none; background: none; border-radius: 100px; color: var(--text-muted); cursor: pointer; display: flex; align-items: center; justify-content: center; }
+  .th-mode button[aria-pressed="true"] { background: var(--card); color: var(--text-primary); box-shadow: 0 1px 2px rgba(0,0,0,0.12); }
+  .th-mode svg { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+  @media (max-width: 900px) {
+    nav { flex-wrap: wrap; row-gap: 12px; }
+    .theme-bar { order: 3; width: 100%; justify-content: center; }
+  }
+  @media (max-width: 680px) {
+    .theme-bar { gap: 8px; padding: 4px 5px 4px 8px; width: auto; margin: 0 auto; }
+    .th-swatches { gap: 3px; flex: none; }
+    .th-swatches svg { width: 28px; height: 14px; border-radius: 4px; }
+    .th-mode button { width: 26px; height: 22px; }
+    .th-name { display: none; }
+  }
 
   /* ── HERO ── */
   .hero { position: relative; text-align: center; min-height: max(620px, calc(100vh - 110px)); display: flex; flex-direction: column; justify-content: center; padding: 20px 0 40px; }
@@ -90,7 +167,6 @@
   .hero .lede { margin: 0 auto; font-size: 19px; max-width: 46ch; }
   .ctas { display: flex; justify-content: center; align-items: center; flex-wrap: wrap; gap: 14px; margin-top: 30px; }
   .btn-quiet { background: transparent; color: var(--text-primary); border: 1px solid var(--border); }
-  @media (prefers-color-scheme: dark) { .btn-quiet { background: transparent; color: var(--text-primary); } }
   .fine { margin-top: 14px; font-size: 13px; color: var(--text-muted); font-weight: 300; }
 
   /* A phone can't install a Mac app, so it is offered the link by email instead. */
@@ -128,7 +204,7 @@
   .pane { transition: opacity 0.4s ease; }
   .views span[role="button"] { cursor: pointer; }
   .show-tabs { position: absolute; left: 50%; bottom: max(14px, 3.5vh); transform: translateX(-50%); z-index: 4; display: flex; gap: 4px; background: var(--card); border: 1px solid var(--border); border-radius: 100px; padding: 5px; box-shadow: var(--chip-shadow); opacity: 0; visibility: hidden; }
-  .show-tabs button { position: relative; overflow: hidden; border: none; background: transparent; font: inherit; font-size: 14px; font-weight: 500; color: var(--text-secondary); padding: 9px 18px; border-radius: 100px; cursor: pointer; transition: background 0.25s, color 0.25s; }
+  .show-tabs button { position: relative; overflow: hidden; border: none; background: transparent; font: inherit; font-size: 14px; font-weight: 500; color: var(--text-secondary); padding: 9px 18px; border-radius: 100px; cursor: pointer; transition: background 0.25s, color 0.25s; display: inline-flex; align-items: center; gap: 7px; }
   .show-tabs button.on { background: var(--text-primary); color: var(--bg); }
   .show-tabs button::after { content: ''; position: absolute; left: 14px; right: 14px; bottom: 4px; height: 2px; border-radius: 2px; background: var(--accent); transform: scaleX(0); transform-origin: left; }
   .show-tabs button.run::after { animation: fillbar 3.8s linear forwards; }
@@ -142,84 +218,99 @@
   .cap h2 { font-family: 'DM Serif Display', serif; font-weight: 400; font-size: clamp(26px, 3.6vw, 40px); letter-spacing: -1px; line-height: 1.1; }
   .cap p { color: var(--text-secondary); font-weight: 300; font-size: 16px; margin-top: 8px; }
 
+  /* THE WINDOW is drawn as the app draws itself (its welcome's MiniWindow, Sidebar, TabBar, Grid and BoardView): a sunken left bar the full height of the window with the window's buttons on it, Agents and Changes above the vault's tree and Settings at its foot; a sunken tab bar over the page; the app's own line icons. Colours are the theme's tokens, set by the theme script. */
+  .sprite { position: absolute; width: 0; height: 0; overflow: hidden; }
+  svg.i { width: 15px; height: 15px; flex: none; fill: none; stroke: currentColor; stroke-width: 1.75; stroke-linecap: round; stroke-linejoin: round; }
   .win {
     position: relative; z-index: 1;
     width: min(900px, 94vw); height: min(520px, 60vh);
     margin-top: 13vh;
-    background: var(--win); border-radius: 18px; box-shadow: var(--win-shadow);
+    background: var(--win); border-radius: 12px; box-shadow: var(--win-shadow);
     border: 1px solid var(--win-line);
-    display: grid; grid-template-columns: 27% 1fr; grid-template-rows: 38px 1fr;
-    overflow: hidden; text-align: left;
+    display: grid; grid-template-columns: 27% 1fr; grid-template-rows: 1fr;
+    overflow: hidden; text-align: left; color: var(--text-primary);
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', sans-serif;
   }
-  .win-bar { grid-column: 1 / -1; background: var(--win-bar); display: flex; align-items: center; gap: 8px; padding: 0 14px; border-bottom: 1px solid var(--win-line); }
-  .win-bar i { width: 11px; height: 11px; border-radius: 50%; border: 1px solid var(--text-muted); opacity: 0.6; }
-  .win-bar .tab { margin-left: 18px; font-size: 12px; color: var(--text-secondary); background: var(--win); padding: 5px 12px; border-radius: 7px 7px 0 0; align-self: flex-end; min-width: 90px; }
-  .win-side { background: var(--win-side); border-right: 1px solid var(--win-line); padding: 14px 10px; overflow: hidden; }
-  .win-side .vault { font-size: 11px; color: var(--text-muted); padding: 0 8px 8px; letter-spacing: 0.3px; }
-  .row { display: flex; align-items: center; gap: 8px; font-size: 13px; padding: 4px 8px; border-radius: 6px; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; opacity: 0; transition: background 0.3s; }
-  .row.folder { font-weight: 500; opacity: 1; }
-  .row.indent { padding-left: 24px; }
-  .row .ic { width: 16px; text-align: center; flex: none; font-size: 12px; }
+  .lights { position: absolute; top: 13px; left: 14px; z-index: 3; display: flex; gap: 7px; }
+  .lights i { width: 11px; height: 11px; border-radius: 50%; background: #ff5f57; box-shadow: inset 0 0 0 0.5px rgba(0,0,0,0.12); }
+  .lights i:nth-child(2) { background: #febc2e; }
+  .lights i:nth-child(3) { background: #28c840; }
+  .win-side { position: relative; background: var(--win-side); border-right: 1px solid var(--win-line); padding: 38px 8px 8px; overflow: hidden; }
+  .place { display: flex; align-items: center; gap: 8px; font-size: 13px; height: 25px; padding: 0 8px; border-radius: 6px; color: var(--text-secondary); white-space: nowrap; }
+  .place .badge { margin-left: auto; font-style: normal; font-size: 11px; color: var(--text-secondary); background: var(--hover); border-radius: 100px; padding: 0 7px; }
+  .win-side .vault { font-size: 11px; color: var(--text-muted); padding: 9px 8px 3px; font-weight: 500; }
+  .row { display: flex; align-items: center; gap: 5px; font-size: 13px; height: 23px; padding: 0 6px; border-radius: 6px; color: var(--text-primary); white-space: nowrap; overflow: hidden; opacity: 0; transition: background 0.3s; }
+  .row .nm, .place .nm { overflow: hidden; text-overflow: ellipsis; }
+  .row svg.i { color: var(--text-secondary); }
+  .row .chev { width: 12px; flex: none; display: flex; color: var(--text-muted); }
+  .row .chev svg.i { width: 11px; height: 11px; stroke-width: 2.2; }
+  .row .chev.open svg.i { transform: rotate(90deg); }
+  .row.folder { opacity: 1; }
+  .row.indent { padding-left: 23px; }
   .row.lit { background: var(--soft); }
-  .win-main { position: relative; overflow: hidden; }
-  .pane { position: absolute; inset: 0; padding: 26px 32px; overflow: hidden; }
-  .pane .crumb { font-size: 11px; color: var(--text-muted); margin-bottom: 12px; }
+  .win-main { position: relative; overflow: hidden; background: var(--win); }
+  .tabbar { position: absolute; left: 0; right: 0; top: 0; height: 38px; display: flex; align-items: stretch; background: var(--win-side); background-image: linear-gradient(to top, var(--win-line) 1px, transparent 1px); z-index: 2; transition: padding 0.2s; }
+  .win.side-gone .tabbar { padding-left: 70px; }
+  .tabbar .tab { display: flex; align-items: center; gap: 7px; padding: 0 9px 0 12px; max-width: 220px; background: var(--win); border-right: 1px solid var(--win-line); font-size: 12.5px; color: var(--text-primary); white-space: nowrap; }
+  .tabbar .tab span { overflow: hidden; text-overflow: ellipsis; min-width: 70px; }
+  .tabbar .tab svg.i { width: 13px; height: 13px; color: var(--text-secondary); }
+  .tabbar .tab svg.i:last-child { width: 11px; height: 11px; color: var(--text-muted); margin-left: 6px; }
+  .tab-plus { display: flex; align-items: center; padding: 0 10px; color: var(--text-muted); }
+  .tab-plus svg.i { width: 13px; height: 13px; }
+  .pane { position: absolute; inset: 38px 0 0 0; padding: 18px 32px; overflow: hidden; }
+  .doc-top { display: flex; justify-content: space-between; gap: 12px; font-size: 11.5px; color: var(--text-muted); margin-bottom: 14px; white-space: nowrap; }
+  .doc-top .crumb { overflow: hidden; text-overflow: ellipsis; color: var(--text-secondary); }
+  .doc-top .crumb b { font-weight: 400; color: var(--text-muted); margin: 0 3px; }
 
-  .pane-home h3 { font-weight: 600; font-size: clamp(20px, 2.6vw, 28px); letter-spacing: -0.5px; line-height: 1.15; margin-bottom: 12px; }
-  .pane-home p { font-size: 13.5px; color: var(--text-secondary); line-height: 1.6; max-width: 46ch; }
+  .pane-home h3 { font-weight: 700; font-size: clamp(20px, 2.6vw, 28px); letter-spacing: -0.5px; line-height: 1.15; margin-bottom: 12px; }
+  .pane-home p { font-size: 14px; color: var(--text-primary); line-height: 1.65; max-width: 46ch; }
   .counts { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 18px; }
-  .count { background: var(--win-side); border: 1px solid var(--win-line); border-radius: 10px; padding: 8px 12px; font-size: 12px; color: var(--text-secondary); }
+  .count { background: var(--win-side); border: 1px solid var(--win-line); border-radius: 6px; padding: 8px 12px; font-size: 12px; color: var(--text-secondary); }
   .count b { display: block; font-size: 18px; color: var(--text-primary); font-weight: 600; }
   .empty { color: var(--text-muted); font-size: 13px; }
 
-  /* The page: a cover, a title, and the Markdown a person or an agent writes. */
-  .pane-doc { padding: 0; }
-  .cover { height: 92px; background: linear-gradient(120deg, #f6c99f 0%, #e98a5a 45%, #b8460f 100%); position: relative; }
-  @media (prefers-color-scheme: dark) { .cover { background: linear-gradient(120deg, #6b3a1f 0%, #a24f24 50%, #e8823c 100%); } }
+  .pane-doc { padding: 18px 0 0; }
   .doc { padding: 0 34px 20px; }
-  .doc .emoji { font-size: 40px; line-height: 1; margin-top: -24px; position: relative; }
-  .doc h3 { font-weight: 700; font-size: clamp(22px, 2.8vw, 30px); letter-spacing: -0.6px; margin: 8px 0 4px; }
-  .doc .meta { font-size: 11.5px; color: var(--text-muted); margin-bottom: 14px; display: flex; gap: 8px; align-items: center; }
-  .doc .meta .pill { background: color-mix(in srgb, var(--accent) 12%, transparent); color: var(--accent); border-radius: 100px; padding: 1px 8px; font-weight: 500; }
-  .doc p { font-size: 13.5px; line-height: 1.65; color: var(--text-secondary); max-width: 56ch; }
-  .doc p b { color: var(--text-primary); font-weight: 600; }
-  .doc p mark { background: color-mix(in srgb, var(--amber) 22%, transparent); color: var(--text-primary); border-radius: 3px; padding: 0 2px; }
-  .doc h4 { font-size: 14.5px; font-weight: 600; margin: 14px 0 6px; }
-  .doc ul.check { list-style: none; display: grid; gap: 5px; font-size: 13.5px; }
-  .doc ul.check li { display: flex; gap: 8px; align-items: center; color: var(--text-secondary); }
-  .doc ul.check li::before { content: ''; width: 13px; height: 13px; border: 1.5px solid var(--text-muted); border-radius: 4px; flex: none; }
-  .doc ul.check li.x { text-decoration: line-through; color: var(--text-muted); }
-  .doc ul.check li.x::before { background: var(--green); border-color: var(--green); }
-  .doc blockquote { margin-top: 14px; border-left: 3px solid var(--accent); padding: 4px 0 4px 12px; font-size: 13px; color: var(--text-secondary); font-style: italic; }
+  .doc h3 { font-weight: 700; font-size: clamp(22px, 2.8vw, 30px); letter-spacing: -0.6px; line-height: 1.15; margin: 4px 0 12px; }
+  .doc p { font-size: 14px; line-height: 1.65; color: var(--text-primary); max-width: 56ch; }
+  .doc p b { font-weight: 600; }
+  .doc p mark { background: color-mix(in srgb, var(--amber) 32%, transparent); color: inherit; border-radius: 2px; padding: 0 1px; }
+  .doc h4 { font-size: 17px; font-weight: 700; margin: 16px 0 6px; letter-spacing: -0.2px; }
+  .doc ul.check { list-style: none; display: grid; gap: 4px; font-size: 14px; padding-left: 4px; }
+  .doc ul.check li { display: flex; gap: 9px; align-items: center; }
+  .doc .box { width: 14px; height: 14px; border: 1.5px solid var(--text-muted); border-radius: 3px; flex: none; display: flex; align-items: center; justify-content: center; }
+  .doc li.x .box { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
+  .doc .box svg.i { width: 11px; height: 11px; stroke-width: 3; }
+  .doc blockquote { margin-top: 14px; border-left: 3px solid var(--win-line); padding: 2px 0 2px 14px; font-size: 14px; color: var(--text-secondary); }
 
-  /* The database: one set of task elements, placed by the script anywhere between a table (m = 0) and a board (m = 1). */
-  .pane-db h3 { font-weight: 600; font-size: clamp(20px, 2.6vw, 26px); letter-spacing: -0.5px; margin-bottom: 10px; display: flex; align-items: center; gap: 10px; }
-  .views { display: flex; gap: 4px; margin-bottom: 14px; font-size: 12px; }
-  .views span { padding: 4px 10px; border-radius: 7px; color: var(--text-muted); border: 1px solid transparent; transition: all 0.3s; }
-  .views span.on { color: var(--text-primary); background: var(--win-side); border-color: var(--win-line); font-weight: 500; }
+  .pane-db h3 { font-weight: 700; font-size: clamp(20px, 2.6vw, 26px); letter-spacing: -0.5px; margin-bottom: 10px; display: flex; align-items: center; gap: 10px; }
+  .pane-db h3 svg.i { width: 22px; height: 22px; color: var(--text-secondary); }
+  .views { display: flex; gap: 2px; margin-bottom: 12px; font-size: 12.5px; }
+  .views span { display: inline-flex; align-items: center; gap: 6px; padding: 4px 9px; border-radius: 6px; color: var(--text-secondary); transition: background 0.3s, color 0.3s; }
+  .views span svg.i { width: 13px; height: 13px; }
+  .views span.on { color: var(--text-primary); background: var(--hover); font-weight: 500; }
   .db { position: relative; height: 252px; }
-  .db-head { position: absolute; left: 0; right: 0; top: 0; height: 28px; display: grid; grid-template-columns: 1fr 90px 80px; gap: 8px; align-items: center; font-size: 11px; color: var(--text-muted); letter-spacing: 0.4px; border-bottom: 1px solid var(--win-line); padding: 0 10px; }
-  .col-head { position: absolute; top: 0; height: 28px; display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; opacity: 0; white-space: nowrap; }
-  .col-head i { width: 8px; height: 8px; border-radius: 50%; }
-  .col-head em { font-style: normal; color: var(--text-muted); font-weight: 400; }
-  .col-bg { position: absolute; top: 32px; bottom: 0; border-radius: 12px; background: var(--win-side); opacity: 0; }
-  .task { position: absolute; top: 0; left: 0; overflow: hidden; font-size: 13px; }
-  .task .t-bg { position: absolute; inset: 0; background: var(--win); border: 1px solid var(--win-line); border-radius: 10px; box-shadow: 0 2px 8px rgba(26,26,26,0.06); opacity: 0; }
+  .db-head { position: absolute; left: 0; right: 0; top: 0; height: 30px; display: grid; grid-template-columns: 1fr 96px 84px; align-items: stretch; font-size: 12.5px; color: var(--text-secondary); border-top: 1px solid var(--win-line); border-bottom: 1px solid var(--win-line); }
+  .db-head span, .task .t-title, .task .cell { display: flex; align-items: center; padding: 0 10px; border-right: 1px solid var(--win-line); min-width: 0; }
+  .db-head span:last-child, .task .cell.owner { border-right: none; }
+  .col-head { position: absolute; top: 2px; height: 26px; display: flex; align-items: center; gap: 6px; font-size: 12.5px; opacity: 0; white-space: nowrap; }
+  .col-head em { font-style: normal; color: var(--text-muted); }
+  .col-bg { position: absolute; top: 32px; bottom: 0; border-radius: 6px; background: var(--win-side); opacity: 0; }
+  .task { position: absolute; top: 0; left: 0; overflow: hidden; font-size: 13.5px; }
+  .task .t-bg { position: absolute; inset: 0; background: var(--win); border: 1px solid var(--win-line); border-radius: 6px; opacity: 0; }
   .task .t-line { position: absolute; left: 0; right: 0; bottom: 0; height: 1px; background: var(--win-line); }
-  .task .t-row { position: relative; display: grid; grid-template-columns: 1fr 90px 80px; gap: 8px; align-items: center; height: 36px; padding: 0 10px; }
-  .task .t-title { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .task .t-row { position: relative; display: grid; grid-template-columns: 1fr 96px 84px; align-items: stretch; height: 36px; }
+  .task .t-title { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; line-height: 36px; }
   .task .t-cells { display: contents; }
-  /* Past halfway to a board, a task drops its table cells and lays out as a card: title on top, status and owner under it. */
   .task.is-card .t-row { display: block; height: auto; padding: 9px 10px 0; line-height: 18px; }
-  .task.is-card .t-title { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; white-space: normal; line-height: 1.3; }
+  .task.is-card .t-title { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; white-space: normal; line-height: 1.3; padding: 0; border: none; font-weight: 500; }
   .task.is-card .t-meta { position: relative; left: 0; top: 0; padding: 5px 10px 0; }
   .task.is-card .t-cells { display: none; }
-  .task.is-card .t-title { font-weight: 500; }
-  .task .t-meta { position: absolute; left: 10px; top: 32px; display: flex; gap: 6px; align-items: center; font-size: 11px; color: var(--text-muted); opacity: 0; white-space: nowrap; }
-  .pill-s { font-size: 11px; border-radius: 100px; padding: 1px 8px; white-space: nowrap; justify-self: start; }
-  .pill-s.todo { background: color-mix(in srgb, var(--text-muted) 18%, transparent); color: var(--text-secondary); }
-  .pill-s.doing { background: color-mix(in srgb, var(--blue) 16%, transparent); color: var(--blue); }
-  .pill-s.done { background: color-mix(in srgb, var(--green) 16%, transparent); color: var(--green); }
+  .task .t-meta { position: absolute; left: 10px; top: 32px; display: flex; gap: 6px; align-items: center; font-size: 11.5px; color: var(--text-secondary); opacity: 0; white-space: nowrap; }
+  .pill-s { font-size: 12px; border-radius: 4px; padding: 1px 7px; white-space: nowrap; justify-self: start; color: var(--text-primary); }
+  .pill-s.todo { background: color-mix(in srgb, var(--text-muted) 20%, transparent); }
+  .pill-s.doing { background: color-mix(in srgb, var(--blue) 22%, transparent); }
+  .pill-s.done { background: color-mix(in srgb, var(--green) 22%, transparent); }
   .owner { font-size: 12px; color: var(--text-secondary); }
 
   /* ── SECTIONS ── */
@@ -359,28 +450,49 @@
   .swap { overflow: hidden; border-radius: 14px; }
   .swap-track { display: flex; width: 200%; transition: transform 0.9s cubic-bezier(.6,.05,.2,1); }
   .swap-track.ws { transform: translateX(-50%); }
-  .mini { width: 50%; background: var(--win); border: 1px solid var(--win-line); border-radius: 14px; overflow: hidden; }
-  .mini-bar { height: 30px; background: var(--win-bar); border-bottom: 1px solid var(--win-line); display: flex; align-items: center; gap: 6px; padding: 0 12px; }
-  .mini-bar i { width: 9px; height: 9px; border-radius: 50%; border: 1px solid var(--text-muted); opacity: 0.6; }
-  .mini-bar span { margin: 0 auto; font-size: 11.5px; color: var(--text-secondary); font-weight: 500; transform: translateX(-20px); }
+  /* Finder is drawn in macOS's own colours, light or dark by the theme's day or night, never the theme's: in the theme's palette it would read as Workspace, and the point is that these are two views of the same files (as the app's welcome draws it). */
+  .mini { width: 50%; border-radius: 12px; overflow: hidden; border: 1px solid var(--win-line); }
+  .mini .lights { position: static; gap: 6px; }
+  .mini .lights i { width: 9px; height: 9px; }
+  .mini.finder { --f-bg: #ffffff; --f-bar: #f6f5f4; --f-side: #edeceb; --f-fg: #1d1d1f; --f-fg2: #86868b; --f-line: #e3e3e3; --f-sel: #e0dfde; background: var(--f-bg); color: var(--f-fg); border-color: var(--f-line); }
+  :root[data-theme="dark"] .mini.finder { --f-bg: #1e1e1e; --f-bar: #2a2a2a; --f-side: #262626; --f-fg: #ededed; --f-fg2: #98989d; --f-line: #3a3a3a; --f-sel: #3a3a3a; }
+  .finder .mini-bar { height: 34px; background: var(--f-bar); border-bottom: 1px solid var(--f-line); display: flex; align-items: center; gap: 14px; padding: 0 12px; }
+  .finder .mini-bar span { font-size: 12px; font-weight: 600; color: var(--f-fg); }
   .mini-body { display: grid; grid-template-columns: 36% 1fr; height: 214px; }
-  .f-side { background: var(--win-side); border-right: 1px solid var(--win-line); padding: 10px 8px; font-size: 11.5px; display: grid; align-content: start; gap: 2px; }
-  .f-side small { font-size: 10px; color: var(--text-muted); padding: 0 6px 4px; }
+  .finder .mini-body { height: 210px; }
+  .f-side { background: var(--f-side); border-right: 1px solid var(--f-line); padding: 10px 8px; font-size: 11.5px; display: grid; align-content: start; gap: 2px; }
+  .f-side small { font-size: 10px; color: var(--f-fg2); padding: 0 6px 4px; font-weight: 600; }
   .f-side div { padding: 3px 6px; border-radius: 5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .f-side .on { background: var(--soft); }
-  .finder .f-side .on { background: color-mix(in srgb, #4d97ec 18%, transparent); }
+  .f-side .on { background: var(--f-sel); }
   .f-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px 6px; padding: 14px 10px; align-content: start; }
-  .f-item { display: flex; flex-direction: column; align-items: center; gap: 5px; font-size: 10.5px; color: var(--text-secondary); text-align: center; line-height: 1.2; word-break: break-word; }
+  .f-item { display: flex; flex-direction: column; align-items: center; gap: 5px; font-size: 10.5px; color: var(--f-fg); text-align: center; line-height: 1.2; word-break: break-word; }
   .fi { width: 34px; height: 40px; position: relative; }
   .fi.doc { background: #fff; border: 1px solid rgba(0,0,0,0.12); border-radius: 3px 10px 3px 3px; font-size: 8px; font-weight: 700; letter-spacing: 0; white-space: nowrap; color: #8a8580; display: flex; align-items: flex-end; justify-content: center; padding-bottom: 5px; box-shadow: 0 2px 4px rgba(0,0,0,0.08); }
   .fi.folder { width: 42px; height: 32px; margin-top: 8px; border-radius: 4px; background: linear-gradient(180deg, #7cb7f5, #4d97ec); }
   .fi.folder::before { content: ''; position: absolute; left: 0; top: -5px; width: 16px; height: 7px; border-radius: 3px 3px 0 0; background: #6aacf2; }
   .fi.img { width: 38px; height: 30px; margin-top: 10px; border-radius: 3px; background: linear-gradient(135deg, #f6c99f, #e98a5a 60%, #7aa0c8); border: 2px solid #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.12); }
-  .w-page { padding: 14px 16px; display: grid; gap: 8px; align-content: start; font-size: 14px; }
-  .w-page .ln { height: 7px; border-radius: 4px; background: var(--win-line); }
+  /* Workspace: the big window's parts, smaller. */
+  .mini.wsp { background: var(--win); color: var(--text-primary); font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', sans-serif; }
+  .wsp .mini-body { height: 244px; grid-template-columns: 38% 1fr; }
+  .w-side { background: var(--win-side); border-right: 1px solid var(--win-line); padding: 12px 6px 8px; font-size: 11.5px; overflow: hidden; }
+  .w-side .lights { margin: 0 0 12px 6px; }
+  .w-side .vault { font-size: 10px; color: var(--text-muted); padding: 2px 6px 4px; font-weight: 500; }
+  .w-side .r { display: flex; align-items: center; gap: 5px; height: 21px; padding: 0 6px; border-radius: 5px; white-space: nowrap; overflow: hidden; }
+  .w-side .r svg.i { width: 12px; height: 12px; color: var(--text-secondary); }
+  .w-side .r.on { background: var(--soft); }
+  .w-main { position: relative; display: flex; flex-direction: column; min-width: 0; }
+  .w-main .tabbar { position: relative; height: 30px; flex: none; }
+  .w-main .tabbar .tab { font-size: 11px; padding: 0 8px 0 10px; gap: 5px; }
+  .w-main .tabbar .tab span { min-width: 0; }
+  .w-main .tabbar .tab svg.i { width: 11px; height: 11px; }
+  .w-page { padding: 12px 16px; display: grid; gap: 7px; align-content: start; font-size: 11px; }
+  .w-page .crumb { color: var(--text-muted); font-size: 9.5px; }
+  .w-page b { font-size: 16px; font-weight: 700; letter-spacing: -0.3px; }
+  .w-page .ln { height: 6px; border-radius: 3px; background: var(--win-line); }
   .w-page .w90 { width: 90%; } .w-page .w70 { width: 70%; } .w-page .w80 { width: 80%; }
-  .w-page .chk { width: 60%; height: 9px; border-radius: 4px; background: var(--win-line); position: relative; margin-left: 16px; }
-  .w-page .chk::before { content: ''; position: absolute; left: -16px; top: -1px; width: 10px; height: 10px; border-radius: 3px; border: 1.5px solid var(--text-muted); }
+  .w-page .chk { width: 60%; height: 7px; border-radius: 3px; background: var(--win-line); position: relative; margin-left: 16px; }
+  .w-page .chk::before { content: ''; position: absolute; left: -16px; top: -2px; width: 9px; height: 9px; border-radius: 2px; border: 1.5px solid var(--text-muted); }
+  .w-page .chk.x::before { background: var(--accent); border-color: var(--accent); }
 
   .reveal-up { opacity: 0; transform: translateY(24px); transition: opacity 0.7s ease, transform 0.7s ease; }
   .reveal-up.in { opacity: 1; transform: none; }
@@ -397,18 +509,23 @@
     .chip-in { font-size: 11.5px; padding: 7px 10px; }
     .chip-in small { display: none; }
     .win { grid-template-columns: 34% 1fr; height: 58vh; margin-top: 18vh; }
-    .pane { padding: 18px 16px; }
-    .pane-doc { padding: 0; }
+    .pane { padding: 14px 16px; }
+    .pane-doc { padding: 14px 0 0; }
     .doc { padding: 0 16px 16px; }
-    .doc p, .doc ul.check { font-size: 12.5px; }
-    .cover { height: 64px; }
-    .row { font-size: 11.5px; padding: 3px 6px; }
-    .row.indent { padding-left: 14px; }
+    .doc p, .doc ul.check, .doc blockquote { font-size: 12.5px; }
+    .doc-top .edited { display: none; }
+    .row { font-size: 11.5px; height: 22px; padding: 0 4px; }
+    .row.indent { padding-left: 12px; }
+    .row .chev { width: 8px; }
+    .place { font-size: 11.5px; height: 22px; padding: 0 6px; }
+    .place .badge { display: none; }
+    .tabbar .tab { max-width: 160px; font-size: 11.5px; }
     .db-head, .task .t-row { grid-template-columns: 1fr 74px; }
     .db-head span:nth-child(3), .task .owner { display: none; }
+    .db-head span:nth-child(2) { border-right: none; }
     .task { font-size: 11.5px; }
     .views { font-size: 11px; white-space: nowrap; }
-    .views .v-cal, .col-head em { display: none; }
+    .views .v-list, .col-head em { display: none; }
     .col-head { font-size: 11px; }
     .gather-captions { top: 3vh; }
     .roadmap { grid-auto-columns: 84%; }
@@ -448,13 +565,22 @@
 
   <nav>
     <a href="/" class="logo">Brian <span class="logo-italic">Hirsh</span></a>
+    <!-- The app's themes, as its Settings shows them: day left of the diagonal, night right. Filled in by the script at the end from window.wsTheme. -->
+    <div class="theme-bar" id="themeBar" role="group" aria-label="Page theme">
+      <div class="th-swatches" id="thSwatches"></div>
+      <span class="th-name" id="thName" aria-live="polite">Default</span>
+      <div class="th-mode" role="group" aria-label="Day or night">
+        <button type="button" data-mode="day" aria-label="Day" title="Day"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2.5v2.5M12 19v2.5M2.5 12H5M19 12h2.5M5.3 5.3l1.8 1.8M16.9 16.9l1.8 1.8M5.3 18.7l1.8-1.8M16.9 7.1l1.8-1.8"/></svg></button>
+        <button type="button" data-mode="night" aria-label="Night" title="Night"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.5A8 8 0 0 1 9.5 4 8 8 0 1 0 20 14.5z"/></svg></button>
+      </div>
+    </div>
     <a class="btn nav-cta for-mac" href="/workspace/download/">Download for Mac</a>
     <a class="btn nav-cta for-phone" href="/workspace/signup/">Get the link</a>
   </nav>
 
   <header class="hero fade-up" id="hero">
     <picture class="app-icon">
-      <source media="(prefers-color-scheme: dark)" srcset="/workspace/media/workspace-logo-dark.svg">
+      <source data-dark media="(prefers-color-scheme: dark)" srcset="/workspace/media/workspace-logo-dark.svg">
       <img src="/workspace/media/workspace-logo-light.svg" alt="Workspace" width="84" height="84" decoding="async">
     </picture>
     <h1>Finally, see <em class="rot" id="rot">everything</em> you and your agents are working on.</h1>
@@ -478,28 +604,48 @@
         <div class="cap" data-cap="4"><h2>Databases that do the heavy lifting.</h2><p>Relations, lookups and rollups, and every view you need. Turn a table into a board in one click.</p></div>
       </div>
 
+      <svg class="sprite" aria-hidden="true" width="0" height="0">
+        <!-- The app's own icons (v0/code/src/renderer/src/ui/icons.ts): one 24-unit box, a 1.75 stroke, currentColor. -->
+        <symbol id="i-chevron" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></symbol>
+        <symbol id="i-folder" viewBox="0 0 24 24"><path d="M3 7a2 2 0 012-2h4l2 2h8a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V7z"/></symbol>
+        <symbol id="i-file" viewBox="0 0 24 24"><path d="M14 3H7a2 2 0 00-2 2v14a2 2 0 002 2h10a2 2 0 002-2V8l-5-5zM14 3v5h5"/></symbol>
+        <symbol id="i-database" viewBox="0 0 24 24"><path d="M4 6c0-1.7 3.6-3 8-3s8 1.3 8 3-3.6 3-8 3-8-1.3-8-3zM4 6v12c0 1.7 3.6 3 8 3s8-1.3 8-3V6M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3"/></symbol>
+        <symbol id="i-image" viewBox="0 0 24 24"><path d="M3 5a2 2 0 012-2h14a2 2 0 012 2v14a2 2 0 01-2 2H5a2 2 0 01-2-2V5zM8.5 10a1.5 1.5 0 100-3 1.5 1.5 0 000 3zM21 16l-5-5L5 21"/></symbol>
+        <symbol id="i-agent" viewBox="0 0 24 24"><path d="M7 8h10a2 2 0 012 2v6a2 2 0 01-2 2H7a2 2 0 01-2-2v-6a2 2 0 012-2zM12 4.5V8M10 13h.01M14 13h.01"/></symbol>
+        <symbol id="i-changes" viewBox="0 0 24 24"><path d="M3 12h4l3-7 4 14 3-7h4"/></symbol>
+        <symbol id="i-settings" viewBox="0 0 24 24"><path d="M4 7h10M18 7h2M4 12h2M10 12h10M4 17h8M16 17h4M16 5v4M8 10v4M14 15v4"/></symbol>
+        <symbol id="i-close" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></symbol>
+        <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+        <symbol id="i-grid" viewBox="0 0 24 24"><path d="M4 5h6v6H4V5zM14 5h6v6h-6V5zM4 15h6v6H4v-6zM14 15h6v6h-6v-6z"/></symbol>
+        <symbol id="i-row" viewBox="0 0 24 24"><path d="M4 5a2 2 0 012-2h12a2 2 0 012 2v14a2 2 0 01-2 2H6a2 2 0 01-2-2V5zM4 9h16M4 12h16M4 15h16M9 9v12"/></symbol>
+        <symbol id="i-list" viewBox="0 0 24 24"><path d="M4 6h2M9 6h11M4 12h2M9 12h11M4 18h2M9 18h11"/></symbol>
+        <symbol id="i-check" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7"/></symbol>
+      </svg>
       <div class="win" id="win">
-        <div class="win-bar"><i></i><i></i><i></i><div class="tab" id="winTab">Home</div></div>
+        <span class="lights" aria-hidden="true"><i></i><i></i><i></i></span>
         <div class="win-side">
+          <div class="place"><svg class="i"><use href="#i-agent"/></svg><span class="nm">Agents</span></div>
+          <div class="place"><svg class="i"><use href="#i-changes"/></svg><span class="nm">Changes</span><em class="badge">3</em></div>
           <div class="vault">Your vault</div>
-          <div class="row folder"><span class="ic">▾</span>Projects</div>
-          <div class="row indent" data-row="plan"><span class="ic">📄</span>Launch plan</div>
-          <div class="row indent" data-row="research"><span class="ic">📄</span>Research</div>
-          <div class="row indent" data-row="meeting"><span class="ic">📄</span>Meeting notes</div>
-          <div class="row folder"><span class="ic">▾</span>Databases</div>
-          <div class="row indent" data-row="clients"><span class="ic">▦</span>Clients</div>
-          <div class="row indent" data-row="tasks"><span class="ic">▦</span>Tasks</div>
-          <div class="row indent" data-row="reading"><span class="ic">▦</span>Reading list</div>
-          <div class="row folder"><span class="ic">▾</span>Agents</div>
-          <div class="row indent" data-row="roles"><span class="ic">🤖</span>Roles</div>
-          <div class="row indent" data-row="skills"><span class="ic">🧰</span>Skills</div>
-          <div class="row indent" data-row="agentsmd"><span class="ic">📄</span>AGENTS.md</div>
-          <div class="row folder"><span class="ic">▾</span>Files</div>
-          <div class="row indent" data-row="shots"><span class="ic">🖼️</span>Screenshots</div>
+          <div class="row folder"><span class="chev open"><svg class="i"><use href="#i-chevron"/></svg></span><svg class="i"><use href="#i-folder"/></svg><span class="nm">Projects</span></div>
+          <div class="row indent" data-row="plan"><span class="chev"></span><svg class="i"><use href="#i-file"/></svg><span class="nm">Launch plan</span></div>
+          <div class="row indent" data-row="research"><span class="chev"></span><svg class="i"><use href="#i-file"/></svg><span class="nm">Research</span></div>
+          <div class="row indent" data-row="meeting"><span class="chev"></span><svg class="i"><use href="#i-file"/></svg><span class="nm">Meeting notes</span></div>
+          <div class="row folder"><span class="chev open"><svg class="i"><use href="#i-chevron"/></svg></span><svg class="i"><use href="#i-folder"/></svg><span class="nm">Databases</span></div>
+          <div class="row indent" data-row="clients"><span class="chev"></span><svg class="i"><use href="#i-database"/></svg><span class="nm">Clients</span></div>
+          <div class="row indent" data-row="tasks"><span class="chev"></span><svg class="i"><use href="#i-database"/></svg><span class="nm">Tasks</span></div>
+          <div class="row indent" data-row="reading"><span class="chev"></span><svg class="i"><use href="#i-database"/></svg><span class="nm">Reading list</span></div>
+          <div class="row folder"><span class="chev open"><svg class="i"><use href="#i-chevron"/></svg></span><svg class="i"><use href="#i-folder"/></svg><span class="nm">Agents</span></div>
+          <div class="row indent" data-row="roles"><span class="chev"></span><svg class="i"><use href="#i-agent"/></svg><span class="nm">Roles</span></div>
+          <div class="row indent" data-row="skills"><span class="chev"></span><svg class="i"><use href="#i-folder"/></svg><span class="nm">Skills</span></div>
+          <div class="row indent" data-row="agentsmd"><span class="chev"></span><svg class="i"><use href="#i-file"/></svg><span class="nm">AGENTS.md</span></div>
+          <div class="row folder"><span class="chev open"><svg class="i"><use href="#i-chevron"/></svg></span><svg class="i"><use href="#i-folder"/></svg><span class="nm">Files</span></div>
+          <div class="row indent" data-row="shots"><span class="chev"></span><svg class="i"><use href="#i-image"/></svg><span class="nm">Screenshots</span></div>
         </div>
         <div class="win-main">
+          <div class="tabbar"><div class="tab"><svg class="i"><use id="winTabIcon" href="#i-file"/></svg><span id="winTab">Home</span><svg class="i"><use href="#i-close"/></svg></div><span class="tab-plus"><svg class="i"><use href="#i-plus"/></svg></span></div>
           <div class="pane pane-home" id="paneHome">
-            <div class="crumb">Your vault › Home</div>
+            <div class="doc-top"><span class="crumb">Your vault</span></div>
             <h3>Home</h3>
             <p id="winEmpty" class="empty">Nothing here yet.</p>
             <div id="winFull" style="opacity:0">
@@ -513,47 +659,45 @@
           </div>
 
           <div class="pane pane-doc" id="paneDoc" style="opacity:0">
-            <div class="cover"></div>
             <div class="doc">
-              <div class="emoji">🚀</div>
+              <div class="doc-top"><span class="crumb">Your vault <b>›</b> Projects <b>›</b> Launch plan</span><span class="edited">Claude edited 2 min ago</span></div>
               <h3>Launch plan</h3>
-              <div class="meta"><span class="pill">Claude</span> edited 2 min ago · Projects</div>
               <p>Get Workspace in front of <b>200 people</b> by December. <mark>Lead with the speed numbers</mark>; they get the most clicks.</p>
               <h4>This week</h4>
               <ul class="check">
-                <li class="x">Email the beta list</li>
-                <li>Write the Show HN post</li>
-                <li>Record a 60-second demo</li>
+                <li class="x"><span class="box"><svg class="i"><use href="#i-check"/></svg></span>Email the beta list</li>
+                <li><span class="box"></span>Write the Show HN post</li>
+                <li><span class="box"></span>Record a 60-second demo</li>
               </ul>
               <blockquote>Everything here is a plain Markdown file in your folder.</blockquote>
             </div>
           </div>
 
           <div class="pane pane-db" id="paneDb" style="opacity:0">
-            <div class="crumb">Your vault › Databases › Tasks</div>
-            <h3>Tasks</h3>
-            <div class="views"><span class="on" id="vTable" role="button">▦ Table</span><span id="vBoard" role="button">▥ Board</span><span class="v-cal">▤ Calendar</span></div>
+            <div class="doc-top"><span class="crumb">Your vault <b>›</b> Databases <b>›</b> Tasks</span><span class="edited">6 rows</span></div>
+            <h3><svg class="i"><use href="#i-database"/></svg>Tasks</h3>
+            <div class="views"><span class="on" id="vTable" role="button"><svg class="i"><use href="#i-row"/></svg>Table</span><span id="vBoard" role="button"><svg class="i"><use href="#i-grid"/></svg>Board</span><span class="v-list"><svg class="i"><use href="#i-list"/></svg>List</span></div>
             <div class="db" id="db">
-              <div class="db-head" id="dbHead"><span>TASK</span><span>STATUS</span><span>OWNER</span></div>
+              <div class="db-head" id="dbHead"><span>Task</span><span>Status</span><span>Owner</span></div>
               <div class="col-bg" data-col="0"></div><div class="col-bg" data-col="1"></div><div class="col-bg" data-col="2"></div>
-              <div class="col-head" data-col="0"><i style="background:var(--text-muted)"></i>To do <em>2</em></div>
-              <div class="col-head" data-col="1"><i style="background:var(--blue)"></i>Doing <em>2</em></div>
-              <div class="col-head" data-col="2"><i style="background:var(--green)"></i>Done <em>2</em></div>
-              <div class="task" data-col="2"><div class="t-bg"></div><div class="t-line"></div><div class="t-row"><span class="t-title">Email the beta list</span><span class="t-cells"><span class="pill-s done">Done</span><span class="owner">You</span></span></div><div class="t-meta"><span class="pill-s done">Done</span>You</div></div>
-              <div class="task" data-col="1"><div class="t-bg"></div><div class="t-line"></div><div class="t-row"><span class="t-title">Write the Show HN post</span><span class="t-cells"><span class="pill-s doing">Doing</span><span class="owner">Claude</span></span></div><div class="t-meta"><span class="pill-s doing">Doing</span>Claude</div></div>
-              <div class="task" data-col="0"><div class="t-bg"></div><div class="t-line"></div><div class="t-row"><span class="t-title">Record a 60-second demo</span><span class="t-cells"><span class="pill-s todo">To do</span><span class="owner">Codex</span></span></div><div class="t-meta"><span class="pill-s todo">To do</span>Codex</div></div>
-              <div class="task" data-col="2"><div class="t-bg"></div><div class="t-line"></div><div class="t-row"><span class="t-title">Update the roadmap</span><span class="t-cells"><span class="pill-s done">Done</span><span class="owner">Claude</span></span></div><div class="t-meta"><span class="pill-s done">Done</span>Claude</div></div>
-              <div class="task" data-col="1"><div class="t-bg"></div><div class="t-line"></div><div class="t-row"><span class="t-title">Design the landing page</span><span class="t-cells"><span class="pill-s doing">Doing</span><span class="owner">You</span></span></div><div class="t-meta"><span class="pill-s doing">Doing</span>You</div></div>
-              <div class="task" data-col="0"><div class="t-bg"></div><div class="t-line"></div><div class="t-row"><span class="t-title">Reply to beta feedback</span><span class="t-cells"><span class="pill-s todo">To do</span><span class="owner">Claude</span></span></div><div class="t-meta"><span class="pill-s todo">To do</span>Claude</div></div>
+              <div class="col-head" data-col="0"><span class="pill-s todo">To do</span><em>2</em></div>
+              <div class="col-head" data-col="1"><span class="pill-s doing">Doing</span><em>2</em></div>
+              <div class="col-head" data-col="2"><span class="pill-s done">Done</span><em>2</em></div>
+              <div class="task" data-col="2"><div class="t-bg"></div><div class="t-line"></div><div class="t-row"><span class="t-title">Email the beta list</span><span class="t-cells"><span class="cell"><span class="pill-s done">Done</span></span><span class="cell owner">You</span></span></div><div class="t-meta"><span class="pill-s done">Done</span>You</div></div>
+              <div class="task" data-col="1"><div class="t-bg"></div><div class="t-line"></div><div class="t-row"><span class="t-title">Write the Show HN post</span><span class="t-cells"><span class="cell"><span class="pill-s doing">Doing</span></span><span class="cell owner">Claude</span></span></div><div class="t-meta"><span class="pill-s doing">Doing</span>Claude</div></div>
+              <div class="task" data-col="0"><div class="t-bg"></div><div class="t-line"></div><div class="t-row"><span class="t-title">Record a 60-second demo</span><span class="t-cells"><span class="cell"><span class="pill-s todo">To do</span></span><span class="cell owner">Codex</span></span></div><div class="t-meta"><span class="pill-s todo">To do</span>Codex</div></div>
+              <div class="task" data-col="2"><div class="t-bg"></div><div class="t-line"></div><div class="t-row"><span class="t-title">Update the roadmap</span><span class="t-cells"><span class="cell"><span class="pill-s done">Done</span></span><span class="cell owner">Claude</span></span></div><div class="t-meta"><span class="pill-s done">Done</span>Claude</div></div>
+              <div class="task" data-col="1"><div class="t-bg"></div><div class="t-line"></div><div class="t-row"><span class="t-title">Design the landing page</span><span class="t-cells"><span class="cell"><span class="pill-s doing">Doing</span></span><span class="cell owner">You</span></span></div><div class="t-meta"><span class="pill-s doing">Doing</span>You</div></div>
+              <div class="task" data-col="0"><div class="t-bg"></div><div class="t-line"></div><div class="t-row"><span class="t-title">Reply to beta feedback</span><span class="t-cells"><span class="cell"><span class="pill-s todo">To do</span></span><span class="cell owner">Claude</span></span></div><div class="t-meta"><span class="pill-s todo">To do</span>Claude</div></div>
             </div>
           </div>
         </div>
       </div>
 
       <div class="show-tabs" id="showTabs" role="tablist" aria-label="Show in the window">
-        <button type="button" class="on" data-view="page" role="tab" aria-selected="true">📄 Page</button>
-        <button type="button" data-view="table" role="tab" aria-selected="false">▦ Table</button>
-        <button type="button" data-view="board" role="tab" aria-selected="false">▥ Board</button>
+        <button type="button" class="on" data-view="page" role="tab" aria-selected="true"><svg class="i"><use href="#i-file"/></svg>Page</button>
+        <button type="button" data-view="table" role="tab" aria-selected="false"><svg class="i"><use href="#i-row"/></svg>Table</button>
+        <button type="button" data-view="board" role="tab" aria-selected="false"><svg class="i"><use href="#i-grid"/></svg>Board</button>
       </div>
     </div>
   </section>
@@ -661,7 +805,7 @@
       <div class="swap" aria-hidden="true">
         <div class="swap-track" id="swapTrack">
           <div class="mini finder">
-            <div class="mini-bar"><i></i><i></i><i></i><span>My vault</span></div>
+            <div class="mini-bar"><span class="lights"><i></i><i></i><i></i></span><span>My vault</span></div>
             <div class="mini-body">
               <div class="f-side"><small>Favorites</small><div>🖥️ Desktop</div><div>📄 Documents</div><div class="on">📁 My vault</div><div>⬇️ Downloads</div></div>
               <div class="f-grid">
@@ -675,10 +819,16 @@
             </div>
           </div>
           <div class="mini wsp">
-            <div class="mini-bar"><i></i><i></i><i></i><span>Workspace</span></div>
             <div class="mini-body">
-              <div class="f-side ws"><small>My vault</small><div class="on">📄 Launch plan</div><div>📄 Research</div><div>▦ Tasks</div><div>▦ Clients</div><div>📄 AGENTS.md</div><div>🖼️ Screenshot</div></div>
-              <div class="w-page"><b>🚀 Launch plan</b><span class="ln w90"></span><span class="ln w70"></span><span class="ln w80"></span><span class="chk"></span><span class="chk"></span></div>
+              <div class="w-side">
+                <span class="lights"><i></i><i></i><i></i></span>
+                <div class="vault">My vault</div>
+                <div class="r on"><svg class="i"><use href="#i-file"/></svg>Launch plan</div><div class="r"><svg class="i"><use href="#i-file"/></svg>Research</div><div class="r"><svg class="i"><use href="#i-database"/></svg>Tasks</div><div class="r"><svg class="i"><use href="#i-database"/></svg>Clients</div><div class="r"><svg class="i"><use href="#i-file"/></svg>AGENTS.md</div><div class="r"><svg class="i"><use href="#i-image"/></svg>Screenshot</div>
+              </div>
+              <div class="w-main">
+                <div class="tabbar"><div class="tab"><svg class="i"><use href="#i-file"/></svg><span>Launch plan</span><svg class="i"><use href="#i-close"/></svg></div></div>
+                <div class="w-page"><span class="crumb">My vault › Launch plan</span><b>Launch plan</b><span class="ln w90"></span><span class="ln w70"></span><span class="ln w80"></span><span class="chk x"></span><span class="chk"></span></div>
+              </div>
             </div>
           </div>
         </div>
@@ -828,7 +978,7 @@
   <!-- FINAL CTA -->
   <section class="final reveal-up">
     <picture class="app-icon">
-      <source media="(prefers-color-scheme: dark)" srcset="/workspace/media/workspace-logo-dark.svg">
+      <source data-dark media="(prefers-color-scheme: dark)" srcset="/workspace/media/workspace-logo-dark.svg">
       <img src="/workspace/media/workspace-logo-light.svg" alt="" width="64" height="64" decoding="async">
     </picture>
     <h2 class="big">Get Workspace for your Mac.</h2>
@@ -878,7 +1028,7 @@
   var caps = Array.prototype.slice.call(stage.querySelectorAll('.cap'));
   var rows = {};
   Array.prototype.forEach.call(stage.querySelectorAll('[data-row]'), function (r) { rows[r.dataset.row] = r; });
-  var winTab = document.getElementById('winTab');
+  var winTab = document.getElementById('winTab'), winTabIcon = document.getElementById('winTabIcon');
   var paneHome = document.getElementById('paneHome'), paneDoc = document.getElementById('paneDoc'), paneDb = document.getElementById('paneDb');
   var winEmpty = document.getElementById('winEmpty'), winFull = document.getElementById('winFull');
   var counters = [['nPages', 24], ['nDbs', 3], ['nAgents', 3]].map(function (c) { return [document.getElementById(c[0]), c[1]]; });
@@ -921,7 +1071,7 @@
   // Table and board places for every task, inside the database box. Measured again whenever the box changes width (the phone sidebar folds away).
   function measureDb() {
     var W = db.clientWidth, gap = 10, colW = (W - 2 * gap) / 3, perCol = [0, 0, 0];
-    var narrow = W < 420, cardH = narrow ? 74 : 58;
+    var narrow = W < 420, cardH = narrow ? 74 : 68;
     dbGeo = {
       W: W, colW: colW, gap: gap,
       t: tasks.map(function (t, i) {
@@ -993,6 +1143,7 @@
     winEl.style.gridTemplateColumns = sideCol === null ? '' : sideCol.toFixed(2) + '% 1fr';
     winSide.style.padding = sideCol !== null && sideCol < 2 ? '0' : '';
     winSide.style.borderRight = sideCol !== null && sideCol < 2 ? 'none' : '';
+    winEl.classList.toggle('side-gone', sideCol !== null && sideCol < 10);
     if (dbGeo && db.clientWidth !== dbGeo.W) { measureDb(); drawDb(); }
     paneHome.style.opacity = String(1 - sf);
     paneDoc.style.opacity = String(view === 'page' ? sf : 0);
@@ -1006,6 +1157,7 @@
     Object.keys(chipLit).forEach(function (k) { lit[k] = true; });
     if (sf > 0.5) { if (view === 'page') { lit.plan = true; winTab.textContent = 'Launch plan'; } else { lit.tasks = true; winTab.textContent = 'Tasks'; } }
     else winTab.textContent = 'Home';
+    winTabIcon.setAttribute('href', sf > 0.5 && view !== 'page' ? '#i-database' : '#i-file');
     Object.keys(rows).forEach(function (k) { rows[k].classList.toggle('lit', !!lit[k]); });
   }
 
@@ -1152,7 +1304,8 @@
 
   function apply(opts) {
     opts = opts || {};
-    var name = (darkQuery.matches ? 'night' : 'day') + '-' + (portraitQuery.matches ? 'vertical' : 'wide');
+    var isNight = window.wsTheme ? window.wsTheme.night() : darkQuery.matches;
+    var name = (isNight ? 'night' : 'day') + '-' + (portraitQuery.matches ? 'vertical' : 'wide');
     if (current === name) return;
     current = name;
     var wasPlaying = !video.paused && !video.ended;
@@ -1176,6 +1329,7 @@
     var f = function () { apply({ resume: true }); };
     if (q.addEventListener) q.addEventListener('change', f); else if (q.addListener) q.addListener(f);
   });
+  document.addEventListener('wstheme', function () { apply({ resume: true }); });
   playBtn.addEventListener('click', function () {
     video.controls = true; video.muted = false; video.volume = 1;
     var p = video.play();
@@ -1183,6 +1337,38 @@
     playBtn.hidden = true;
   });
   video.addEventListener('ended', function () { playBtn.hidden = false; video.controls = false; });
+})();
+
+/* THEME BAR — swatches drawn from the theme table, as the app's ThemeSwatch draws them: day left of the diagonal, night right, each half its ground, a line of text and a button. */
+(function () {
+  'use strict';
+  var W = window.wsTheme; if (!W) return;
+  var box = document.getElementById('thSwatches'), nameEl = document.getElementById('thName');
+  var modeBtns = Array.prototype.slice.call(document.querySelectorAll('.th-mode button'));
+  var NS = 'http://www.w3.org/2000/svg';
+  Object.keys(W.T).forEach(function (id) {
+    var d = W.tokens(id, false), n = W.tokens(id, true);
+    var b = document.createElement('button');
+    b.type = 'button'; b.dataset.theme = id; b.title = W.T[id][0]; b.setAttribute('aria-label', W.T[id][0] + ' theme');
+    b.innerHTML = '<svg viewBox="0 0 48 24" aria-hidden="true">' +
+      '<polygon points="0,0 28,0 20,24 0,24" fill="' + d.bg + '"/>' +
+      '<rect x="4" y="6" width="12" height="2" rx="1" fill="' + d.fg + '"/>' +
+      '<rect x="4" y="13" width="10" height="6" rx="1.5" fill="' + d.accent + '"/>' +
+      '<polygon points="28,0 48,0 48,24 20,24" fill="' + n.bg + '"/>' +
+      '<rect x="31" y="6" width="13" height="2" rx="1" fill="' + n.fg + '"/>' +
+      '<rect x="34" y="13" width="10" height="6" rx="1.5" fill="' + n.accent + '"/></svg>';
+    b.addEventListener('click', function () { W.set(id); });
+    box.appendChild(b);
+  });
+  modeBtns.forEach(function (b) { b.addEventListener('click', function () { W.setMode(b.dataset.mode); }); });
+  function sync() {
+    var cur = W.current(), night = W.night();
+    Array.prototype.forEach.call(box.children, function (b) { b.setAttribute('aria-pressed', String(b.dataset.theme === cur)); });
+    nameEl.textContent = W.T[cur][0];
+    modeBtns.forEach(function (b) { b.setAttribute('aria-pressed', String((b.dataset.mode === 'night') === night)); });
+  }
+  document.addEventListener('wstheme', sync);
+  sync();
 })();
 </script>
 
