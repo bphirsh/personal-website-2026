@@ -1134,6 +1134,7 @@
 
   var winEl = document.getElementById('win'), winSide = winEl.querySelector('.win-side');
   var lastCap = -1;
+  var fly = { mode: 'scroll', t0: 0, from: null, raf: 0, snap: 0 }; /* scroll: following the scroll; in: flying into the left bar; back: flying back to the headline */
   function render() {
     if (reduce.matches || !geo.length) return;
     var sy = window.scrollY;
@@ -1146,26 +1147,35 @@
     var atTop = sy <= 0;
     layer.classList.toggle('at-top', atTop);
     layer.style.zIndex = a > 0.35 ? '3' : '1';
-    // One smooth curve per file, from its place by the headline (carried up with the page), bending past its place beside the window, into its row in the left bar. The curve's only stops are where it starts and where it lands, so a file never pauses on the way down before flying in.
-    var span = Math.max(1, section.offsetHeight - window.innerHeight);
-    chips.forEach(function (c, i) {
+    // The files. Down from the headline to their places beside the window, they follow the scroll. Once they get there, they fly into their rows in the left bar on their own, as an animation, and stay there however the page is scrolled. Back at the very top of the page they fly back to the headline, and the next scroll down plays it again.
+    var now = performance.now();
+    var live = chips.map(function (c, i) {
       var g = geo[i];
-      var land = gatherTop + span * (0.2 + i * 0.034); /* the scroll position where this file reaches its row */
-      var u = clamp(sy / land), t = 0.5 - 0.5 * Math.cos(Math.PI * u); /* eases out of the start and into the landing */
-      var cx = s.left + g.ox, cy = s.top + g.oy;
-      var x0 = g.late ? cx : g.hx, y0 = g.late ? cy : g.hy - sy;
-      var x2 = s.left + g.rx, y2 = s.top + g.ry;
-      var q = 1 - t;
-      var x = q * q * x0 + 2 * q * t * cx + t * t * x2, y = q * q * y0 + 2 * q * t * cy + t * t * y2;
-      var shrink = clamp((t - 0.5) / 0.5);
-      c.style.transform = 'translate(' + x.toFixed(1) + 'px,' + (y + (atTop ? sy : 0)).toFixed(1) + 'px) scale(' + (0.86 - 0.14 * shrink).toFixed(3) + ')';
+      return { x: g.late ? g.ox : lerp(g.hx - s.left, g.ox, a), y: g.late ? g.oy : lerp(g.hy - sy - s.top, g.oy, a) }; /* relative to the stage */
+    });
+    if (fly.mode === 'scroll' && a >= 0.85 && sy > 0) { fly.mode = 'in'; fly.t0 = now; fly.from = live; }
+    else if (fly.mode === 'in' && sy <= 0) { fly.mode = 'back'; fly.t0 = now; }
+    var moving = false;
+    chips.forEach(function (c, i) {
+      var g = geo[i], pos = live[i], fade = 0, k = 1, scale = 0.86;
+      if (fly.mode !== 'scroll') {
+        k = clamp((now - fly.t0 - i * 70) / 850);
+        if (k < 1) moving = true;
+        var e = ease(k), f = fly.mode === 'in' ? fly.from[i] : { x: g.rx, y: g.ry }, to = fly.mode === 'in' ? { x: g.rx, y: g.ry } : live[i];
+        var cx = (f.x + to.x) / 2, cy = Math.min(f.y, to.y) - 30, q = 1 - e; /* a slight arc */
+        pos = { x: q * q * f.x + 2 * q * e * cx + e * e * to.x, y: q * q * f.y + 2 * q * e * cy + e * e * to.y };
+        fade = fly.mode === 'in' ? clamp((k - 0.85) / 0.15) : 1 - clamp(k / 0.15);
+        scale = fly.mode === 'in' ? 0.86 - 0.14 * e : 0.72 + 0.14 * e;
+      }
+      c.style.transform = 'translate(' + (s.left + pos.x).toFixed(1) + 'px,' + (s.top + pos.y + (atTop ? sy : 0)).toFixed(1) + 'px) scale(' + scale.toFixed(3) + ')';
       c.style.transformOrigin = 'left center';
-      var fade = clamp((t - 0.94) / 0.06);
       c.style.opacity = String((1 - fade) * (g.late ? a : 1));
       rows[c.dataset.to].style.opacity = String(fade);
-      if (fade > 0.5 && t < 1) lit[c.dataset.to] = true;
+      if (fade > 0.5 && k < 1 && fly.mode === 'in') lit[c.dataset.to] = true;
       if (fade > 0.5) landed[c.dataset.to] = true;
     });
+    if (fly.mode === 'back' && !moving) fly.mode = 'scroll';
+    if (moving) { cancelAnimationFrame(fly.raf); fly.raf = requestAnimationFrame(render); clearTimeout(fly.snap); fly.snap = setTimeout(render, 1600); } /* keeps animating; the timeout finishes it if frames are paused */
 
     // The folder page fills in as the files land.
     fillFolder(landed);
