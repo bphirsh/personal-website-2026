@@ -36,13 +36,10 @@ const WORDS = {
   sampleInstead: 'Show example data',
   dismiss: 'Dismiss',
   howToFix: 'How to fix it',
-  sampleBanner: 'Example data, about a made-up person.',
-  getPrompt: 'Get the prompt',
   // In the window's title bar, where the line beside Load a different file used to be.
   windowTitle: 'Nothing leaves your computer. This all runs in your browser.',
-  // Shown with the example only, always (M-022, M-023: the example is a parody about real people and companies).
+  // Shown with the example only, always, as its window's title (M-022, M-023: the example is a parody about real people and companies).
   parody: 'A parody, just for fun: ChatGPT playing a dramatic royal adviser. No connection to Sam Altman, OpenAI or any company named, and nothing here is a real quote, event or claim.',
-  loadMine: 'Load my file',
   // After "Reading your file…", one at a time, each replacing the last (M-014).
   loading: ['Working magic…', 'Creating your new Workspace…'],
 };
@@ -165,22 +162,8 @@ function showSample() {
   const r = readInvite(text);
   if (!r.ok) return showError(r.error);
   reset();
-  const b = el('div', 'banner banner-sample');
-  b.setAttribute('role', 'status');
-  const row = el('div', 'banner-row');
-  row.appendChild(el('span', 'banner-text', WORDS.sampleBanner));
-  const load = el('button', 'link', WORDS.loadMine);
-  load.type = 'button';
-  // As Load a different file: cancelling the picker leaves the example data where it was.
-  load.addEventListener('click', () => pick.click());
-  // Back to the start, where the prompt is: a fresh load of this page, keeping its link's code and headline.
-  const getPrompt = el('a', 'link', WORDS.getPrompt);
-  getPrompt.href = location.pathname + location.search + location.hash;
-  row.append(load, getPrompt);
-  b.append(row, el('p', 'banner-note', WORDS.parody));
-  banners.appendChild(b);
-  // The banner and its parody line stay in view above the window (the page doesn't scroll), so the example is never seen without them.
-  mountDemo(demo, r.invite, SAMPLE_NAME, text, { sample: true, full: true, letter: true, places: true, title: WORDS.windowTitle });
+  // No banner over the example (Brian, 17 Nov: they just chose it, so they know it is example data); its parody label (M-023) is the window's title instead, so it is always in view with the example.
+  mountDemo(demo, r.invite, SAMPLE_NAME, text, { sample: true, full: true, letter: true, places: true, title: WORDS.parody, titleWrap: true });
   revealWorkspace();
 }
 

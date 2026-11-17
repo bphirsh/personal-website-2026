@@ -404,12 +404,16 @@
 .demo-full .pane { min-height: 0; }
 /* The window's title: a quiet line, centred, clear of the three dots. */
 .win-title { position: absolute; left: calc(var(--space-8) * 1.5); right: calc(var(--space-8) * 1.5); text-align: center; font-size: var(--text-xs); color: var(--fg-secondary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; pointer-events: none; }
+/* A title that must be read whole (the example's parody label) wraps instead of being cut off, and the bar grows to hold it. */
+.demo-full .win-titlebar:has(.win-title.wrap) { height: auto; min-height: var(--tabbar-height); }
+.win-title.wrap { position: static; flex: 1; white-space: normal; padding: var(--space-2) var(--space-8); line-height: 1.35; }
 @media (max-width: 760px) {
   /* A narrow window: the left bar above, a little over a third of the height, and the page below, each scrolling on its own. */
   .demo-full .win-body { height: auto; flex-direction: column; }
   .demo-full .leftbar { flex: 0 0 auto; max-height: 38%; }
   .demo-full .page, .demo-full .place-page { min-height: 0; }
   .win-title { left: calc(var(--space-8) + var(--space-2)); right: var(--space-4); text-align: right; }
+  .win-title.wrap { padding: var(--space-2) 0 var(--space-2) var(--space-2); text-align: left; }
 }
 
 /* ── Agents and Changes: two rows above the vault in the left bar, as the app's (Sidebar.svelte), and the pages they open over the pane (AgentsPage, ChangesPage) ── */

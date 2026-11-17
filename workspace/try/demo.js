@@ -212,7 +212,7 @@ export function mountDemo(mount, invite, fileName, fileText, options = {}) {
   win.setAttribute('aria-label', options.label ?? 'Workspace preview');
   const titlebar = el('div', 'win-titlebar');
   titlebar.append(el('span', 'win-dot'), el('span', 'win-dot'), el('span', 'win-dot'));
-  if (options.title) titlebar.appendChild(el('span', 'win-title', options.title));
+  if (options.title) titlebar.appendChild(el('span', options.titleWrap ? 'win-title wrap' : 'win-title', options.title));
   const body = el('div', 'win-body');
   const left = el('nav', 'leftbar');
   left.setAttribute('aria-label', 'Left bar');
