@@ -56,8 +56,51 @@
     </div>
     <!-- Release notes (row "Release notes and terms on the website", 9 Nov 2026). Newest first. One section per published version: its number, its date, and what someone using the app would notice, in plain words. Write it at each release, from the app's Build Log, in the same voice as the rest of the site. At the same time, update the roadmap on /workspace/ (section#roadmap) and on /workspace/try/ (section#roadmap): move anything this release ships into a Shipped leg for its version, and take it out of Next, Soon or Future (Brian, 10 Nov 2026). -->
     <div class="doc">
+      <section class="release" id="v1.3.0">
+        <h2>1.3.0 <span class="latest">Latest</span></h2>
+        <time datetime="2026-11-16">16 November 2026</time>
+        <p>Bring your data in, and find anything: Workspace now imports from Notion, Airtable, Obsidian, CSV and Excel, and has a new search.</p>
+        <h3>📥 Import</h3>
+        <ul>
+          <li>Import Database… in the File menu takes a CSV or Excel file, an Airtable or Notion export, or a whole Obsidian vault. A preview shows what will be made before anything is written: change a column's type, leave things out, then Import, with Undo after.</li>
+          <li>An Obsidian vault comes in as its folders and databases, with its links kept.</li>
+          <li>Or hand any export to your own agent, which goes through it with you in chat and brings it in, pictures and databases included.</li>
+        </ul>
+        <h3>🔍 Search</h3>
+        <ul>
+          <li>A new search window: recent pages when nothing is typed, any file from part of its name or with a typo, and a preview of the result with your words marked.</li>
+          <li>Narrow it by folder, by kind, or by when something was last edited.</li>
+          <li>Paste a file's full path into Go to File (⌘O) to open it.</li>
+        </ul>
+        <h3>🗂️ Like Finder</h3>
+        <ul>
+          <li>Drag a file or folder out to Finder, Mail or any app, and it arrives as the file itself.</li>
+          <li>Press Space for Quick Look, and Quick Look in Finder now shows pages and databases the way Workspace does.</li>
+          <li>On a folder page, click to select, double-click to open, and drag to select several.</li>
+        </ul>
+        <h3>💪 Databases</h3>
+        <ul>
+          <li>Select several cells and type, paste or delete to change them all at once.</li>
+          <li>Board columns collapse to a narrow strip, and show as you drag them.</li>
+          <li>Filter on when rows were created or last changed.</li>
+          <li>Databases open faster, and sheets are now called collections.</li>
+        </ul>
+        <h3>🦋 Pages</h3>
+        <ul>
+          <li>Tables in pages: select cells, copy them out as a real table, paste blocks in, sort by a column, and ⌘Z without clicking out first.</li>
+          <li>A folder with no README shows a text area: click and start writing.</li>
+          <li>Enter at the end of a link keeps the link.</li>
+        </ul>
+        <h3>💻 On your Mac</h3>
+        <ul>
+          <li>Hold ⌘Q (or press it twice) to quit, so a stray press doesn't.</li>
+          <li>⌘Z brings back a file, folder or database you just deleted.</li>
+          <li>The search index takes about half the disk space. It rebuilds once, the first time you open 1.3.0.</li>
+        </ul>
+      </section>
+
       <section class="release" id="v1.2.0">
-        <h2>1.2.0 <span class="latest">Latest</span></h2>
+        <h2>1.2.0</h2>
         <time datetime="2026-11-11">11 November 2026</time>
         <p>The biggest update yet: Workspace now teaches your AI agents how it works, and adds templates, video and audio, and a lot of database power.</p>
         <h3>🤖 Your agents</h3>
