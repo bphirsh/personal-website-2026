@@ -127,9 +127,13 @@
   .style-square { width: 24px; height: 24px; padding: 0; flex: none; border: 1px solid var(--border); border-radius: 4px; cursor: pointer; }
   .style-square:hover { border-color: var(--text-secondary); }
   .style-square[aria-checked="true"] { box-shadow: 0 0 0 2px var(--bg), 0 0 0 4px var(--accent); }
+  .win-wrap { position: relative; z-index: 1; }
+  .style-pick.docked { position: absolute; top: 13vh; left: calc(100% + 16px); flex-direction: column; flex-wrap: nowrap; gap: 8px; padding: 8px; background: var(--card); border: 1px solid var(--border); border-radius: 6px; opacity: 0; visibility: hidden; transition: opacity 0.3s; }
+  .style-pick.docked .style-label { margin: 0; }
+  @media (max-width: 1040px) { .style-pick.docked { display: none; } }
   @media (max-width: 680px) {
     nav { flex-wrap: wrap; row-gap: 12px; }
-    .style-pick { order: 3; width: 100%; }
+    .style-pick:not(.docked) { order: 3; width: 100%; }
     .style-square { width: 22px; height: 22px; }
   }
 
@@ -602,6 +606,7 @@
         <symbol id="i-list" viewBox="0 0 24 24"><path d="M4 6h2M9 6h11M4 12h2M9 12h11M4 18h2M9 18h11"/></symbol>
         <symbol id="i-check" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7"/></symbol>
       </svg>
+      <div class="win-wrap">
       <div class="win" id="win">
         <span class="lights" aria-hidden="true"><i></i><i></i><i></i></span>
         <div class="win-side">
@@ -673,6 +678,9 @@
             </div>
           </div>
         </div>
+      </div>
+        <!-- The style picker again, docked in a slim column to the right of the window as on /try; it appears with the showcase. -->
+        <div class="style-pick docked" id="themeDock" role="radiogroup" aria-label="Style"><span class="style-label">Style</span></div>
       </div>
 
       <div class="show-tabs" id="showTabs" role="tablist" aria-label="Show in the window">
@@ -1115,7 +1123,7 @@
 
   /* SHOWCASE — the buttons under the window (and the view tabs inside it) pick Page, Table or Board; while the showcase is on screen they also move on by themselves every 3.8 seconds. Clicking one picks it and restarts the count. */
   var VIEWS = ['page', 'table', 'board'], view = 'page', sf = 0, chipLit = {}, active = false, timer = null;
-  var showTabs = document.getElementById('showTabs');
+  var showTabs = document.getElementById('showTabs'), themeDock = document.getElementById('themeDock');
   var tabBtns = Array.prototype.slice.call(showTabs.querySelectorAll('button'));
   var m = 0, mFrom = 0, mTo = 0, mStart = 0, mRaf = null, mSnap = null;
 
@@ -1133,6 +1141,7 @@
     paneDoc.style.pointerEvents = paneDb.style.pointerEvents = 'none';
     if (view !== 'page') paneDb.style.pointerEvents = sf > 0.5 ? 'auto' : 'none';
     showTabs.style.opacity = String(sf);
+    themeDock.style.opacity = String(sf); themeDock.style.visibility = sf > 0.02 ? 'visible' : 'hidden';
     showTabs.style.visibility = sf > 0.02 ? 'visible' : 'hidden';
     showTabs.style.pointerEvents = sf > 0.5 ? 'auto' : 'none';
     var lit = {};
@@ -1349,29 +1358,36 @@
   video.addEventListener('ended', function () { playBtn.hidden = false; video.controls = false; });
 })();
 
-/* STYLE PICKER — a square per theme, its ground and accent in the current day or night, as on /try. */
+/* STYLE PICKER — a square per theme, its ground and accent in the current day or night, as on /try. Built twice: in the nav, and docked beside the window. */
 (function () {
   'use strict';
   var W = window.wsTheme; if (!W) return;
-  var box = document.getElementById('themeBar');
-  var ids = Object.keys(W.T);
-  var squares = ids.map(function (id) {
-    var b = document.createElement('button');
-    b.type = 'button'; b.className = 'style-square'; b.title = W.T[id][0];
-    b.setAttribute('role', 'radio'); b.setAttribute('aria-label', W.T[id][0]);
-    b.addEventListener('click', function () { W.set(id); });
-    b.addEventListener('keydown', function (e) {
-      var d = { ArrowRight: 1, ArrowDown: 1, ArrowLeft: -1, ArrowUp: -1 }[e.key]; if (!d) return;
-      e.preventDefault(); var n = ids[(ids.indexOf(id) + d + ids.length) % ids.length]; W.set(n); squares[ids.indexOf(n)].focus();
+  var ids = Object.keys(W.T), all = [];
+  function build(box) {
+    if (!box) return;
+    var squares = ids.map(function (id) {
+      var b = document.createElement('button');
+      b.type = 'button'; b.className = 'style-square'; b.title = W.T[id][0];
+      b.setAttribute('role', 'radio'); b.setAttribute('aria-label', W.T[id][0]);
+      b.addEventListener('click', function () { W.set(id); });
+      b.addEventListener('keydown', function (e) {
+        var d = { ArrowRight: 1, ArrowDown: 1, ArrowLeft: -1, ArrowUp: -1 }[e.key]; if (!d) return;
+        e.preventDefault(); var n = ids[(ids.indexOf(id) + d + ids.length) % ids.length]; W.set(n); squares[ids.indexOf(n)].focus();
+      });
+      box.appendChild(b); return b;
     });
-    box.appendChild(b); return b;
-  });
+    all.push(squares);
+  }
+  build(document.getElementById('themeBar'));
+  build(document.getElementById('themeDock'));
   function sync() {
     var cur = W.current(), night = W.night();
-    ids.forEach(function (id, i) {
-      var t = W.tokens(id, night), b = squares[i], on = id === cur;
-      b.style.background = 'linear-gradient(135deg, ' + t.bg + ' 0 50%, ' + t.accent + ' 50% 100%)';
-      b.setAttribute('aria-checked', String(on)); b.tabIndex = on ? 0 : -1;
+    all.forEach(function (squares) {
+      ids.forEach(function (id, i) {
+        var t = W.tokens(id, night), b = squares[i], on = id === cur;
+        b.style.background = 'linear-gradient(135deg, ' + t.bg + ' 0 50%, ' + t.accent + ' 50% 100%)';
+        b.setAttribute('aria-checked', String(on)); b.tabIndex = on ? 0 : -1;
+      });
     });
   }
   document.addEventListener('wstheme', sync);
