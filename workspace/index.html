@@ -152,6 +152,7 @@
     margin: 0 auto 22px;
   }
   .hero h1 em { font-style: italic; color: var(--accent); }
+  .hero h1 .h-line { display: block; white-space: nowrap; } /* "Finally, see" and "[word] you" are lines of their own, so a short word can never pull "and" up beside "you" */
   .rot { display: inline-block; white-space: nowrap; transition: opacity 0.35s ease, transform 0.35s ease, filter 0.35s ease, width 0.7s cubic-bezier(0.65, 0, 0.35, 1); }
   .rot.out { opacity: 0; transform: translateY(-0.25em); filter: blur(4px); }
   .rot.in-start { opacity: 0; transform: translateY(0.25em); filter: blur(4px); transition: width 0.7s cubic-bezier(0.65, 0, 0.35, 1); } /* keeps the width sliding while the new word appears */
@@ -584,7 +585,7 @@
       <source data-dark media="(prefers-color-scheme: dark)" srcset="/workspace/media/workspace-logo-dark.svg">
       <img src="/workspace/media/workspace-logo-light.svg" alt="Workspace" width="84" height="84" decoding="async">
     </picture>
-    <h1>Finally, see <em class="rot" id="rot">everything</em> you and your agents are working on.</h1>
+    <h1><span class="h-line">Finally, see</span> <span class="h-line"><em class="rot" id="rot">everything</em> you</span> and your agents are working on.</h1>
     <p class="lede">Workspace is a Mac app where you and your AI agents share the same pages, databases and files. Nothing gets lost in a chat again, and you can see every change.</p>
     <div class="ctas">
       <a class="btn for-mac" href="/workspace/download/">Download for Mac <span aria-hidden="true">→</span></a>
