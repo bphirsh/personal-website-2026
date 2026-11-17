@@ -152,9 +152,9 @@
     margin: 0 auto 22px;
   }
   .hero h1 em { font-style: italic; color: var(--accent); }
-  .rot { display: inline-block; transition: opacity 0.35s ease, transform 0.35s ease, filter 0.35s ease; }
+  .rot { display: inline-block; white-space: nowrap; transition: opacity 0.35s ease, transform 0.35s ease, filter 0.35s ease, width 0.7s cubic-bezier(0.65, 0, 0.35, 1); }
   .rot.out { opacity: 0; transform: translateY(-0.25em); filter: blur(4px); }
-  .rot.in-start { opacity: 0; transform: translateY(0.25em); filter: blur(4px); transition: none; }
+  .rot.in-start { opacity: 0; transform: translateY(0.25em); filter: blur(4px); transition: width 0.7s cubic-bezier(0.65, 0, 0.35, 1); } /* keeps the width sliding while the new word appears */
   .hero .lede { margin: 0 auto; font-size: 19px; max-width: 46ch; }
   .ctas { display: flex; justify-content: center; align-items: center; flex-wrap: wrap; gap: 14px; margin-top: 30px; }
   .btn-quiet { background: transparent; color: var(--text-primary); border: 1px solid var(--border); }
@@ -990,15 +990,26 @@
 
 </div>
 <script>
-/* HEADLINE — the italic word changes every 2.2 seconds. */
+/* HEADLINE — the italic word changes every 2.2 seconds. Its width slides from the old word's to the new one's, so "you" glides to its place instead of jumping. */
 (function () {
   'use strict';
   var el = document.getElementById('rot');
   var WORDS = ['everything', 'every page', 'every task', 'every change', 'every file', 'every chat'];
   var i = 0;
   if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  var probe = el.cloneNode(false); probe.removeAttribute('id');
+  probe.setAttribute('aria-hidden', 'true');
+  probe.style.cssText = 'position:absolute;visibility:hidden;left:0;top:0;transition:none';
+  el.parentNode.appendChild(probe);
+  var settle = 0;
   setInterval(function () {
     if (document.hidden) return;
+    probe.textContent = WORDS[(i + 1) % WORDS.length];
+    el.style.width = el.getBoundingClientRect().width + 'px';
+    void el.offsetWidth;
+    el.style.width = probe.getBoundingClientRect().width + 'px';
+    clearTimeout(settle);
+    settle = setTimeout(function () { el.style.width = ''; }, 800); /* back to auto, so a resize can't leave a stale width */
     el.classList.add('out');
     setTimeout(function () {
       i = (i + 1) % WORDS.length; el.textContent = WORDS[i];
