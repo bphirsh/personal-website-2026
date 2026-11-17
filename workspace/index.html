@@ -31,7 +31,7 @@
 <link rel="manifest" href="/workspace/site.webmanifest">
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/workspace/workspace.css">
-<!-- THEMES: the app's own eight themes, each with a day and a night, generated from v0/code/src/renderer/src/theme/themes/*.json (the same tokens the app uses). The buttons at the top pick one; the whole page and the drawn app windows follow. Day/night follows the Mac until the visitor picks one. Kept in this visitor's browser only. -->
+<!-- THEMES: the app's own eight themes, each with a day and a night, generated from v0/code/src/renderer/src/theme/themes/*.json (the same tokens the app uses). The buttons at the top pick one; the whole page and the drawn app windows follow. Day or night follows the visitor's Mac. Nothing is stored: a reload is back to Default, as on /try. -->
 <script>
 (function () {
   'use strict';
@@ -45,7 +45,6 @@
   moss:["Moss","#F4F0D9,#FBF8E8,#EAE6CC,#3F4A4F,#5E6A5A,#8A9483,#DDD8BC,#5E7314,#E4E9C6,#FFFFFF,#EBE7CF,#DCE4B8,#2A78D6,#EB6834,#1BAF7A,#EDA100","#2D353B,#343F44,#272E33,#D3C6AA,#A3AE9F,#7A8478,#475258,#A7C080,#3C4841,#2D353B,#374247,#485743,#3987E5,#D95926,#199E70,#C98500"],
   stark:["Stark","#FFFFFF,#FFFFFF,#F0F0F0,#000000,#383838,#6E6E6E,#9A9A9A,#0040A8,#DCE8FA,#FFFFFF,#EDEDED,#B8D3FA,#2A78D6,#EB6834,#1BAF7A,#EDA100","#000000,#0E0E0E,#000000,#FFFFFF,#D4D4D4,#8F8F8F,#707070,#7CC0FF,#0F2A45,#000000,#1C1C1C,#1E4A7A,#3987E5,#D95926,#199E70,#C98500"]};
   var store = { name: 'default', mode: 'auto' };
-  try { var s = JSON.parse(localStorage.getItem('ws-theme') || 'null'); if (s && T[s.name]) store.name = s.name; if (s && /^(auto|day|night)$/.test(s.mode)) store.mode = s.mode; } catch (e) {}
   var dark = window.matchMedia('(prefers-color-scheme: dark)');
   function night() { return store.mode === 'auto' ? dark.matches : store.mode === 'night'; }
   function tokens(name, isNight) { var v = T[name][isNight ? 2 : 1].split(','), o = {}; K.forEach(function (k, i) { o[k] = v[i]; }); return o; }
@@ -69,7 +68,7 @@
     Array.prototype.forEach.call(document.querySelectorAll('picture source[data-dark]'), function (s) { s.media = n ? 'all' : 'not all'; });
     document.dispatchEvent(new CustomEvent('wstheme'));
   }
-  function save() { try { localStorage.setItem('ws-theme', JSON.stringify(store)); } catch (e) {} }
+  function save() {}
   window.wsTheme = {
     T: T, tokens: tokens, night: night, current: function () { return store.name; }, mode: function () { return store.mode; },
     set: function (name) { if (T[name]) { store.name = name; save(); apply(); } },
@@ -122,28 +121,16 @@
   .btn { background: var(--text-primary); color: var(--bg); }
   .btn-quiet { background: transparent; color: var(--text-primary); }
 
-  /* THEME BAR: the app's eight themes as swatches, the chosen one ringed, then its name and day or night. */
-  .theme-bar { display: flex; align-items: center; gap: 10px; padding: 5px 6px 5px 8px; background: var(--card); border: 1px solid var(--border); border-radius: 100px; box-shadow: var(--shadow); }
-  .th-swatches { display: flex; gap: 5px; }
-  .th-swatches button { display: block; padding: 0; border: none; background: none; cursor: pointer; border-radius: 6px; outline-offset: 2px; transition: transform 0.15s; }
-  .th-swatches button:hover { transform: translateY(-1px); }
-  .th-swatches svg { display: block; width: 40px; height: 20px; border-radius: 5px; box-shadow: 0 0 0 1px var(--border); }
-  .th-swatches button[aria-pressed="true"] svg { box-shadow: 0 0 0 2px var(--accent); }
-  .th-name { font-size: 12.5px; font-weight: 500; color: var(--text-secondary); min-width: 52px; }
-  .th-mode { display: flex; gap: 2px; background: var(--win-side); border-radius: 100px; padding: 2px; }
-  .th-mode button { width: 28px; height: 24px; border: none; background: none; border-radius: 100px; color: var(--text-muted); cursor: pointer; display: flex; align-items: center; justify-content: center; }
-  .th-mode button[aria-pressed="true"] { background: var(--card); color: var(--text-primary); box-shadow: 0 1px 2px rgba(0,0,0,0.12); }
-  .th-mode svg { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
-  @media (max-width: 900px) {
-    nav { flex-wrap: wrap; row-gap: 12px; }
-    .theme-bar { order: 3; width: 100%; justify-content: center; }
-  }
+  /* STYLE PICKER, as /try draws it. */
+  .style-pick { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 8px; }
+  .style-label { font-size: 12px; color: var(--text-secondary); font-weight: 500; margin-right: 2px; }
+  .style-square { width: 24px; height: 24px; padding: 0; flex: none; border: 1px solid var(--border); border-radius: 4px; cursor: pointer; }
+  .style-square:hover { border-color: var(--text-secondary); }
+  .style-square[aria-checked="true"] { box-shadow: 0 0 0 2px var(--bg), 0 0 0 4px var(--accent); }
   @media (max-width: 680px) {
-    .theme-bar { gap: 8px; padding: 4px 5px 4px 8px; width: auto; margin: 0 auto; }
-    .th-swatches { gap: 3px; flex: none; }
-    .th-swatches svg { width: 28px; height: 14px; border-radius: 4px; }
-    .th-mode button { width: 26px; height: 22px; }
-    .th-name { display: none; }
+    nav { flex-wrap: wrap; row-gap: 12px; }
+    .style-pick { order: 3; width: 100%; }
+    .style-square { width: 22px; height: 22px; }
   }
 
   /* ── HERO ── */
@@ -566,14 +553,8 @@
   <nav>
     <a href="/" class="logo">Brian <span class="logo-italic">Hirsh</span></a>
     <!-- The app's themes, as its Settings shows them: day left of the diagonal, night right. Filled in by the script at the end from window.wsTheme. -->
-    <div class="theme-bar" id="themeBar" role="group" aria-label="Page theme">
-      <div class="th-swatches" id="thSwatches"></div>
-      <span class="th-name" id="thName" aria-live="polite">Default</span>
-      <div class="th-mode" role="group" aria-label="Day or night">
-        <button type="button" data-mode="day" aria-label="Day" title="Day"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2.5v2.5M12 19v2.5M2.5 12H5M19 12h2.5M5.3 5.3l1.8 1.8M16.9 16.9l1.8 1.8M5.3 18.7l1.8-1.8M16.9 7.1l1.8-1.8"/></svg></button>
-        <button type="button" data-mode="night" aria-label="Night" title="Night"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.5A8 8 0 0 1 9.5 4 8 8 0 1 0 20 14.5z"/></svg></button>
-      </div>
-    </div>
+    <!-- The style picker, as on /try: "Style" and one square per theme of the app, each its ground and accent split on the diagonal. Day or night follows the visitor's Mac. -->
+    <div class="style-pick" id="themeBar" role="radiogroup" aria-label="Style"><span class="style-label">Style</span></div>
     <a class="btn nav-cta for-mac" href="/workspace/download/">Download for Mac</a>
     <a class="btn nav-cta for-phone" href="/workspace/signup/">Get the link</a>
   </nav>
@@ -857,7 +838,7 @@
     <div class="kicker">Roadmap</div>
     <h2 class="big">Where it's going.</h2>
     <p class="lede">I ship a new version every week or two. Here's what's done and what's coming.</p>
-    <!-- One card per shipped version, oldest on the left, then Next, Soon and Future. It opens scrolled to the latest version (#rmLatest); scroll or use the arrows to go back. Each version's "More in" list has the medium-sized changes; every change is on the release notes page. -->
+    <!-- One card per shipped version, oldest on the left, then Next, Soon and Future. It starts at v1.0 and glides to the latest version (#rmLatest) the first time it is fully on screen; scroll or use the arrows to go back. Each version's "More in" list has the medium-sized changes; every change is on the release notes page. -->
     <div class="rm-wrap" style="text-align:left">
       <div class="rm-nav"><span class="rm-hint">← Scroll back for earlier versions</span><button type="button" class="rm-arrow" id="rmPrev" aria-label="Earlier">‹</button><button type="button" class="rm-arrow" id="rmNext" aria-label="Later">›</button></div>
       <div class="roadmap" id="roadmapTrack" tabindex="0" aria-label="Roadmap, oldest version first">
@@ -937,8 +918,9 @@
       <div class="leg next">
         <h3>Next</h3>
         <ul>
+          <li><span class="e">🤖</span>Agent workflows: lay out your agents' steps in a visual editor</li>
+          <li><span class="e">📊</span>A sheets editor for .csv and .xlsx files</li>
           <li><span class="e">📄</span>Import Google Docs and Google Sheets</li>
-          <li><span class="e">🤖</span>Agent workflows, with a visual editor</li>
           <li><span class="e">🔐</span>Secrets your agents can use, kept in your Keychain</li>
         </ul>
       </div>
@@ -1265,20 +1247,48 @@
   }, { threshold: 0.4 }).observe(own);
 })();
 
-/* ROADMAP — open on the latest shipped version, with the older ones to the left; the arrows move one card. */
+/* ROADMAP — it starts at the oldest version, and the first time the whole track is on screen it glides across to the latest, so visitors see there is history to scroll back to. The arrows move one card. */
 (function () {
   'use strict';
   var track = document.getElementById('roadmapTrack'), latest = document.getElementById('rmLatest');
   var prev = document.getElementById('rmPrev'), next = document.getElementById('rmNext');
   if (!track || !latest) return;
+  var arrived = false, touched = false;
   function step() { var c = track.querySelector('.leg'); return c ? c.getBoundingClientRect().width + 14 : 300; }
   function update() { prev.disabled = track.scrollLeft < 4; next.disabled = track.scrollLeft > track.scrollWidth - track.clientWidth - 4; }
-  function home() { var b = track.style.scrollBehavior; track.style.scrollBehavior = 'auto'; track.scrollLeft = latest.offsetLeft - track.firstElementChild.offsetLeft; track.style.scrollBehavior = b; update(); }
-  prev.addEventListener('click', function () { track.scrollBy({ left: -step() }); });
-  next.addEventListener('click', function () { track.scrollBy({ left: step() }); });
+  function target() { return Math.min(latest.offsetLeft - track.firstElementChild.offsetLeft, track.scrollWidth - track.clientWidth); }
+  function jump(x) { var b = track.style.scrollBehavior; track.style.scrollBehavior = 'auto'; track.scrollLeft = x; track.style.scrollBehavior = b; update(); }
+  function glide() {
+    if (arrived) return; arrived = true;
+    if (touched) return;
+    var to = target(), from = track.scrollLeft;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) { jump(to); return; }
+    track.style.scrollSnapType = 'none'; track.style.scrollBehavior = 'auto';
+    var t0 = performance.now(), dur = 1500, done = false;
+    function finish() { if (done) return; done = true; track.scrollLeft = to; track.style.scrollSnapType = ''; track.style.scrollBehavior = ''; update(); }
+    (function frame(now) {
+      if (done || touched) { finish(); return; }
+      var t = Math.min(1, (now - t0) / dur), e = t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+      track.scrollLeft = from + (to - from) * e;
+      if (t < 1) requestAnimationFrame(frame); else finish();
+    })(t0);
+    setTimeout(finish, dur + 400); // a background tab pauses animation frames: land there anyway
+  }
+  ['pointerdown', 'wheel', 'touchstart', 'keydown'].forEach(function (ev) { track.addEventListener(ev, function () { touched = true; }, { passive: true }); });
+  prev.addEventListener('click', function () { touched = true; track.scrollBy({ left: -step() }); });
+  next.addEventListener('click', function () { touched = true; track.scrollBy({ left: step() }); });
   track.addEventListener('scroll', update, { passive: true });
-  window.addEventListener('resize', home);
-  home();
+  window.addEventListener('resize', function () { if (arrived && !touched) jump(target()); else update(); });
+  jump(0);
+  // Once the whole track is on screen (or as much of it as fits), glide.
+  function check() {
+    if (arrived) return;
+    var r = track.getBoundingClientRect(), vh = window.innerHeight;
+    var seen = Math.min(r.bottom, vh) - Math.max(r.top, 0);
+    if (r.height > 0 && seen >= Math.min(r.height, vh) * 0.9) { window.removeEventListener('scroll', check); setTimeout(glide, 250); }
+  }
+  window.addEventListener('scroll', check, { passive: true });
+  check();
 })();
 
 /* Sections fade up and the speed bars grow the first time they come into view. */
@@ -1339,33 +1349,30 @@
   video.addEventListener('ended', function () { playBtn.hidden = false; video.controls = false; });
 })();
 
-/* THEME BAR — swatches drawn from the theme table, as the app's ThemeSwatch draws them: day left of the diagonal, night right, each half its ground, a line of text and a button. */
+/* STYLE PICKER — a square per theme, its ground and accent in the current day or night, as on /try. */
 (function () {
   'use strict';
   var W = window.wsTheme; if (!W) return;
-  var box = document.getElementById('thSwatches'), nameEl = document.getElementById('thName');
-  var modeBtns = Array.prototype.slice.call(document.querySelectorAll('.th-mode button'));
-  var NS = 'http://www.w3.org/2000/svg';
-  Object.keys(W.T).forEach(function (id) {
-    var d = W.tokens(id, false), n = W.tokens(id, true);
+  var box = document.getElementById('themeBar');
+  var ids = Object.keys(W.T);
+  var squares = ids.map(function (id) {
     var b = document.createElement('button');
-    b.type = 'button'; b.dataset.theme = id; b.title = W.T[id][0]; b.setAttribute('aria-label', W.T[id][0] + ' theme');
-    b.innerHTML = '<svg viewBox="0 0 48 24" aria-hidden="true">' +
-      '<polygon points="0,0 28,0 20,24 0,24" fill="' + d.bg + '"/>' +
-      '<rect x="4" y="6" width="12" height="2" rx="1" fill="' + d.fg + '"/>' +
-      '<rect x="4" y="13" width="10" height="6" rx="1.5" fill="' + d.accent + '"/>' +
-      '<polygon points="28,0 48,0 48,24 20,24" fill="' + n.bg + '"/>' +
-      '<rect x="31" y="6" width="13" height="2" rx="1" fill="' + n.fg + '"/>' +
-      '<rect x="34" y="13" width="10" height="6" rx="1.5" fill="' + n.accent + '"/></svg>';
+    b.type = 'button'; b.className = 'style-square'; b.title = W.T[id][0];
+    b.setAttribute('role', 'radio'); b.setAttribute('aria-label', W.T[id][0]);
     b.addEventListener('click', function () { W.set(id); });
-    box.appendChild(b);
+    b.addEventListener('keydown', function (e) {
+      var d = { ArrowRight: 1, ArrowDown: 1, ArrowLeft: -1, ArrowUp: -1 }[e.key]; if (!d) return;
+      e.preventDefault(); var n = ids[(ids.indexOf(id) + d + ids.length) % ids.length]; W.set(n); squares[ids.indexOf(n)].focus();
+    });
+    box.appendChild(b); return b;
   });
-  modeBtns.forEach(function (b) { b.addEventListener('click', function () { W.setMode(b.dataset.mode); }); });
   function sync() {
     var cur = W.current(), night = W.night();
-    Array.prototype.forEach.call(box.children, function (b) { b.setAttribute('aria-pressed', String(b.dataset.theme === cur)); });
-    nameEl.textContent = W.T[cur][0];
-    modeBtns.forEach(function (b) { b.setAttribute('aria-pressed', String((b.dataset.mode === 'night') === night)); });
+    ids.forEach(function (id, i) {
+      var t = W.tokens(id, night), b = squares[i], on = id === cur;
+      b.style.background = 'linear-gradient(135deg, ' + t.bg + ' 0 50%, ' + t.accent + ' 50% 100%)';
+      b.setAttribute('aria-checked', String(on)); b.tabIndex = on ? 0 : -1;
+    });
   }
   document.addEventListener('wstheme', sync);
   sync();
