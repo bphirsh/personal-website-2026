@@ -138,6 +138,8 @@
   nav .nav-links .nav-menu-list a { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 12px; font-size: 15px; font-weight: 500; letter-spacing: 0; color: var(--text-primary); white-space: nowrap; transition: background 0.15s; }
   nav .nav-links .nav-menu-list a:hover, nav .nav-links .nav-menu-list a:focus-visible { background: var(--bg); outline: none; }
   .nav-menu-list img { width: 26px; height: 26px; flex-shrink: 0; }
+  /* The Workspace logo follows the macOS icon grid, so its tile fills only the middle 824 of 1024 units; drawn 1024/824 larger (32px) with the margin taken back, its tile matches Better Tab Manager's 26px icon and the row keeps its spacing. */
+  .nav-menu-list img.ws-icon { width: 32px; height: 32px; margin: -3px; }
 
   /* ── CARD SYSTEM ── */
   .card {
@@ -1039,7 +1041,7 @@
       <li class="nav-menu">
         <button type="button" class="nav-menu-btn" aria-expanded="false" aria-controls="projects-menu">Projects<svg class="chev" viewBox="0 0 10 6" aria-hidden="true"><path d="M1 1l4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
         <div class="nav-menu-list" id="projects-menu">
-          <a href="/workspace/"><img src="/workspace/media/workspace-logo-light.svg" alt="" width="26" height="26">Workspace</a>
+          <a href="/workspace/"><img class="ws-icon" src="/workspace/media/workspace-logo-light.svg" alt="" width="32" height="32">Workspace</a>
           <a href="/better-tab-manager/"><img src="/better-tab-manager/media/icon-128.png" alt="" width="26" height="26">Better Tab Manager</a>
         </div>
       </li>
