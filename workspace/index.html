@@ -294,7 +294,14 @@
   .try-line { text-align: center; margin-top: 22px; font-size: 15px; color: var(--text-secondary); font-weight: 300; }
   .try-line a { color: var(--text-primary); font-weight: 500; }
 
-  .roadmap { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-top: 36px; }
+  .rm-wrap { margin-top: 30px; }
+  .rm-nav { display: flex; align-items: center; justify-content: flex-end; gap: 8px; margin-bottom: 12px; }
+  .rm-hint { margin-right: auto; font-size: 13px; color: var(--text-muted); font-weight: 300; }
+  .rm-arrow { width: 36px; height: 36px; border-radius: 50%; border: 1px solid var(--border); background: var(--card); color: var(--text-primary); font-size: 20px; line-height: 1; cursor: pointer; box-shadow: var(--shadow); }
+  .rm-arrow:disabled { opacity: 0.35; cursor: default; }
+  .roadmap { display: grid; grid-auto-flow: column; grid-auto-columns: calc((100% - 42px) / 4); gap: 14px; overflow-x: auto; scroll-snap-type: x mandatory; scroll-behavior: smooth; padding: 2px 2px 14px; scrollbar-width: thin; align-items: start; }
+  .roadmap > .leg { scroll-snap-align: start; }
+  .leg.latest { box-shadow: 0 0 0 1px color-mix(in srgb, var(--green) 45%, transparent), var(--shadow); }
   .leg { background: var(--card); border-radius: 22px; padding: 22px 20px; box-shadow: var(--shadow); }
   .leg h3 { font-size: 13px; font-weight: 600; letter-spacing: 1.6px; text-transform: uppercase; color: var(--text-muted); margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; }
   .leg.shipped h3 { color: var(--green); }
@@ -383,7 +390,7 @@
     .benefit.flip .b-text { order: 0; }
     .steps { grid-template-columns: 1fr; }
     .own { grid-template-columns: 1fr; padding: 34px 26px; }
-    .roadmap { grid-template-columns: 1fr 1fr; }
+    .roadmap { grid-auto-columns: calc((100% - 14px) / 2); }
   }
   @media (max-width: 680px) {
     .hero .lede { font-size: 17px; }
@@ -404,7 +411,8 @@
     .views .v-cal, .col-head em { display: none; }
     .col-head { font-size: 11px; }
     .gather-captions { top: 3vh; }
-    .roadmap { grid-template-columns: 1fr; }
+    .roadmap { grid-auto-columns: 84%; }
+    .rm-hint { font-size: 12px; }
     .final { padding: 40px 22px; }
   }
 
@@ -699,8 +707,61 @@
     <div class="kicker">Roadmap</div>
     <h2 class="big">Where it's going.</h2>
     <p class="lede">I ship a new version every week or two. Here's what's done and what's coming.</p>
-    <div class="roadmap" style="text-align:left">
+    <!-- One card per shipped version, oldest on the left, then Next, Soon and Future. It opens scrolled to the latest version (#rmLatest); scroll or use the arrows to go back. Each version's "More in" list has the medium-sized changes; every change is on the release notes page. -->
+    <div class="rm-wrap" style="text-align:left">
+      <div class="rm-nav"><span class="rm-hint">← Scroll back for earlier versions</span><button type="button" class="rm-arrow" id="rmPrev" aria-label="Earlier">‹</button><button type="button" class="rm-arrow" id="rmNext" aria-label="Later">›</button></div>
+      <div class="roadmap" id="roadmapTrack" tabindex="0" aria-label="Roadmap, oldest version first">
       <div class="leg shipped">
+        <h3>Private beta <span class="ver">v1.0</span></h3>
+        <ul>
+          <li><span class="e">💪</span>Powerful relational databases</li>
+          <li><span class="e">🦋</span>Beautiful markdown writing</li>
+          <li><span class="e">💻</span>Open code, HTML, photos and documents</li>
+        </ul>
+      </div>
+      <div class="leg shipped">
+        <h3>Shipped <span class="ver">v1.1</span></h3>
+        <ul>
+          <li><span class="e">↩️</span>Version history</li>
+          <li><span class="e">🤖</span>Agent roles, skills and learnings</li>
+          <li><span class="e">👀</span>What agents changed here</li>
+          <li><span class="e">🏗️</span>Automatic updating</li>
+        </ul>
+        <details>
+          <summary>More in v1.1 ▾</summary>
+          <ul>
+            <li><span class='e'>✅</span>Signed and notarized by Apple, so it opens like any Mac app</li>
+            <li><span class='e'>🧜</span>Mermaid diagrams expand to fill the pane</li>
+            <li><span class='e'>🔗</span>Links in PDFs and web pages open in your browser</li>
+            <li><span class='e'>🪪</span>A row's side panel shows its ID, created and updated</li>
+            <li><span class='e'>🖥️</span>Control-Command-F for full screen</li>
+          </ul>
+        </details>
+      </div>
+      <div class="leg shipped">
+        <h3>Shipped <span class="ver">v1.2</span></h3>
+        <ul>
+          <li><span class="e">🎓</span>Teach your AI agents Workspace</li>
+          <li><span class="e">🧩</span>Your agents make pages and databases for you</li>
+          <li><span class="e">📋</span>Templates for pages and databases</li>
+          <li><span class="e">🔗</span>Lookup and rollup columns</li>
+          <li><span class="e">🎬</span>Video and audio play in the app</li>
+        </ul>
+        <details>
+          <summary>More in v1.2 ▾</summary>
+          <ul>
+            <li><span class='e'>📅</span>Relative date filters: today, next week, the past 30 days</li>
+            <li><span class='e'>➗</span>Math in $ signs is drawn as typeset math</li>
+            <li><span class='e'>📌</span>Pinned tabs</li>
+            <li><span class='e'>🔠</span>Lettered and roman-numeral lists</li>
+            <li><span class='e'>🕸️</span>A Links view of what links to a page</li>
+            <li><span class='e'>🃏</span>Reorder board cards within a column</li>
+            <li><span class='e'>↪️</span>Aliases and shortcuts open what they point to</li>
+            <li><span class='e'>⚡</span>Large vaults open at once</li>
+          </ul>
+        </details>
+      </div>
+      <div class="leg shipped latest" id="rmLatest">
         <h3>Shipped <span class="ver">v1.3</span></h3>
         <ul>
           <li><span class="e">📥</span>Import from Obsidian, Notion and Airtable</li>
@@ -710,20 +771,16 @@
           <li><span class="e">✏️</span>Edit many database cells at once</li>
         </ul>
         <details>
-          <summary>Earlier: v1.0 to v1.2 ▾</summary>
+          <summary>More in v1.3 ▾</summary>
           <ul>
-            <li><span class="e">🎓</span>Teach your AI agents Workspace</li>
-            <li><span class="e">🧩</span>Your agents make pages and databases for you</li>
-            <li><span class="e">📋</span>Templates for pages and databases</li>
-            <li><span class="e">🔗</span>Lookup and rollup columns</li>
-            <li><span class="e">🎬</span>Video and audio play in the app</li>
-            <li><span class="e">↩️</span>Version history</li>
-            <li><span class="e">🤖</span>Agent roles, skills and learnings</li>
-            <li><span class="e">🤖</span>What agents changed here</li>
-            <li><span class="e">🏗️</span>Automatic updating</li>
-            <li><span class="e">💪</span>Powerful relational databases</li>
-            <li><span class="e">🦋</span>Beautiful markdown writing</li>
-            <li><span class="e">💻</span>Open code, HTML, photos and documents</li>
+            <li><span class='e'>🤝</span>Hand any export to your agent to bring in with you</li>
+            <li><span class='e'>↔️</span>Collapse board columns</li>
+            <li><span class='e'>🕒</span>Filter on created and updated time</li>
+            <li><span class='e'>📋</span>Tables in pages: copy, paste, sort and undo</li>
+            <li><span class='e'>⌘</span>Hold ⌘Q to quit, so a stray press doesn't</li>
+            <li><span class='e'>↩️</span>⌘Z brings back a file you just deleted</li>
+            <li><span class='e'>📍</span>Paste a full path into Go to File</li>
+            <li><span class='e'>💾</span>The search index takes half the disk space</li>
           </ul>
         </details>
       </div>
@@ -749,6 +806,7 @@
           <li><span class="e">💻</span>Windows app</li>
           <li><span class="e">📱</span>Android</li>
         </ul>
+      </div>
       </div>
     </div>
     <p class="try-line"><a href="/workspace/releases/">Release notes</a> for every version.</p>
@@ -1053,6 +1111,22 @@
       else if (!e.isIntersecting && seen) { clearInterval(timer); timer = null; seen = false; }
     });
   }, { threshold: 0.4 }).observe(own);
+})();
+
+/* ROADMAP — open on the latest shipped version, with the older ones to the left; the arrows move one card. */
+(function () {
+  'use strict';
+  var track = document.getElementById('roadmapTrack'), latest = document.getElementById('rmLatest');
+  var prev = document.getElementById('rmPrev'), next = document.getElementById('rmNext');
+  if (!track || !latest) return;
+  function step() { var c = track.querySelector('.leg'); return c ? c.getBoundingClientRect().width + 14 : 300; }
+  function update() { prev.disabled = track.scrollLeft < 4; next.disabled = track.scrollLeft > track.scrollWidth - track.clientWidth - 4; }
+  function home() { var b = track.style.scrollBehavior; track.style.scrollBehavior = 'auto'; track.scrollLeft = latest.offsetLeft - track.firstElementChild.offsetLeft; track.style.scrollBehavior = b; update(); }
+  prev.addEventListener('click', function () { track.scrollBy({ left: -step() }); });
+  next.addEventListener('click', function () { track.scrollBy({ left: step() }); });
+  track.addEventListener('scroll', update, { passive: true });
+  window.addEventListener('resize', home);
+  home();
 })();
 
 /* Sections fade up and the speed bars grow the first time they come into view. */
