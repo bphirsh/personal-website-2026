@@ -271,6 +271,8 @@
   .fold-row svg.i { color: var(--text-secondary); }
   .fold-cols { height: 24px; border-bottom: 1px solid var(--win-line); font-size: 12px; color: var(--text-secondary); }
   .fold-cols span:last-child { color: var(--text-secondary); }
+  .fill { opacity: 0; transform: translateY(6px); transition: opacity 0.35s ease, transform 0.35s ease; }
+  .fill.on { opacity: 1; transform: none; }
   .empty { color: var(--text-muted); font-size: 13px; }
 
   .pane-doc { padding: 18px 0 0; }
@@ -641,37 +643,37 @@
           <div class="row folder"><span class="chev open"><svg class="i"><use href="#i-chevron"/></svg></span><svg class="i"><use href="#i-folder"/></svg><span class="nm">Agents</span></div>
           <div class="row indent" data-row="roles"><span class="chev"></span><svg class="i"><use href="#i-agent"/></svg><span class="nm">Roles</span></div>
           <div class="row indent" data-row="skills"><span class="chev"></span><svg class="i"><use href="#i-folder"/></svg><span class="nm">Skills</span></div>
-          <div class="row indent" data-row="agentsmd"><span class="chev"></span><svg class="i"><use href="#i-file"/></svg><span class="nm">AGENTS.md</span></div>
           <div class="row folder"><span class="chev open"><svg class="i"><use href="#i-chevron"/></svg></span><svg class="i"><use href="#i-folder"/></svg><span class="nm">Files</span></div>
           <div class="row indent" data-row="shots"><span class="chev"></span><svg class="i"><use href="#i-image"/></svg><span class="nm">Screenshots</span></div>
+          <div class="row" data-row="agentsmd"><span class="chev"></span><svg class="i"><use href="#i-file"/></svg><span class="nm">AGENTS.md</span></div>
         </div>
         <div class="win-main">
-          <div class="tabbar"><div class="tab"><svg class="i"><use id="winTabIcon" href="#i-folder"/></svg><span id="winTab">Your vault</span><svg class="i"><use href="#i-close"/></svg></div><span class="tab-plus"><svg class="i"><use href="#i-plus"/></svg></span></div>
+          <div class="tabbar"><div class="tab"><svg class="i"><use id="winTabIcon" href="#i-folder"/></svg><span id="winTab">Your files</span><svg class="i"><use href="#i-close"/></svg></div><span class="tab-plus"><svg class="i"><use href="#i-plus"/></svg></span></div>
           <!-- The vault's folder page, drawn as the app's BasicFolder draws one: a Folders band of horizontal cards, then a Documents band as a list with Name and Modified columns. It is empty until the files land, then fills in. -->
           <div class="pane pane-home" id="paneHome">
-            <div class="doc-top"><span class="crumb">Your vault</span></div>
-            <h3><svg class="i"><use href="#i-folder"/></svg>Your vault</h3>
+            <div class="doc-top"><span class="crumb">Your files</span></div>
+            <h3><svg class="i"><use href="#i-folder"/></svg>Your files</h3>
             <p id="winEmpty" class="empty">Nothing here yet.</p>
-            <div id="winFull" style="opacity:0">
-              <div class="band-head">Folders</div>
+            <!-- Each folder card and document row appears as its first file lands in the left bar (data-rows: the sidebar rows it holds), and its count goes up with each one. -->
+            <div id="winFull">
+              <div class="band-head fill" data-band="folders">Folders</div>
               <div class="fold-cards">
-                <div class="fold-card"><svg class="i"><use href="#i-folder"/></svg><span>Projects</span><em>3 pages</em></div>
-                <div class="fold-card"><svg class="i"><use href="#i-folder"/></svg><span>Databases</span><em>3 databases</em></div>
-                <div class="fold-card"><svg class="i"><use href="#i-folder"/></svg><span>Agents</span><em>2 roles</em></div>
-                <div class="fold-card"><svg class="i"><use href="#i-folder"/></svg><span>Files</span><em>12 files</em></div>
+                <div class="fold-card fill" data-rows="plan,research,meeting" data-unit="page"><svg class="i"><use href="#i-folder"/></svg><span>Projects</span><em></em></div>
+                <div class="fold-card fill" data-rows="clients,tasks,reading" data-unit="database"><svg class="i"><use href="#i-folder"/></svg><span>Databases</span><em></em></div>
+                <div class="fold-card fill" data-rows="roles,skills" data-unit="item"><svg class="i"><use href="#i-folder"/></svg><span>Agents</span><em></em></div>
+                <div class="fold-card fill" data-rows="shots" data-unit="item"><svg class="i"><use href="#i-folder"/></svg><span>Files</span><em></em></div>
               </div>
-              <div class="band-head">Documents</div>
+              <div class="band-head fill" data-band="docs">Documents</div>
               <div class="fold-list">
-                <div class="fold-row fold-cols"><span>Name</span><span>Modified</span></div>
-                <div class="fold-row"><span><svg class="i"><use href="#i-file"/></svg>AGENTS.md</span><span>Today, 9:41</span></div>
-                <div class="fold-row"><span><svg class="i"><use href="#i-file"/></svg>Ideas</span><span>Yesterday</span></div>
+                <div class="fold-row fold-cols fill" data-band="docs"><span>Name</span><span>Modified</span></div>
+                <div class="fold-row fill" data-rows="agentsmd"><span><svg class="i"><use href="#i-file"/></svg>AGENTS.md</span><span>Just now</span></div>
               </div>
             </div>
           </div>
 
           <div class="pane pane-doc" id="paneDoc" style="opacity:0">
             <div class="doc">
-              <div class="doc-top"><span class="crumb">Your vault <b>›</b> Projects <b>›</b> Launch plan</span><span class="edited">Claude edited 2 min ago</span></div>
+              <div class="doc-top"><span class="crumb">Your files <b>›</b> Projects <b>›</b> Launch plan</span><span class="edited">Claude edited 2 min ago</span></div>
               <h3>Launch plan</h3>
               <p>Get Workspace in front of <b>200 people</b> by December. <mark>Lead with the speed numbers</mark>; they get the most clicks.</p>
               <h4>This week</h4>
@@ -685,7 +687,7 @@
           </div>
 
           <div class="pane pane-db" id="paneDb" style="opacity:0">
-            <div class="doc-top"><span class="crumb">Your vault <b>›</b> Databases <b>›</b> Tasks</span><span class="edited">6 rows</span></div>
+            <div class="doc-top"><span class="crumb">Your files <b>›</b> Databases <b>›</b> Tasks</span><span class="edited">6 rows</span></div>
             <h3><svg class="i"><use href="#i-database"/></svg>Tasks</h3>
             <div class="views"><span class="on" id="vTable" role="button"><svg class="i"><use href="#i-row"/></svg>Table</span><span id="vBoard" role="button"><svg class="i"><use href="#i-grid"/></svg>Board</span><span class="v-list"><svg class="i"><use href="#i-list"/></svg>List</span></div>
             <div class="db" id="db">
@@ -1102,14 +1104,24 @@
   // Table and board places for every task, inside the database box. Measured again whenever the box changes width (the phone sidebar folds away).
   function measureDb() {
     var W = db.clientWidth, gap = 10, colW = (W - 2 * gap) / 3, perCol = [0, 0, 0];
-    var narrow = W < 420, cardH = narrow ? 74 : 68;
+    var narrow = W < 420, cardH = narrow ? 74 : 68, colY = [38, 38, 38];
+    // Each card is as tall as its title: a title that wraps to two lines gets a taller card, measured on a hidden card at the board's width.
+    var probe = document.createElement('div');
+    probe.className = 'task is-card'; probe.style.cssText = 'visibility:hidden;width:' + (colW - 12) + 'px';
+    probe.innerHTML = '<div class="t-row"><span class="t-title">X</span></div>';
+    db.appendChild(probe);
+    var pt = probe.querySelector('.t-title'), one = pt.offsetHeight;
     dbGeo = {
       W: W, colW: colW, gap: gap,
       t: tasks.map(function (t, i) {
-        var col = +t.dataset.col, k = perCol[col]++;
-        return { tx: 0, ty: 28 + i * 36, tw: W, th: 36, bx: col * (colW + gap) + 6, by: 38 + k * (cardH + 8), bw: colW - 12, bh: cardH };
+        var col = +t.dataset.col;
+        pt.textContent = t.querySelector('.t-title').textContent;
+        var bh = cardH + (pt.offsetHeight - one), by = colY[col];
+        colY[col] += bh + 8;
+        return { tx: 0, ty: 28 + i * 36, tw: W, th: 36, bx: col * (colW + gap) + 6, by: by, bw: colW - 12, bh: bh };
       })
     };
+    db.removeChild(probe);
     colHeads.forEach(function (el) { var c = +el.dataset.col; el.style.left = (c * (colW + gap) + 8) + 'px'; el.style.width = (colW - 8) + 'px'; });
     colBgs.forEach(function (el) { var c = +el.dataset.col; el.style.left = (c * (colW + gap)) + 'px'; el.style.width = colW + 'px'; });
   }
@@ -1128,31 +1140,35 @@
     var s = stage.getBoundingClientRect();
     var a = ease(clamp(sy / gatherTop));
     var p = progress();
-    var lit = {};
+    var lit = {}, landed = {};
 
     // The files.
     var atTop = sy <= 0;
     layer.classList.toggle('at-top', atTop);
     layer.style.zIndex = a > 0.35 ? '3' : '1';
+    // One smooth curve per file, from its place by the headline (carried up with the page), bending past its place beside the window, into its row in the left bar. The curve's only stops are where it starts and where it lands, so a file never pauses on the way down before flying in.
+    var span = Math.max(1, section.offsetHeight - window.innerHeight);
     chips.forEach(function (c, i) {
       var g = geo[i];
-      var bx = g.late ? s.left + g.ox : lerp(g.hx, s.left + g.ox, a);
-      var by = g.late ? s.top + g.oy : lerp(g.hy - sy, s.top + g.oy, a);
-      var t = ease(win(p, 0.02 + i * 0.034, 0.2 + i * 0.034));
-      var x = lerp(bx, s.left + g.rx, t), y = lerp(by, s.top + g.ry, t);
-      c.style.transform = 'translate(' + x.toFixed(1) + 'px,' + (y + (atTop ? sy : 0)).toFixed(1) + 'px) scale(' + (0.86 - 0.14 * t).toFixed(3) + ')';
+      var land = gatherTop + span * (0.2 + i * 0.034); /* the scroll position where this file reaches its row */
+      var u = clamp(sy / land), t = 0.5 - 0.5 * Math.cos(Math.PI * u); /* eases out of the start and into the landing */
+      var cx = s.left + g.ox, cy = s.top + g.oy;
+      var x0 = g.late ? cx : g.hx, y0 = g.late ? cy : g.hy - sy;
+      var x2 = s.left + g.rx, y2 = s.top + g.ry;
+      var q = 1 - t;
+      var x = q * q * x0 + 2 * q * t * cx + t * t * x2, y = q * q * y0 + 2 * q * t * cy + t * t * y2;
+      var shrink = clamp((t - 0.5) / 0.5);
+      c.style.transform = 'translate(' + x.toFixed(1) + 'px,' + (y + (atTop ? sy : 0)).toFixed(1) + 'px) scale(' + (0.86 - 0.14 * shrink).toFixed(3) + ')';
       c.style.transformOrigin = 'left center';
-      var fade = clamp((t - 0.82) / 0.18);
+      var fade = clamp((t - 0.94) / 0.06);
       c.style.opacity = String((1 - fade) * (g.late ? a : 1));
       rows[c.dataset.to].style.opacity = String(fade);
       if (fade > 0.5 && t < 1) lit[c.dataset.to] = true;
+      if (fade > 0.5) landed[c.dataset.to] = true;
     });
 
-    // Home fills in.
-    var full = win(p, 0.46, 0.54);
-    winEmpty.style.display = full >= 1 ? 'none' : '';
-    winEmpty.style.opacity = String(1 - full);
-    winFull.style.opacity = String(full);
+    // The folder page fills in as the files land.
+    fillFolder(landed);
 
     // Past Home the window becomes a showcase of a page, a table and a board.
     sf = win(p, 0.58, 0.64);
@@ -1164,15 +1180,34 @@
     if (cap !== lastCap) { caps.forEach(function (el, i) { el.classList.toggle('on', i === cap); }); lastCap = cap; }
   }
 
+  var fills = Array.prototype.slice.call(stage.querySelectorAll('.fill[data-rows]'));
+  var bands = Array.prototype.slice.call(stage.querySelectorAll('.fill[data-band]'));
+  function fillFolder(landed) {
+    var any = false, shown = { folders: false, docs: false };
+    fills.forEach(function (el) {
+      var n = el.dataset.rows.split(',').filter(function (k) { return landed[k]; }).length;
+      el.classList.toggle('on', n > 0);
+      if (n) { any = true; shown[el.classList.contains('fold-card') ? 'folders' : 'docs'] = true; }
+      var em = el.querySelector('em');
+      if (em && n) em.textContent = n + ' ' + el.dataset.unit + (n > 1 ? 's' : '');
+    });
+    bands.forEach(function (el) { el.classList.toggle('on', shown[el.dataset.band]); });
+    winEmpty.style.display = any ? 'none' : '';
+  }
+
   /* ARRIVAL — as the showcase comes in, the window glides up and grows a little, as if you have arrived, and the caption rides just above it the whole way. */
   function lift(e) {
     if (!lay) return;
     var sh = stage.clientHeight, vw = window.innerWidth, gap = 18;
     var top0 = Math.max(12, sh * 0.035);
-    var winTop = top0 + lay.capH + gap; /* where the window's top goes in the showcase */
     var tabs = Math.max(14, sh * 0.035) + 64; /* room for the Page, Table, Board buttons */
-    var grow = Math.max(1, Math.min(1.1, (sh - winTop - tabs) / lay.h, (vw * 0.96) / lay.w));
-    var dy = Math.min(0, winTop - lay.top) * e, k = 1 + (grow - 1) * e;
+    var avail = sh - top0 - tabs;
+    var dockW = vw >= 1040 ? themeDock.offsetWidth + 16 : 0; /* the Style column beside the window grows with it */
+    var wide = dockW ? (vw / 2 - 12) / (lay.w / 2 + dockW) : (vw * 0.96) / lay.w;
+    var grow = Math.max(1, Math.min(1.18, (avail - lay.capH - gap) / lay.h, wide));
+    var extra = Math.max(0, (avail - lay.capH - gap - lay.h * grow) / 2); /* any room left is shared above and below, so there is never a gap only above the buttons */
+    var winTop = top0 + extra + lay.capH + gap; /* where the window's top goes in the showcase */
+    var dy = (winTop - lay.top) * e, k = 1 + (grow - 1) * e;
     winWrap.style.transform = e > 0 ? 'translateY(' + dy.toFixed(1) + 'px) scale(' + k.toFixed(4) + ')' : '';
     capBox.style.height = lay.capH + 'px';
     capBox.style.top = Math.max(top0, lay.top + dy - gap - lay.capH).toFixed(1) + 'px';
@@ -1204,7 +1239,7 @@
     var lit = {};
     Object.keys(chipLit).forEach(function (k) { lit[k] = true; });
     if (sf > 0.5) { if (view === 'page') { lit.plan = true; winTab.textContent = 'Launch plan'; } else { lit.tasks = true; winTab.textContent = 'Tasks'; } }
-    else winTab.textContent = 'Your vault';
+    else winTab.textContent = 'Your files';
     winTabIcon.setAttribute('href', sf > 0.5 ? (view !== 'page' ? '#i-database' : '#i-file') : '#i-folder');
     Object.keys(rows).forEach(function (k) { rows[k].classList.toggle('lit', !!lit[k]); });
   }
@@ -1269,7 +1304,7 @@
 
   function finished() {
     caps.forEach(function (el, i) { el.classList.toggle('on', i === 2); });
-    winEmpty.style.display = 'none'; winFull.style.opacity = '1';
+    var all = {}; Object.keys(rows).forEach(function (k) { all[k] = true; }); fillFolder(all);
     measure();
     Object.keys(rows).forEach(function (k) { rows[k].style.opacity = '1'; });
     sf = 1; active = true; select('page'); drawDb();
