@@ -168,8 +168,9 @@
     p.for-phone, div.for-phone { display: block !important; }
   }
 
-  /* ── FLYERS: the files drifting around the hero. They live in a fixed layer and the script places them every frame: around the headline at the top, carried by the scroll to the edges of the window, then into its sidebar. ── */
-  .flyers { position: fixed; inset: 0; pointer-events: none; z-index: 1; }
+  /* ── FLYERS: the files drifting around the hero. They live in a layer anchored to the top of the page and the script places them every frame: around the headline at the top, carried by the scroll to the edges of the window, then into its sidebar. ── */
+  /* Anchored to the top of the page, not the screen, so the elastic bounce above the top drags them with the hero; the script adds the scroll to every placement. */
+  .flyers { position: absolute; top: 0; left: 0; right: 0; height: 0; pointer-events: none; z-index: 1; }
   .chip {
     position: absolute; top: 0; left: 0;
     will-change: transform, opacity;
@@ -1099,7 +1100,7 @@
       var by = g.late ? s.top + g.oy : lerp(g.hy - sy, s.top + g.oy, a);
       var t = ease(win(p, 0.02 + i * 0.034, 0.2 + i * 0.034));
       var x = lerp(bx, s.left + g.rx, t), y = lerp(by, s.top + g.ry, t);
-      c.style.transform = 'translate(' + x.toFixed(1) + 'px,' + y.toFixed(1) + 'px) scale(' + (1 - 0.25 * t).toFixed(3) + ')';
+      c.style.transform = 'translate(' + x.toFixed(1) + 'px,' + (y + sy).toFixed(1) + 'px) scale(' + (1 - 0.25 * t).toFixed(3) + ')';
       c.style.transformOrigin = 'left center';
       var fade = clamp((t - 0.82) / 0.18);
       c.style.opacity = String((1 - fade) * (g.late ? a : 1));
