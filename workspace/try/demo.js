@@ -159,7 +159,7 @@ export function buildVault(invite, fileName, fileText) {
 
   // The file's first page: with Brian's prompt, the agent's letter to the visitor ("To Sam, from Claude").
   const letter = pages.length ? theirPages[0] : null;
-  return { root, start, letter, file, owner: p.name, tasks: theirTasks, databases: theirDbs, tools };
+  return { root, start, letter, file, owner: p.name, tasks: theirTasks, databases: theirDbs, tools, people, repo };
 }
 
 /** The page and database "Just files on your computer" shows: the visitor's own first ones, else the same stand-ins the demo uses, with the folder the page sits in. */
@@ -185,7 +185,7 @@ function labels(list) {
  * change the window as files change, each change marked with the app's
  * fading tint for something changed from outside.
  *
- * `options.above` false leaves out the line above the window, `options.sample` says the file is the made-up sample's, `options.label` names the window region for screen readers, and `options.letter` opens on the file's first page, when it has one, with the starting folder as a tab beside it (Brian, 27 Oct 2026: the agent's letter "should be the first page that comes up").
+ * `options.above` false leaves out the line above the window, `options.sample` says the file is the made-up sample's, `options.label` names the window region for screen readers, and `options.letter` opens on the file's first page, when it has one, with the starting folder as a tab beside it (Brian, 27 Oct 2026: the agent's letter "should be the first page that comes up"), `options.places` adds Agents and Changes above the tree, and `options.title` is a line in the title bar.
  */
 export function mountDemo(mount, invite, fileName, fileText, options = {}) {
   const vault = buildVault(invite, fileName, fileText);
@@ -198,7 +198,10 @@ export function mountDemo(mount, invite, fileName, fileText, options = {}) {
   })(vault.root, null);
 
   const letter = options.letter ? vault.letter : null;
-  const state = { tabs: letter ? [vault.start, letter, vault.file] : [vault.start, vault.file], active: letter ?? vault.start, changed: null };
+  // `place` is Agents or Changes when one of them covers the pane, as the app's takeover pages do; null shows the tabs and the page.
+  const state = { tabs: letter ? [vault.start, letter, vault.file] : [vault.start, vault.file], active: letter ?? vault.start, changed: null, place: null };
+  // `options.places`: Agents and Changes above the tree, as the app's left bar has them (Brian, 17 Nov 2026), each opening a page made up for the demo.
+  const places = options.places ? makePlaces(vault, letter) : null;
 
   const wrap = el('div', 'demo');
   // `options.full`: the window fills almost the whole screen, with no text above it (M-014).
@@ -209,6 +212,7 @@ export function mountDemo(mount, invite, fileName, fileText, options = {}) {
   win.setAttribute('aria-label', options.label ?? 'Workspace preview');
   const titlebar = el('div', 'win-titlebar');
   titlebar.append(el('span', 'win-dot'), el('span', 'win-dot'), el('span', 'win-dot'));
+  if (options.title) titlebar.appendChild(el('span', 'win-title', options.title));
   const body = el('div', 'win-body');
   const left = el('nav', 'leftbar');
   left.setAttribute('aria-label', 'Left bar');
@@ -216,7 +220,9 @@ export function mountDemo(mount, invite, fileName, fileText, options = {}) {
   const tabbar = el('div', 'tabbar');
   tabbar.setAttribute('role', 'tablist');
   const page = el('div', 'page');
-  pane.append(tabbar, page);
+  const placePage = el('section', 'place-page');
+  placePage.hidden = true;
+  pane.append(tabbar, page, placePage);
   body.append(left, pane);
   win.append(titlebar, body);
   wrap.appendChild(win);
@@ -225,6 +231,12 @@ export function mountDemo(mount, invite, fileName, fileText, options = {}) {
   function open(n) {
     if (!state.tabs.includes(n)) state.tabs.push(n);
     state.active = n;
+    state.place = null;
+    render();
+  }
+
+  function openPlace(id) {
+    state.place = id;
     render();
   }
 
@@ -237,6 +249,9 @@ export function mountDemo(mount, invite, fileName, fileText, options = {}) {
 
   function render() {
     renderTree();
+    tabbar.hidden = page.hidden = !!state.place;
+    placePage.hidden = !state.place;
+    if (state.place) return renderPlace();
     renderTabs();
     renderPage();
   }
@@ -252,7 +267,7 @@ export function mountDemo(mount, invite, fileName, fileText, options = {}) {
         const row = el('button', 'tree-row');
         row.type = 'button';
         row.style.setProperty('--depth', depth);
-        if (n === state.active) row.classList.add('active');
+        if (n === state.active && !state.place) row.classList.add('active');
         if (state.changed === n) row.classList.add('changed');
         const lead = el('span', 'tree-lead');
         if (n.kind === 'folder') {
@@ -281,7 +296,110 @@ export function mountDemo(mount, invite, fileName, fileText, options = {}) {
     };
     walk(vault.root, 0, list);
     const head = el('div', 'leftbar-head', vaultName());
-    left.replaceChildren(head, list);
+    left.replaceChildren(...(places ? [placeRows()] : []), head, list);
+  }
+
+  // ── Agents and Changes: two rows above the vault, as the app's left bar has them; Changes carries a count of what you haven't seen ──
+  function placeRows() {
+    const box = el('div', 'places');
+    for (const [id, label] of [['agents', 'Agents'], ['changes', 'Changes']]) {
+      const row = el('button', `tree-row place-row${state.place === id ? ' active' : ''}`);
+      row.type = 'button';
+      row.append(el('span', 'tree-lead'), el('span', 'tree-name', label));
+      row.firstChild.appendChild(icon(ICONS[id === 'agents' ? 'agent' : 'changes'], 'tree-icon'));
+      const unseen = id === 'changes' ? places.changes.filter((c) => !c.seen).length : 0;
+      if (unseen) row.appendChild(el('span', 'place-badge', String(unseen)));
+      row.addEventListener('click', () => openPlace(id));
+      box.appendChild(row);
+    }
+    return box;
+  }
+
+  // The page that covers the pane: its head (the mark, the name and Close, as the app's), then the place's body.
+  function renderPlace() {
+    const id = state.place;
+    const head = el('header', 'place-head');
+    const mark = el('span', 'place-mark');
+    mark.appendChild(icon(ICONS[id === 'agents' ? 'agent' : 'changes'], 'place-mark-icon'));
+    head.append(mark, el('h1', 'place-title', id === 'agents' ? 'Agents' : 'Changes'));
+    const actions = el('span', 'place-actions');
+    if (id === 'changes') {
+      const all = button('place-btn', 'Mark all seen', () => { for (const c of places.changes) c.seen = true; render(); });
+      all.disabled = places.changes.every((c) => c.seen);
+      actions.appendChild(all);
+    }
+    actions.appendChild(button('place-btn', 'Close', () => { state.place = null; render(); }));
+    head.appendChild(actions);
+    const body = el('div', 'place-body');
+    body.appendChild(id === 'agents' ? agentsBody() : changesBody());
+    placePage.replaceChildren(head, body);
+    placePage.scrollTop = 0;
+  }
+
+  // Agents: Roles, Skills and Learnings, a few made-up ones each, as the app's Agents page lays them out.
+  function agentsBody() {
+    const wrap = el('div', 'agents');
+    const tabs = el('nav', 'agents-tabs');
+    tabs.setAttribute('aria-label', 'Sections');
+    places.agentsTab ??= 'roles';
+    for (const [id, label] of [['roles', 'Roles'], ['skills', 'Skills'], ['learnings', 'Learnings']]) {
+      const t = button(`agents-tab${places.agentsTab === id ? ' on' : ''}`, label, () => { places.agentsTab = id; renderPlace(); });
+      if (places.agentsTab === id) t.setAttribute('aria-current', 'true');
+      tabs.appendChild(t);
+    }
+    const list = el('ul', 'agents-cards');
+    if (places.agentsTab === 'roles') {
+      for (const r of places.roles) {
+        const li = el('li', 'agents-card');
+        const top = el('div', 'agents-card-top');
+        top.append(el('span', 'agents-who', r.emoji), el('strong', 'agents-name', r.name));
+        if (r.working) top.appendChild(el('span', 'agents-working', 'working'));
+        const tags = el('div', 'agents-tags');
+        for (const t of r.tags) tags.appendChild(el('span', 'agents-tag', t));
+        li.append(top, el('p', 'agents-line', r.line), tags);
+        list.appendChild(li);
+      }
+    } else if (places.agentsTab === 'skills') {
+      for (const s of places.skills) {
+        const li = el('li', 'agents-card');
+        const top = el('div', 'agents-card-top');
+        top.append(el('strong', 'agents-name agents-mono', s.name), el('span', 'agents-dim', s.used));
+        li.append(top, el('p', 'agents-line', s.line));
+        list.appendChild(li);
+      }
+    } else {
+      for (const l of places.learnings) {
+        const li = el('li', 'agents-card');
+        li.append(el('p', 'agents-quote', `“${l.text}”`), el('p', 'agents-dim', `${l.role} · ${l.when}`));
+        list.appendChild(li);
+      }
+    }
+    wrap.append(tabs, list);
+    return wrap;
+  }
+
+  // Changes: what agents and you changed, newest first; each opens the page it names, and an agent's change can be undone (and redone) here, which changes nothing on the page.
+  function changesBody() {
+    const wrap = el('div', 'changes');
+    wrap.appendChild(el('p', 'changes-since', 'While you were away, since 9:12 am'));
+    const list = el('ul', 'changes-list');
+    for (const c of places.changes) {
+      const li = el('li', `change-card${c.seen ? '' : ' unseen'}${c.undone ? ' undone' : ''}`);
+      const what = el('div', 'change-what');
+      const line = el('p', 'change-line');
+      line.append(document.createTextNode(`${c.who} ${c.verb} `));
+      line.appendChild(button('change-name', tabTitle(c.node), () => { c.seen = true; open(c.node); }));
+      if (c.after) line.append(document.createTextNode(` ${c.after}`));
+      what.append(line, el('p', 'change-meta', [c.role, c.when, c.undone ? 'undone' : null].filter(Boolean).join(' · ')));
+      const diff = el('div', 'change-diff');
+      if (c.add) diff.appendChild(el('span', 'change-add', c.add));
+      if (c.del) diff.appendChild(el('span', 'change-del', c.del));
+      if (c.agent) diff.appendChild(button('change-undo', c.undone ? 'Redo' : 'Undo', () => { c.undone = !c.undone; c.seen = true; render(); }));
+      li.append(el('span', 'change-who', c.emoji), what, diff);
+      list.appendChild(li);
+    }
+    wrap.appendChild(list);
+    return wrap;
   }
 
   // ── tab bar ──
@@ -710,10 +828,53 @@ const ICONS = {
   page: 'M7 3h7l5 5v13H7zM14 3v5h5',
   folder: 'M3 7a1 1 0 011-1h5l2 2h9a1 1 0 011 1v9a1 1 0 01-1 1H4a1 1 0 01-1-1z',
   code: 'M9 8l-4 4 4 4M15 8l4 4-4 4',
+  // The app's left-bar icons for its two places (v0 ui/icons.ts).
+  agent: 'M7 8h10a2 2 0 012 2v6a2 2 0 01-2 2H7a2 2 0 01-2-2v-6a2 2 0 012-2zM12 4.5V8M10 13h.01M14 13h.01',
+  changes: 'M3 12h4l3-7 4 14 3-7h4',
 };
 
 // Which icon each kind of node shows, in the left bar and in a folder's Documents.
 const KIND_ICON = { folder: 'folder', md: 'page', tasks: 'page', file: 'page', code: 'code' };
+
+// The demo's Agents and Changes: made up, the same in every demo, except that Changes names pages from this vault, so each one opens. Nothing here reads or writes anything.
+function makePlaces(vault, letter) {
+  const page = letter ?? vault.start.children.find((c) => c.kind === 'md') ?? vault.file;
+  const db = vault.databases[0] ?? vault.people;
+  const code = vault.repo.children.find((c) => c.name === 'src')?.children.find((c) => c.name === 'forecast.ts') ?? vault.repo;
+  return {
+    roles: [
+      { emoji: '🔎', name: 'Researcher', working: true, line: 'Reads your notes and the web, and writes what it finds into new pages, with its sources.', tags: ['Claude Code', 'web-search skill'] },
+      { emoji: '🛠️', name: 'Builder', line: 'Takes tasks from tasks.md and ticks them off when they’re finished.', tags: ['Codex', 'deploy skill'] },
+      { emoji: '✍️', name: 'Writer', line: 'Drafts in your voice from your notes. Learned: “keep it short”.', tags: ['Claude Code', '3 learnings'] },
+      { emoji: '🧐', name: 'Reviewer', line: 'Reads what the others changed and leaves notes before you look.', tags: ['Claude Code'] },
+    ],
+    skills: [
+      { name: 'workspace', used: 'All roles', line: 'How this vault is laid out: pages, databases, and how to write each.' },
+      { name: 'web-search', used: 'Researcher', line: 'Search the web and cite every page it read.' },
+      { name: 'deploy', used: 'Builder', line: 'Run the tests, build, and ship when they pass.' },
+      { name: 'weekly-summary', used: 'Writer', line: 'Every Friday, a page of what changed this week.' },
+    ],
+    learnings: [
+      { text: 'Keep it short. Lead with the answer.', role: 'Writer', when: 'Yesterday' },
+      { text: 'Tasks live in tasks.md, one per line; tick, don’t delete.', role: 'Builder', when: '2 days ago' },
+      { text: 'Link every source, and say when it was read.', role: 'Researcher', when: 'Last week' },
+    ],
+    changes: [
+      { emoji: '🤖', who: 'Claude', verb: 'edited', node: page, role: 'Researcher', when: '14 min ago', add: '+12', del: '−3', agent: true },
+      { emoji: '🤖', who: 'Codex', verb: 'ticked 2 tasks in', node: vault.tasks, role: 'Builder', when: '38 min ago', add: '+2', del: '−2', agent: true },
+      { emoji: '🤖', who: 'Claude', verb: 'added 3 rows to', node: db, role: 'Researcher', when: '1 hr ago', add: '+3 rows', agent: true },
+      { emoji: '🤖', who: 'Codex', verb: 'edited', node: code, after: `in ${vault.repo.name}`, role: 'Builder', when: '1 hr ago', add: '+8', del: '−2', agent: true, seen: true },
+      { emoji: '🙂', who: 'You', verb: 'edited', node: vault.file, when: '2 hr ago', add: '+5', del: '−1', seen: true },
+    ],
+  };
+}
+
+function button(cls, text, onClick) {
+  const b = el('button', cls, text);
+  b.type = 'button';
+  b.addEventListener('click', onClick);
+  return b;
+}
 
 function icon(path, cls) {
   const ns = 'http://www.w3.org/2000/svg';

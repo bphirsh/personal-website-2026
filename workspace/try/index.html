@@ -35,10 +35,10 @@
 <link rel="stylesheet" href="/workspace/try/tokens.css">
 <link rel="stylesheet" href="/workspace/try/try.css">
 <link rel="stylesheet" href="/workspace/try/demo.css">
-<!-- boot.js decides: on a touch-only device it shows the covers below and loads nothing else; otherwise it loads the page's scripts (try.js, and vendor/qrcode.js for the founder card). -->
+<!-- boot.js decides: on a touch-only device it shows the covers below and loads nothing else; otherwise it loads the page's script (try.js). -->
 <script type="module" src="/workspace/try/boot.js"></script>
 </head>
-<!-- "landing" until a file or the example data is shown: the intro, the drop zone and the foot fit one screen (try.css). -->
+<!-- "landing" until a file or the example data is shown: the intro, the drop zone and the foot fit one screen; then "full": the top bar and the workspace window fill the screen, with no page scroll (try.css). -->
 <body class="landing">
 
 <!-- On a touch-only device (a phone or an iPad; Brian, 27 Oct 2026), the page is replaced by these two covers, and none of its scripts run. Shown by CSS on the same rule, so they show before any script; boot.js swaps the first for the second. -->
@@ -62,10 +62,12 @@
 </div>
 
 <main class="try">
-  <div class="topbar">
-    <span class="topbar-links"><a href="/workspace/" class="back">← Workspace</a><a href="/workspace/download/" class="btn topbar-download">Download for Mac</a></span>
-    <div id="styleSwitch"></div>
-  </div>
+  <!-- The top bar (Brian, 17 Nov 2026): Workspace on the left, back to the main page; the style picker in the middle; the download on the right, with Load a different file beside it once a workspace is showing. After load it is the only thing above the window, which fills the rest of the screen. -->
+  <header class="topbar">
+    <a href="/workspace/" class="brand"><picture><source srcset="/workspace/media/workspace-logo-dark.svg" media="(prefers-color-scheme: dark)"><img class="brand-mark" src="/workspace/media/workspace-logo-light.svg" alt="" width="24" height="24"></picture>Workspace</a>
+    <div class="topbar-style" id="styleSwitch"></div>
+    <span class="topbar-end"><button type="button" class="link topbar-load" id="loadAnother" hidden>Load<span class="wide-only"> a different</span> file</button><a href="/workspace/download/" class="btn topbar-download">Download<span class="wide-only"> for Mac</span></a></span>
+  </header>
 
   <!-- The intro: removed from the page once a file or the example data is shown (M-015), so the page starts at the workspace. The file input lives outside it, so "Load a different file" still works. -->
   <input type="file" id="pick" class="visually-hidden" accept=".md,.txt,text/markdown,text/plain" tabindex="-1">
@@ -120,12 +122,6 @@
 
   </section>
 
-  <!-- After their file is read: the drop zone leaves, and this stays, so the promise is still beside the way to choose another file. -->
-  <div class="loaded" id="loaded" hidden>
-    <button type="button" class="link" id="loadAnother">Load a different file</button>
-    <p class="privacy">Nothing leaves your computer. This all runs in your browser.</p>
-  </div>
-
   <section class="failed" id="failed" aria-live="polite" hidden></section>
   <div id="banners"></div>
 
@@ -137,123 +133,9 @@
 
   <div id="demo"></div>
 
-  <!-- The story, shown once the demo is (M-014). -->
-  <section class="story" id="story" hidden>
-    <h2 class="story-head">Workspace is a place for you + agents to collaborate.</h2>
-    <p class="story-sub">I was lost in artifacts and endless chats. Now the work lives in files we both see.</p>
-  </section>
-
-  <div id="replay"></div>
-  <div id="files"></div>
-
-  <!-- Brian's own figures and label (M-015), word for word, as bars (M-016): Notion MCP long, Workspace short, with a little flame off each Workspace bar. They grow once when on screen; still with reduced motion. -->
-  <section class="figures" id="figures" hidden>
-    <h2 class="section-title">Super-fucking-fast</h2>
-    <div class="speed">
-      <div class="speed-group">
-        <p class="speed-claim"><span class="speed-number">10×</span> faster than the Notion MCP</p>
-        <div class="speed-bar-row"><span class="speed-who">Notion MCP</span><span class="speed-track"><span class="speed-bar slow" style="--to: 100%"></span></span></div>
-        <div class="speed-bar-row"><span class="speed-who">Workspace</span><span class="speed-track"><span class="speed-bar fast" style="--to: 10%"><span class="speed-flame" aria-hidden="true"><svg viewBox="0 0 24 36"><defs><radialGradient id="flameGlow1"><stop offset="0" stop-color="var(--chart-4)" stop-opacity=".55"/><stop offset="1" stop-color="var(--chart-4)" stop-opacity="0"/></radialGradient></defs><ellipse class="flame-glow" cx="12" cy="27" rx="12" ry="10" fill="url(#flameGlow1)"/><path class="flame-outer" d="M12 1C14 8 21 13 21 23a9 9 0 0 1-18 0C3 15 9 11 12 1z" fill="var(--chart-2)"/><path class="flame-inner" d="M12 10c1.5 5 5.5 8 5.5 14a5.5 5.5 0 0 1-11 0c0-5 4-8 5.5-14z" fill="var(--chart-4)"/><path class="flame-core" d="M12 19c.8 2.8 3 4.5 3 7a3 3 0 0 1-6 0c0-2.5 2.2-4.2 3-7z" fill="#FFF4D6"/><circle class="flame-ember e1" cx="9" cy="8" r="1" fill="var(--chart-4)"/><circle class="flame-ember e2" cx="15" cy="11" r=".8" fill="var(--chart-2)"/></svg></span></span></span></div>
-      </div>
-      <div class="speed-group">
-        <p class="speed-claim"><span class="speed-number">35%</span> fewer tokens</p>
-        <div class="speed-bar-row"><span class="speed-who">Notion MCP</span><span class="speed-track"><span class="speed-bar slow" style="--to: 100%"></span></span></div>
-        <div class="speed-bar-row"><span class="speed-who">Workspace</span><span class="speed-track"><span class="speed-bar fast" style="--to: 65%"><span class="speed-flame" aria-hidden="true"><svg viewBox="0 0 24 36"><defs><radialGradient id="flameGlow2"><stop offset="0" stop-color="var(--chart-4)" stop-opacity=".55"/><stop offset="1" stop-color="var(--chart-4)" stop-opacity="0"/></radialGradient></defs><ellipse class="flame-glow" cx="12" cy="27" rx="12" ry="10" fill="url(#flameGlow2)"/><path class="flame-outer" d="M12 1C14 8 21 13 21 23a9 9 0 0 1-18 0C3 15 9 11 12 1z" fill="var(--chart-2)"/><path class="flame-inner" d="M12 10c1.5 5 5.5 8 5.5 14a5.5 5.5 0 0 1-11 0c0-5 4-8 5.5-14z" fill="var(--chart-4)"/><path class="flame-core" d="M12 19c.8 2.8 3 4.5 3 7a3 3 0 0 1-6 0c0-2.5 2.2-4.2 3-7z" fill="#FFF4D6"/><circle class="flame-ember e1" cx="9" cy="8" r="1" fill="var(--chart-4)"/><circle class="flame-ember e2" cx="15" cy="11" r=".8" fill="var(--chart-2)"/></svg></span></span></span></div>
-      </div>
-    </div>
-  </section>
-
-  <section class="agent-tools" id="agentTools" hidden>
-    <h2 class="section-title">Agent tools, built in</h2>
-    <ul class="tool-list">
-      <li><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 8v4l3 2M12 3a9 9 0 109 9"/><path d="M21 3v6h-6"/></svg><span><strong>Changes</strong> See exactly what changed while agents worked.</span></li>
-      <li><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h10M4 12h16M4 18h7M17 3l3 3-3 3"/></svg><span><strong>Roles</strong> Reuse how agents work, improving as they learn.</span></li>
-      <li><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h14v16H5zM9 8h6M9 12h6M9 16h3"/></svg><span><strong>Skills</strong> Every skill and instruction, kept in one place.</span></li>
-    </ul>
-  </section>
-
-  <!-- The main call to action (M-016): its own band. Since 9 Nov 2026 (the build went public) it's the download, with the new-build email under it as the optional second step. -->
-  <section class="signup-band" id="signupBand" hidden>
-    <h2 class="signup-head">🤩 Get Workspace for your Mac</h2>
-    <p class="signup-sub">It's a free beta for Macs with Apple silicon, signed and notarized.</p>
-    <a class="btn btn-big signup-download" href="/workspace/download/">Download for Mac</a>
-    <p class="signup-sub signup-sub-email">Or leave your email, and I'll write when there's a new build.</p>
-    <div id="reply"></div>
-  </section>
-
-  <!-- One vertical journey (M-018), redesigned (Brian, 29 Oct 2026: "it's a bit mid"): the shipped stages solid, each with a check and a Shipped tag; "You are here" the accent peak where shipped ends; the planned stages fainter with distance on a dashed path. Each item is a row with its emoji first, as the icon. Brian's own list, word for word, with his emoji. Items stagger in when the section scrolls into view (try.js), not under reduced motion. -->
-  <section class="roadmap" id="roadmap" hidden>
-    <h2 class="section-title">Roadmap</h2>
-    <ol class="journey">
-      <li class="leg shipped">
-        <div class="leg-head"><span class="leg-dot" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span><h3 class="leg-name">v1.0</h3><span class="leg-tag">Shipped</span></div>
-        <ul class="leg-items">
-          <li style="--i: 0"><span class="item-emoji" aria-hidden="true">💪</span><span class="item-text">Powerful relational databases</span><span class="visually-hidden"> 💪</span></li>
-          <li style="--i: 1"><span class="item-emoji" aria-hidden="true">🦋</span><span class="item-text">Beautiful markdown writing experience</span><span class="visually-hidden"> 🦋</span></li>
-          <li style="--i: 2"><span class="item-emoji" aria-hidden="true">💻</span><span class="item-text">Open code, html, photos, documents, and more in app</span><span class="visually-hidden"> 💻</span></li>
-        </ul>
-      </li>
-      <li class="leg shipped">
-        <div class="leg-head"><span class="leg-dot" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span><h3 class="leg-name">v1.1</h3><span class="leg-tag">Shipped</span></div>
-        <ul class="leg-items">
-          <li style="--i: 3"><span class="item-emoji" aria-hidden="true">↩️</span><span class="item-text">Version history</span><span class="visually-hidden"> ↩️</span></li>
-          <li style="--i: 4"><span class="item-emoji" aria-hidden="true">🤖</span><span class="item-text">Agent roles, skills, and learnings</span><span class="visually-hidden"> 🤖</span></li>
-          <li style="--i: 5"><span class="item-emoji" aria-hidden="true">🤖</span><span class="item-text">What agents changed here</span><span class="visually-hidden"> 🤖</span></li>
-          <li style="--i: 6"><span class="item-emoji" aria-hidden="true">🏗️</span><span class="item-text">Automatic updating (yay)</span><span class="visually-hidden"> 🏗️</span></li>
-        </ul>
-      </li>
-      <li class="leg shipped">
-        <div class="leg-head"><span class="leg-dot" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span><h3 class="leg-name">v1.2</h3><span class="leg-tag">Shipped</span></div>
-        <ul class="leg-items">
-          <li style="--i: 7"><span class="item-emoji" aria-hidden="true">🎓</span><span class="item-text">Teach your AI agents Workspace</span><span class="visually-hidden"> 🎓</span></li>
-          <li style="--i: 8"><span class="item-emoji" aria-hidden="true">🧩</span><span class="item-text">Your agents make pages and databases for you</span><span class="visually-hidden"> 🧩</span></li>
-          <li style="--i: 9"><span class="item-emoji" aria-hidden="true">📋</span><span class="item-text">Templates for pages and databases</span><span class="visually-hidden"> 📋</span></li>
-          <li style="--i: 10"><span class="item-emoji" aria-hidden="true">🔗</span><span class="item-text">Lookup and rollup columns</span><span class="visually-hidden"> 🔗</span></li>
-          <li style="--i: 11"><span class="item-emoji" aria-hidden="true">🎬</span><span class="item-text">Video and audio play in the app</span><span class="visually-hidden"> 🎬</span></li>
-        </ul>
-      </li>
-      <li class="leg shipped">
-        <div class="leg-head"><span class="leg-dot" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span><h3 class="leg-name">v1.3</h3><span class="leg-tag">Shipped</span></div>
-        <ul class="leg-items">
-          <li style="--i: 12"><span class="item-emoji" aria-hidden="true">📥</span><span class="item-text">Import from Obsidian, Notion and Airtable</span><span class="visually-hidden"> 📥</span></li>
-          <li style="--i: 13"><span class="item-emoji" aria-hidden="true">📊</span><span class="item-text">Import CSV and Excel</span><span class="visually-hidden"> 📊</span></li>
-          <li style="--i: 14"><span class="item-emoji" aria-hidden="true">🔍</span><span class="item-text">A new search, with previews and filters</span><span class="visually-hidden"> 🔍</span></li>
-          <li style="--i: 15"><span class="item-emoji" aria-hidden="true">🗂️</span><span class="item-text">Drag files out and Quick Look, like Finder</span><span class="visually-hidden"> 🗂️</span></li>
-          <li style="--i: 16"><span class="item-emoji" aria-hidden="true">✏️</span><span class="item-text">Edit many database cells at once</span><span class="visually-hidden"> ✏️</span></li>
-        </ul>
-      </li>
-      <li class="here" aria-label="You are here"><span class="here-dot" aria-hidden="true"></span><span class="here-pill">You are here</span></li>
-      <li class="leg next">
-        <div class="leg-head"><span class="leg-dot" aria-hidden="true"></span><h3 class="leg-name">Next</h3></div>
-        <ul class="leg-items">
-          <li style="--i: 17"><span class="item-emoji" aria-hidden="true">🤖</span><span class="item-text">Agent workflows: lay out your agents' steps in a visual editor</span><span class="visually-hidden"> 🤖</span></li>
-          <li style="--i: 18"><span class="item-emoji" aria-hidden="true">📊</span><span class="item-text">A sheets editor for .csv and .xlsx files</span><span class="visually-hidden"> 📊</span></li>
-          <li style="--i: 19"><span class="item-emoji" aria-hidden="true">📄</span><span class="item-text">Import Google Docs and Google Sheets</span><span class="visually-hidden"> 📄</span></li>
-          <li style="--i: 20"><span class="item-emoji" aria-hidden="true">🔐</span><span class="item-text">Secrets your agents can use, kept in your Keychain</span><span class="visually-hidden"> 🔐</span></li>
-        </ul>
-      </li>
-      <li class="leg soon">
-        <div class="leg-head"><span class="leg-dot" aria-hidden="true"></span><h3 class="leg-name">Soon</h3></div>
-        <ul class="leg-items">
-          <li style="--i: 21"><span class="item-emoji" aria-hidden="true">📱</span><span class="item-text">iOS app</span><span class="visually-hidden"> 📱</span></li>
-          <li style="--i: 22"><span class="item-emoji" aria-hidden="true">🔄</span><span class="item-text">Live syncing</span><span class="visually-hidden"> 🔄</span></li>
-          <li style="--i: 23"><span class="item-emoji" aria-hidden="true">📅</span><span class="item-text">Calendar and timeline views for databases</span><span class="visually-hidden"> 📅</span></li>
-        </ul>
-      </li>
-      <li class="leg future">
-        <div class="leg-head"><span class="leg-dot" aria-hidden="true"></span><h3 class="leg-name">Future</h3></div>
-        <ul class="leg-items">
-          <li style="--i: 24"><span class="item-emoji" aria-hidden="true">💻</span><span class="item-text">Windows app</span><span class="visually-hidden"> 💻</span></li>
-          <li style="--i: 25"><span class="item-emoji" aria-hidden="true">📱</span><span class="item-text">Android</span><span class="visually-hidden"> 📱</span></li>
-        </ul>
-      </li>
-    </ol>
-  </section>
-
-  <div id="card"></div>
 </main>
 
-<!-- M-013: four line icons, inline, in the app's icon style (24-unit paths, stroked); no icon font and no request. -->
+<!-- M-013: four line icons, inline, in the app's icon style (24-unit paths, stroked); no icon font and no request. Shown with the intake only: once a workspace is showing, the window fills the screen and the foot is hidden (try.css). -->
 <footer class="foot">
   <ul class="promises">
     <li class="promises-lead">This demo is:</li>

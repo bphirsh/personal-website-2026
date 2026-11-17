@@ -10,21 +10,19 @@
  * reader's result and the file's name and text as `detail`, for the parts of
  * the page that build on it.
  *
+ * Once a workspace is showing, the page is the top bar and the demo window, filling the screen with no page scroll (Brian, 17 Nov 2026). The story, the speed figures, the agent tools, the sign-up, the roadmap, the replay, "Just files" and the founder card went: the landing page (/workspace/) carries the marketing now.
+ *
  * Words are from Marketing/Beta Signups/Page copy.md.
  */
 
 import { readInvite, refuseBySize, codeFromHash } from './invite.js';
-import { mountDemo, filesSample } from './demo.js';
-import { mountFiles } from './files.js';
-import { mountReplay } from './replay.js';
-import { mountButton } from './button.js';
-import { mountCard } from './card.js';
+import { mountDemo } from './demo.js';
 import { mountStyleSwitcher } from './style.js';
 import { SAMPLE_TEXT } from './sample-data.js';
 import { wireGetFile, peek } from './getfile.js';
 import { pickHeadline, showHeadline, headlineFrom } from './headline.js';
 
-// This visit's headline: the one the prompt's link carried back (?h=), else a fresh pick. Kept in memory only, sent with the sign-up, and put in the copied prompt's link (headline.js).
+// This visit's headline: the one the prompt's link carried back (?h=), else a fresh pick. Kept in memory only, and put in the copied prompt's link (headline.js); the sign-up that also sent it left this page on 17 Nov 2026.
 const HEADLINE = headlineFrom(location.search) ?? pickHeadline();
 
 const WORDS = {
@@ -38,7 +36,10 @@ const WORDS = {
   sampleInstead: 'Show example data',
   dismiss: 'Dismiss',
   howToFix: 'How to fix it',
-  sampleBanner: 'Example data. Copy the prompt above to see your own.',
+  sampleBanner: 'Example data, about a made-up person.',
+  getPrompt: 'Get the prompt',
+  // In the window's title bar, where the line beside Load a different file used to be.
+  windowTitle: 'Nothing leaves your computer. This all runs in your browser.',
   // Shown with the example only, always (M-022, M-023: the example is a parody about real people and companies).
   parody: 'A parody, just for fun: ChatGPT playing a dramatic royal adviser. No connection to Sam Altman, OpenAI or any company named, and nothing here is a real quote, event or claim.',
   loadMine: 'Load my file',
@@ -60,17 +61,11 @@ const pick = document.getElementById('pick');
 const failed = document.getElementById('failed');
 const banners = document.getElementById('banners');
 const demo = document.getElementById('demo');
-const replay = document.getElementById('replay');
-const reply = document.getElementById('reply');
-const card = document.getElementById('card');
 const dropIdle = [...dropMain.childNodes].map((n) => n.cloneNode(true));
 const sampleLink = document.getElementById('sampleLink');
-const loaded = document.getElementById('loaded');
+const loadAnother = document.getElementById('loadAnother');
 const loading = document.getElementById('loading');
 const loadingLine = document.getElementById('loadingLine');
-const storySections = ['story', 'figures', 'agentTools', 'signupBand', 'roadmap'].map((id) => document.getElementById(id));
-const filesMount = document.getElementById('files');
-const figures = document.getElementById('figures');
 const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
 
 function el(tag, cls, text) {
@@ -101,18 +96,13 @@ async function take(file) {
 }
 
 function reset() {
-  styles?.undock();
   failed.hidden = true;
   failed.replaceChildren();
   banners.replaceChildren();
   demo.replaceChildren();
-  replay.replaceChildren();
-  filesMount.replaceChildren();
-  reply.replaceChildren();
-  card.replaceChildren();
-  loaded.hidden = true;
+  loadAnother.hidden = true;
   loading.hidden = true;
-  for (const s of storySections) s.hidden = true;
+  document.body.classList.remove('full');
   intake.hidden = false;
 }
 
@@ -133,43 +123,18 @@ function anticipate() {
   });
 }
 
-// The workspace fills almost the whole window, with nothing above or below it in view (M-014); the rest follows on scroll.
 // Once a file (or the example data) is shown, the intro leaves the page for good (M-015): the heading, its line and the drop zone. A drop on the window, or Load a different file, still opens another.
 function removeIntro() {
   document.getElementById('intro')?.remove();
   document.body.classList.remove('landing');
 }
 
-// The speed bars grow once, the first time most of them are on screen; with reduced motion they are drawn at full length, still (M-016).
-const growBars = new IntersectionObserver((entries) => {
-  if (entries.some((e) => e.intersectionRatio >= 0.5)) {
-    figures.classList.add('grown');
-    growBars.disconnect();
-  }
-}, { threshold: [0, 0.5, 1] });
-growBars.observe(figures);
-
-// The roadmap's items stagger in the first time the section comes on screen (any part of it past the bottom tenth, so a tall section on a short screen still triggers) (Brian, 29 Oct 2026); under reduced motion the CSS shows them at once.
-const roadmap = document.getElementById('roadmap');
-const showRoadmap = new IntersectionObserver((entries) => {
-  if (entries.some((e) => e.isIntersecting)) {
-    roadmap.classList.add('shown');
-    showRoadmap.disconnect();
-  }
-}, { rootMargin: '0px 0px -10% 0px' });
-showRoadmap.observe(roadmap);
-
-// `from`, when given, is scrolled to instead of the window, so it stays in view above it.
-function revealWorkspace(from) {
+// The workspace fills the screen under the top bar, and the page no longer scrolls (Brian, 17 Nov 2026: "take up the entire screen (no scrolling, full screen)"). Load a different file sits in the top bar, since nothing is below the window any more.
+function revealWorkspace() {
   removeIntro();
-  placeStyles();
-  // A section still waiting on its words (the speed figures) stays hidden.
-  for (const s of storySections) s.hidden = s.hasAttribute('data-pending');
-  const win = demo.querySelector('.win');
-  if (!win) return;
-  // A few pixels of ground above it, and the row above (Load a different file) fully out of view.
-  const top = (from ?? win).getBoundingClientRect().top + scrollY - Math.min(Math.round(innerHeight * 0.02), 24);
-  scrollTo({ top, behavior: reducedMotion.matches ? 'auto' : 'smooth' });
+  document.body.classList.add('full');
+  loadAnother.hidden = false;
+  scrollTo(0, 0);
 }
 
 function showError(error) {
@@ -208,30 +173,18 @@ function showSample() {
   load.type = 'button';
   // As Load a different file: cancelling the picker leaves the example data where it was.
   load.addEventListener('click', () => pick.click());
-  row.appendChild(load);
+  // Back to the start, where the prompt is: a fresh load of this page, keeping its link's code and headline.
+  const getPrompt = el('a', 'link', WORDS.getPrompt);
+  getPrompt.href = location.pathname + location.search + location.hash;
+  row.append(load, getPrompt);
   b.append(row, el('p', 'banner-note', WORDS.parody));
   banners.appendChild(b);
-  mountDemo(demo, r.invite, SAMPLE_NAME, text, { sample: true, full: true, letter: true });
-  mountReplay(replay, r.invite, SAMPLE_NAME, text);
-  mountFiles(filesMount, filesSample(r.invite).db);
-  // The example's file is Sam Altman's, not theirs: the sign-up asks their computer and tools, and sends no role.
-  mountButton(reply, { invite: codeFromHash(location.hash), name: 'You', platform: null, role: null, ai_tools: [], knowledge_tools: [], event: eventFromQuery(), headline: HEADLINE });
-  // The same founder card as for their own file (28 Oct 2026).
-  mountCard(card);
-  // The banner and its parody line stay in view above the window, so the example is never seen without them.
-  revealWorkspace(b);
+  // The banner and its parody line stay in view above the window (the page doesn't scroll), so the example is never seen without them.
+  mountDemo(demo, r.invite, SAMPLE_NAME, text, { sample: true, full: true, letter: true, places: true, title: WORDS.windowTitle });
+  revealWorkspace();
 }
 
-/**
- * The invite code the page uses (M-010): the file's when it has a good one,
- * else the one after `#` in the link, else none. The `#` part never reaches
- * the server; the code is sent only when the button is pressed.
- */
-function inviteCode(properties) {
-  return properties.invite ?? codeFromHash(location.hash);
-}
-
-/** The event from a QR link's `?event=` (3 Nov 2026), sent with the sign-up only; /api/invite-reply checks it. Nothing is stored. */
+/** The event from a QR link's `?event=` (3 Nov 2026), carried into the copied prompt's link only. Nothing is stored. */
 function eventFromQuery() {
   const e = (new URLSearchParams(location.search).get('event') ?? '').trim().toLowerCase();
   // The same shape api/_events.js accepts, so nothing else is carried into the prompt's link.
@@ -242,20 +195,12 @@ function showDemo(fileName, text, r) {
   reset();
   // Their file is in: the page is about the demo now (Brian, 27 Oct).
   intake.hidden = true;
-  loaded.hidden = false;
-  const invite = inviteCode(r.invite.properties);
   for (const w of r.warnings) {
-    // With a code from the link, a file without one is no longer a problem.
-    if (w.code === 'bad-invite' && invite) continue;
+    // A missing or wrong invite code no longer matters here: its banner pointed at the sign-up's email box, which left this page with the long page (17 Nov 2026).
+    if (w.code === 'bad-invite') continue;
     banners.appendChild(banner(w));
   }
-  mountDemo(demo, r.invite, fileName, text, { full: true, letter: true });
-  mountReplay(replay, r.invite, fileName, text);
-  mountFiles(filesMount, filesSample(r.invite).db);
-  // Their role only when their file said one (27 Oct 2026).
-  mountButton(reply, { ...r.invite.properties, invite, role: r.invite.properties.hasRole ? r.invite.properties.role : null, event: eventFromQuery(), headline: HEADLINE });
-  // The founder card: the same for everyone, nothing from their file on it (28 Oct 2026).
-  mountCard(card);
+  mountDemo(demo, r.invite, fileName, text, { full: true, letter: true, places: true, title: WORDS.windowTitle });
   revealWorkspace();
 }
 
@@ -331,18 +276,11 @@ addEventListener('drop', (e) => {
   take(e.dataTransfer?.files?.[0]);
 });
 
-const styles = mountStyleSwitcher(document.getElementById('styleSwitch'));
-// Beside the preview only when the window leaves room for a column to its right; otherwise in the top bar, so the preview never moves (M-016).
-const roomBeside = matchMedia('(min-width: 1260px)');
-function placeStyles() {
-  const wrap = demo.querySelector('.demo');
-  if (wrap && roomBeside.matches) styles.dock(wrap);
-  else styles.undock();
-}
-roomBeside.addEventListener('change', placeStyles);
+// The style picker stays in the middle of the top bar, before and after load (Brian, 17 Nov 2026).
+mountStyleSwitcher(document.getElementById('styleSwitch'));
 showHeadline(sampleLink.querySelector('.title'), HEADLINE);
 sampleLink.hidden = false;
-document.getElementById('loadAnother').addEventListener('click', () => pick.click());
+loadAnother.addEventListener('click', () => pick.click());
 document.getElementById('skipDemo').addEventListener('click', showSample);
 // The landing's screens (Brian, 27 Oct 2026): step 1 copies the prompt. A successful copy shows the copied screen, which holds about three seconds and fades into the drop screen; Skip goes there at once. I have my file, or a file dragged over the page, goes straight to the drop screen. From the drop screen, Copy the prompt again copies it and shows the copied screen again; Use demo data opens the example, as Skip does.
 // Brian, 27 Oct 2026: "hold the 'Paste it in a chat...' page a little longer"; with the 240 ms fade, about five seconds in all.
