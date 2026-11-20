@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Workspace privacy</title>
+<meta name="description" content="What Workspace sends, what it never sends, and what happens to your feedback.">
+<link rel="canonical" href="https://www.brianhirsh.com/workspace/privacy/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Brian Hirsh">
+<meta property="og:title" content="Workspace privacy">
+<meta property="og:description" content="What Workspace sends, what it never sends, and what happens to your feedback.">
+<meta property="og:url" content="https://www.brianhirsh.com/workspace/privacy/">
+<meta property="og:image" content="https://www.brianhirsh.com/og/workspace-download.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#F4F1EC" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#141312" media="(prefers-color-scheme: dark)">
+<link rel="icon" type="image/svg+xml" href="/workspace/media/workspace-logo-light.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="/workspace/media/workspace-favicon-32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/workspace/media/workspace-favicon-16.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/workspace/media/workspace-apple-touch-icon.png">
+<link rel="manifest" href="/workspace/site.webmanifest">
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/workspace/workspace.css">
+<style>
+  .doc-card { max-width: 620px; margin: 0 auto 20px; }
+  .back-link { display: inline-block; font-size: 14px; color: var(--text-secondary); text-decoration: none; margin-bottom: 26px; }
+  .back-link:hover { color: var(--text-primary); }
+  .doc-head { margin-bottom: 30px; }
+  .doc-head h1 { margin-bottom: 10px; }
+  .doc-head .lede { font-size: 16px; margin-bottom: 0; }
+  .doc p, .doc li { font-size: 15px; line-height: 1.7; color: var(--text-secondary); font-weight: 300; }
+  .doc p + p { margin-top: 12px; }
+  .doc h2 { font-family: inherit; font-size: 16px; font-weight: 600; color: var(--text-primary); margin: 26px 0 8px; }
+  .doc ul { padding-left: 20px; }
+  .doc li + li { margin-top: 8px; }
+  .doc strong { font-weight: 600; color: var(--text-primary); }
+  .doc a { color: var(--text-primary); }
+</style>
+</head>
+<body>
+
+<div class="site-wrapper">
+
+  <div class="card doc-card fade-up">
+    <a href="/workspace/" class="back-link">← Workspace</a>
+    <div class="doc-head">
+      <div class="section-label">Workspace</div>
+      <h1 class="page-title">Privacy</h1>
+      <p class="lede">Workspace keeps your files on your computer.</p>
+    </div>
+    <!-- Privacy page (20 Nov 2026), from the 5 Planner's draft v0/Privacy page copy.md, written from what the app's code does. The Chrome Web Store links here for the browser extension. Recheck it whenever a release adds a connection. -->
+    <div class="doc">
+      <p>Your pages, databases and pictures stay in the folders you choose, as ordinary files. We don't have a copy of them, and the app doesn't send them anywhere unless you ask it to.</p>
+
+      <h2>What Workspace sends, and when</h2>
+      <ul>
+        <li><strong>Update checks.</strong> The app checks for a new version and downloads updates from our update server, hosted by Cloudflare. That request includes your computer's IP address and the app's version, as any download does.</li>
+        <li><strong>Send feedback.</strong> When you send feedback, your message goes to us, along with the details shown before you send: the page you had open, what you had selected, recent keystrokes, and the app's version. Nothing is sent until you press Send.</li>
+        <li><strong>Bug reports from your agents.</strong> Only if you turn this on in Settings, your AI agents can report a bug in Workspace to us. Each report is the same kind of message as Send feedback.</li>
+        <li><strong>AI models, only with your key.</strong> If you add your own key for Anthropic, OpenAI or OpenRouter, the app sends the text of a job you start to that company, under your account and its privacy terms. Without a key, nothing goes to them from Workspace.</li>
+      </ul>
+
+      <h2>What Workspace never sends</h2>
+      <ul>
+        <li>No analytics, tracking or advertising identifiers.</li>
+        <li>Not your files, unless you send them yourself in feedback.</li>
+        <li>Not your secrets. Passwords and keys you keep in Workspace stay in your computer's own secure store (the Keychain on a Mac, Credential Manager on Windows).</li>
+      </ul>
+
+      <h2>The Workspace browser extension</h2>
+      <p>The extension fills a saved secret into a web page when you approve it. It talks only to the Workspace app on the same computer. It sends nothing to us or anyone else, and collects no browsing history.</p>
+
+      <h2>Your feedback, kept by us</h2>
+      <p>Feedback and bug reports are stored privately, read by us to improve Workspace, and never sold or shared. To have yours deleted, email us at the address below.</p>
+
+      <h2>Contact</h2>
+      <p>Questions about privacy: <a href="mailto:brian@brianhirsh.com?subject=Workspace%20privacy">brian@brianhirsh.com</a>.</p>
+
+      <p><em>Last updated: 20 November 2026.</em></p>
+    </div>
+  </div>
+
+  <div class="footer">
+    <a href="/">Brian</a> · NYC · 2026
+  </div>
+
+</div>
+
+</body>
+</html>
