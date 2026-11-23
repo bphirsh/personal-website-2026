@@ -14,6 +14,8 @@ const crypto = require('crypto');
 
 const RELEASES = 'https://releases.brianhirsh.com/';
 const FEED = RELEASES + 'latest-mac.yml';
+/** Windows (22 Nov 2026, for the Windows launch in 1.3.2): latest.yml is the feed the Windows app's updater reads, naming the NSIS installer. */
+const FEED_WIN = RELEASES + 'latest.yml';
 
 /** Used when the feed can't be read and nothing was read before: the signed, notarized build current on 9 Nov 2026. */
 const FALLBACK = { version: '1.1.3', url: RELEASES + 'Workspace-1.1.3-arm64.dmg', size: 161433811, fallback: true };
@@ -24,13 +26,19 @@ const TIMEOUTS = { feed: 2500, count: 1500, list: 8000, feedCacheMs: 60 * 1000 }
 const BLOB_API_VERSION = '13';
 const PREFIX = 'downloads/';
 const DMG_RE = /^[A-Za-z0-9._+-]+\.dmg$/;
+const EXE_RE = /^[A-Za-z0-9._+-]+\.exe$/;
+/** What each system's download is: its feed, the one file type taken from it, the fallback, and the tag its clicks are counted under (the Mac's clicks keep the bare version, as before). */
+const PLATFORMS = {
+  mac: { feed: FEED, re: DMG_RE, fallback: FALLBACK, tag: (v) => v },
+  win: { feed: FEED_WIN, re: EXE_RE, fallback: { version: '1.3.1', url: RELEASES + 'Workspace-Setup-1.3.1.exe', size: 140538288, fallback: true }, tag: (v) => `${v}-win` },
+};
 const VERSION_RE = /^[0-9A-Za-z.+-]{1,40}$/;
 const RECORD_RE = /^downloads\/(\d{4}-\d{2}-\d{2})\/([0-9A-Za-z.+-]{1,40})-[0-9a-f]{12}\.txt$/;
 
-let cached = null; // { build, at }
+const cached = {}; // per platform: { build, at }
 
 /** For the check: forget what this instance remembers. */
-function reset() { cached = null; }
+function reset() { for (const k of Object.keys(cached)) delete cached[k]; }
 
 /** fetch, given up after `ms`. */
 async function fetchWithin(ms, url, init = {}) {
@@ -42,14 +50,14 @@ async function fetchWithin(ms, url, init = {}) {
 /**
  * The .dmg in latest-mac.yml as { version, url, size }, or null when it names none. The feed is electron-builder's: a `version:` line and a `files:` list of `- url:` entries, each followed by its `size:`. Only a bare file name is accepted, always served from the releases host, so the redirect can't be pointed anywhere else.
  */
-function parseFeed(text) {
+function parseFeed(text, re = DMG_RE) {
   const s = String(text || '');
   const v = s.match(/^version:\s*['"]?([^'"\s]+)['"]?\s*$/m);
   const version = v && VERSION_RE.test(v[1]) ? v[1] : null;
   const lines = s.split(/\r?\n/);
   for (let i = 0; i < lines.length; i++) {
     const m = lines[i].match(/^\s*-\s*url:\s*['"]?([^'"\s]+)['"]?\s*$/);
-    if (!m || !DMG_RE.test(m[1])) continue;
+    if (!m || !re.test(m[1])) continue;
     let size = null;
     for (let j = i + 1; j < lines.length && !/^\s*-\s/.test(lines[j]) && /^\s/.test(lines[j]); j++) {
       const z = lines[j].match(/^\s*size:\s*(\d+)\s*$/);
@@ -60,21 +68,24 @@ function parseFeed(text) {
   return null;
 }
 
-/** The current build: from memory when read in the last minute, else from the feed, else the last one read, else FALLBACK. Never throws. */
-async function latestBuild() {
-  if (cached && Date.now() - cached.at < TIMEOUTS.feedCacheMs) return cached.build;
+/** The current build for a system ('mac', the default, or 'win'): from memory when read in the last minute, else from its feed, else the last one read, else its fallback. Never throws. */
+async function latestBuild(os = 'mac') {
+  const pf = PLATFORMS[os] || PLATFORMS.mac;
+  const key = PLATFORMS[os] ? os : 'mac';
+  const c = cached[key];
+  if (c && Date.now() - c.at < TIMEOUTS.feedCacheMs) return c.build;
   try {
-    const res = await fetchWithin(TIMEOUTS.feed, FEED, { cache: 'no-store' });
+    const res = await fetchWithin(TIMEOUTS.feed, pf.feed, { cache: 'no-store' });
     if (!res.ok) throw new Error(`feed answered ${res.status}`);
-    const build = parseFeed(await res.text());
-    if (!build) throw new Error('feed names no .dmg');
-    // No version line: take it from the file name (Workspace-1.1.3-arm64.dmg).
-    if (!build.version) { const n = build.url.match(/-(\d+\.\d+[0-9A-Za-z.+]*)-/); build.version = n ? n[1] : 'unknown'; }
-    cached = { build, at: Date.now() };
+    const build = parseFeed(await res.text(), pf.re);
+    if (!build) throw new Error('feed names no ' + (key === 'win' ? '.exe' : '.dmg'));
+    // No version line: take it from the file name (Workspace-1.1.3-arm64.dmg, Workspace-Setup-1.3.1.exe).
+    if (!build.version) { const n = build.url.match(/-(\d+\.\d+[0-9A-Za-z.+]*?)(?:-|\.exe$)/); build.version = n ? n[1] : 'unknown'; }
+    cached[key] = { build, at: Date.now() };
     return build;
   } catch (err) {
-    console.error('download: the release feed could not be read;', cached ? 'using the last one read' : 'using the fallback', String(err && err.message || err).slice(0, 200));
-    return cached ? cached.build : FALLBACK;
+    console.error('download: the ' + key + ' release feed could not be read;', c ? 'using the last one read' : 'using the fallback', String(err && err.message || err).slice(0, 200));
+    return c ? c.build : pf.fallback;
   }
 }
 
@@ -177,4 +188,4 @@ async function countClicks(req) {
   return { total, byDay: sorted(byDay), byVersion: sorted(byVersion), clicks, counting: true };
 }
 
-module.exports = { latestBuild, parseFeed, recordClick, recordPath, countClicks, reset, TIMEOUTS, FALLBACK, FEED, RECORD_RE };
+module.exports = { latestBuild, parseFeed, recordClick, recordPath, countClicks, reset, TIMEOUTS, FALLBACK, FEED, RECORD_RE, PLATFORMS };
