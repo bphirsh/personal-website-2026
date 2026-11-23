@@ -5,12 +5,14 @@
  *
  * Each GET counts one click (date and version only, nothing about the person) when a Blob store is connected. The count is awaited for at most a second and a half, and a counting failure never stops the redirect. A HEAD, as link previews and prefetchers send, is redirected without counting.
  *
- * GET /api/download?info=1 answers { version, size, url } instead, without counting: the download page shows the version and size from it, since the feed's host doesn't allow the browser to read it directly.
+ * GET /api/download?os=win does the same with the Windows installer from latest.yml (22 Nov 2026), counted under its version with -win after it (1.3.2-win), so the Mac's counts are unchanged.
+ *
+ * GET /api/download?info=1 (with os=win for Windows) answers { version, size, url } instead, without counting: the download page shows the version and size from it, since the feed's host doesn't allow the browser to read it directly.
  *
  * It sets no cookie and reads nothing from the request but its method, its query and the x-vercel-oidc-token header Vercel adds, which signs in to the Blob store.
  */
 
-const { latestBuild, recordClick, TIMEOUTS } = require('./_downloads.js');
+const { latestBuild, recordClick, TIMEOUTS, PLATFORMS } = require('./_downloads.js');
 
 module.exports = async (req, res) => {
   if (req.method !== 'GET' && req.method !== 'HEAD') {
@@ -20,8 +22,11 @@ module.exports = async (req, res) => {
     return;
   }
 
-  const build = await latestBuild();
-  const info = req.query ? req.query.info : new URL(req.url || '/', 'https://x').searchParams.get('info');
+  const q = req.query || Object.fromEntries(new URL(req.url || '/', 'https://x').searchParams);
+  // ?os=win gives the Windows installer (22 Nov 2026); anything else, or nothing, the Mac .dmg as before.
+  const os = q.os === 'win' ? 'win' : 'mac';
+  const build = await latestBuild(os);
+  const info = q.info;
 
   if (info) {
     // Cached at the edge for a minute: this is the same for everyone and counts nothing.
@@ -32,7 +37,7 @@ module.exports = async (req, res) => {
 
   if (req.method === 'GET') {
     // Wait a little for the count, never long: the redirect goes either way.
-    await Promise.race([recordClick(build.version, req), new Promise((r) => setTimeout(r, TIMEOUTS.count))]);
+    await Promise.race([recordClick(PLATFORMS[os].tag(build.version), req), new Promise((r) => setTimeout(r, TIMEOUTS.count))]);
   }
 
   // Never cached, by Vercel, Cloudflare or the browser, so every click reaches this function and is counted.

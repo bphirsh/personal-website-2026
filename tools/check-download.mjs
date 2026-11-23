@@ -33,6 +33,16 @@ sha512: abc
 releaseDate: '2026-11-20T16:17:49.179Z'
 `;
 
+const FEED_WIN_TEXT = `version: 1.3.2
+files:
+  - url: Workspace-Setup-1.3.2.exe
+    sha512: ghi
+    size: 141000000
+path: Workspace-Setup-1.3.2.exe
+sha512: ghi
+releaseDate: '2026-11-23T00:43:41.064Z'
+`;
+
 // What each case's network does. `feed` and `put` and `list` are 'ok', 'fail', 'hang', or for the feed a text to serve.
 let net = {};
 let calls = [];
@@ -48,6 +58,7 @@ globalThis.fetch = async (url, init = {}) => {
     if (net.feed === 'hang') return hang(init.signal);
     if (net.feed === 'fail') return reply(503, 'down');
     if (net.feed === 'throw') throw new Error('getaddrinfo ENOTFOUND');
+    if (u.pathname === '/latest.yml') return reply(200, typeof net.feedWin === 'string' ? net.feedWin : FEED_WIN_TEXT);
     return reply(200, typeof net.feed === 'string' ? net.feed : FEED_TEXT);
   }
   if (u.host === 'vercel.com' && u.pathname.startsWith('/api/blob')) {
@@ -92,6 +103,17 @@ const feedCalls = () => calls.filter((c) => c.url.includes('releases.brianhirsh.
 const noCookie = (r) => !('set-cookie' in r.headers);
 
 const cases = [
+  // Windows (22 Nov 2026).
+  ['?os=win redirects to the installer latest.yml names', {}, () => run(download, { method: 'GET', query: { os: 'win' } }),
+    (r) => r.statusCode === 302 && r.headers.location === 'https://releases.brianhirsh.com/Workspace-Setup-1.3.2.exe'],
+  ['?os=win&info=1 answers the Windows version and size', {}, () => run(download, { method: 'GET', query: { os: 'win', info: '1' } }),
+    (r) => r.statusCode === 200 && r.body.version === '1.3.2' && r.body.size === 141000000 && r.body.url.endsWith('Workspace-Setup-1.3.2.exe')],
+  ['a Windows click is counted as 1.3.2-win', { token: true }, () => run(download, { method: 'GET', query: { os: 'win' } }),
+    () => puts().length === 1 && /downloads\/\d{4}-\d{2}-\d{2}\/1\.3\.2-win-[0-9a-f]{12}\.txt/.test(new URL(puts()[0].url).searchParams.get('pathname'))],
+  ['a Windows feed naming no .exe: the Windows fallback, never a dmg', { feedWin: 'version: 9\nfiles:\n  - url: x.dmg\n    size: 1\n' }, () => run(download, { method: 'GET', query: { os: 'win' } }),
+    (r) => r.headers.location === 'https://releases.brianhirsh.com/Workspace-Setup-1.3.1.exe'],
+  ['an unknown os gives the Mac dmg', {}, () => run(download, { method: 'GET', query: { os: 'linux' } }),
+    (r) => r.headers.location.endsWith('Workspace-1.2.0-arm64.dmg')],
   // The redirect.
   ['a GET redirects 302 to the .dmg the feed names, on the releases host', {}, () => run(download, { method: 'GET' }),
     (r) => r.statusCode === 302 && r.headers.location === 'https://releases.brianhirsh.com/Workspace-1.2.0-arm64.dmg' && r.ended],
@@ -162,7 +184,7 @@ const cases = [
 
 let failed = 0;
 for (const [name, setup, act, ok] of cases) {
-  net = { feed: setup.feed, put: setup.put, list: setup.list };
+  net = { feed: setup.feed, feedWin: setup.feedWin, put: setup.put, list: setup.list };
   calls = [];
   stored = [];
   downloads.reset();

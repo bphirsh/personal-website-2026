@@ -4,13 +4,13 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Workspace — see everything you and your agents are working on</title>
-<meta name="description" content="A free Mac app where you and your AI agents share the same pages, databases and files, so you can finally see everything that's going on.">
+<meta name="description" content="A free app for Mac and Windows where you and your AI agents share the same pages, databases and files, so you can finally see everything that's going on.">
 <!-- The landing page (Brian, 12 Nov 2026): a hero whose headline word changes and whose scattered files drift around it; scrolling carries those same files into a window, which then shows a page and a database turning into a board. Then benefits, how it works, the film, the roadmap and questions. Link previews: Marketing/Beta Signups/Link previews.md; the card is drawn by tools/make-og.mjs. -->
 <link rel="canonical" href="https://www.brianhirsh.com/workspace/">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Brian Hirsh">
 <meta property="og:title" content="Workspace — see everything you and your agents are working on">
-<meta property="og:description" content="A free Mac app where you and your AI agents share the same pages, databases and files, so you can finally see everything that's going on.">
+<meta property="og:description" content="A free app for Mac and Windows where you and your AI agents share the same pages, databases and files, so you can finally see everything that's going on.">
 <meta property="og:url" content="https://www.brianhirsh.com/workspace/">
 <meta property="og:image" content="https://www.brianhirsh.com/og/workspace.png">
 <meta property="og:image:type" content="image/png">
@@ -19,7 +19,7 @@
 <meta property="og:image:alt" content="A place for you + agents to collaborate">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Workspace — see everything you and your agents are working on">
-<meta name="twitter:description" content="A free Mac app where you and your AI agents share the same pages, databases and files, so you can finally see everything that's going on.">
+<meta name="twitter:description" content="A free app for Mac and Windows where you and your AI agents share the same pages, databases and files, so you can finally see everything that's going on.">
 <meta name="twitter:image" content="https://www.brianhirsh.com/og/workspace.png">
 <meta name="twitter:image:alt" content="A place for you + agents to collaborate">
 <meta name="theme-color" content="#F4F1EC" media="(prefers-color-scheme: light)">
@@ -161,7 +161,7 @@
   .btn-quiet { background: transparent; color: var(--text-primary); border: 1px solid var(--border); }
   .fine { margin-top: 14px; font-size: 13px; color: var(--text-muted); font-weight: 300; }
 
-  /* A phone can't install a Mac app, so it is offered the link by email instead. */
+  /* A phone can't install Workspace, so it is offered the link by email instead. On a computer, "Mac" in the download buttons becomes "Windows" on Windows (the script at the end, 22 Nov 2026). */
   .for-phone { display: none !important; }
   @media (pointer: coarse) and (max-width: 900px) {
     .for-mac { display: none !important; }
@@ -578,7 +578,7 @@
     <!-- The app's themes, as its Settings shows them: day left of the diagonal, night right. Filled in by the script at the end from window.wsTheme. -->
     <!-- The style picker, as on /try: "Style" and one square per theme of the app, each its ground and accent split on the diagonal. Day or night follows the visitor's Mac. -->
     <div class="style-pick" id="themeBar" role="radiogroup" aria-label="Style"><span class="style-label">Style</span></div>
-    <a class="btn nav-cta for-mac" href="/workspace/download/">Download for Mac</a>
+    <a class="btn nav-cta for-mac" href="/workspace/download/">Download for <span class="os-name">Mac</span></a>
     <a class="btn nav-cta for-phone" href="/workspace/signup/">Get the link</a>
   </nav>
 
@@ -588,21 +588,21 @@
       <img src="/workspace/media/workspace-logo-light.svg" alt="Workspace" width="84" height="84" decoding="async">
     </picture>
     <h1><span class="h-line">Finally, see</span> <span class="h-line"><em class="rot" id="rot">everything</em> you</span> and your agents are working on.</h1>
-    <p class="lede">Workspace is a Mac app where you and your AI agents share the same pages, databases and files. Nothing gets lost in a chat again, and you can see every change.</p>
+    <p class="lede">Workspace is an app for Mac and Windows where you and your AI agents share the same pages, databases and files. Nothing gets lost in a chat again, and you can see every change.</p>
     <div class="ctas">
-      <a class="btn for-mac" href="/workspace/download/">Download for Mac <span aria-hidden="true">→</span></a>
+      <a class="btn for-mac" href="/workspace/download/">Download for <span class="os-name">Mac</span> <span aria-hidden="true">→</span></a>
       <a class="btn for-phone" href="/workspace/signup/">Email me the download link <span aria-hidden="true">→</span></a>
       <a class="btn btn-quiet" href="#film">Watch the film</a>
     </div>
-    <p class="fine for-mac">Free · for Macs with Apple silicon</p>
-    <p class="fine for-phone">Workspace is a free Mac app. Leave your email and open the link on your Mac.</p>
+    <p class="fine for-mac">Free · for Mac (Apple silicon) and Windows 11</p>
+    <p class="fine for-phone">Workspace is a free app for Mac and Windows. Leave your email and open the link on your computer.</p>
   </header>
 
   <section class="gather" id="gather" aria-label="Your scattered work, gathered into Workspace">
     <div class="gather-stage" id="gatherStage">
       <div class="gather-captions" aria-live="polite">
         <div class="cap on" data-cap="0"><h2>Your work is everywhere.</h2><p>Notes in one app, plans in another, and your agent's best work buried in a chat from last Tuesday.</p></div>
-        <div class="cap" data-cap="1"><h2>Bring it all into one place.</h2><p>Your notes, databases, files and everything your agents make, together in one folder on your Mac.</p></div>
+        <div class="cap" data-cap="1"><h2>Bring it all into one place.</h2><p>Your notes, databases, files and everything your agents make, together in one folder on your computer.</p></div>
         <div class="cap" data-cap="2"><h2>Now you can see all of it.</h2><p>Every page, every database, every change, for you and your agents.</p></div>
         <div class="cap" data-cap="3"><h2>A beautiful place to write.</h2><p>Pages are Markdown files, with headings, checklists, pictures and more, written by you or your agents.</p></div>
         <div class="cap" data-cap="4"><h2>Databases that do the heavy lifting.</h2><p>Relations, lookups and rollups, and every view you need. Turn a table into a board in one click.</p></div>
@@ -764,7 +764,7 @@
     <div class="b-text">
       <div class="kicker">Blazing fast</div>
       <h2 class="big">Fast for you. Fast for your agents.</h2>
-      <p class="lede">Everything is a file on your Mac, so there's no waiting on a server. Pages open instantly, and your agents read them directly instead of going through a slow connector, using fewer tokens on every task.</p>
+      <p class="lede">Everything is a file on your computer, so there's no waiting on a server. Pages open instantly, and your agents read them directly instead of going through a slow connector, using fewer tokens on every task.</p>
     </div>
     <div class="panel reveal" id="speed" aria-label="Compared with the Notion MCP: 10 times faster and 35 percent fewer tokens">
       <div class="speed">
@@ -791,7 +791,7 @@
           <span class="viz-arrow">→</span>
           <span class="viz-folder"><span class="fold"></span><small>Applications</small></span>
         </div>
-        <div class="n">1</div><h3>Download Workspace</h3><p>Free, for Macs with Apple silicon. Drag it into Applications and open it.</p>
+        <div class="n">1</div><h3>Download Workspace</h3><p>Free, for Macs with Apple silicon and Windows 11. Install it like any app and open it.</p>
       </div>
       <div class="step">
         <div class="viz viz-vault" aria-hidden="true">
@@ -812,7 +812,7 @@
     <div class="own reveal-up" id="own" style="text-align:left">
       <div>
         <h2>Your files stay yours.</h2>
-        <p class="lede">They're just files on your Mac: Markdown pages and SQLite databases in a normal folder. Open them in Finder, in any other app, or in Workspace. No account, and your notes stay on your Mac.</p>
+        <p class="lede">They're just files on your computer: Markdown pages and SQLite databases in a normal folder. Open them in Finder or File Explorer, in any other app, or in Workspace. No account, and your notes stay on your computer.</p>
         <div class="swap-tabs" role="tablist" aria-label="Show the files in">
           <button type="button" class="on" data-side="0" role="tab" aria-selected="true">In Finder</button>
           <button type="button" data-side="1" role="tab" aria-selected="false">In Workspace</button>
@@ -934,11 +934,12 @@
           <li><span class="e">⌨️</span><span>A <code>workspace</code> command for your agents</span></li>
           <li><span class="e">🔍</span>A new search, with previews and filters</li>
           <li><span class="e">📊</span>A viewer for CSV, Excel and Numbers files</li>
-          <li><span class="e">✏️</span>Edit many database cells at once</li>
+          <li><span class="e">🪟</span>Windows 11, signed and updating itself</li>
         </ul>
         <details>
           <summary>More in v1.3 ▾</summary>
           <ul>
+            <li><span class='e'>✏️</span>Edit many database cells at once</li>
             <li><span class='e'>📋</span>Paste from Notion, Google Docs, Word or Apple Notes, clean</li>
             <li><span class='e'>🔄</span>Edit databases on several devices through Syncthing, iCloud Drive or Dropbox</li>
             <li><span class='e'>🗂️</span>Drag files out and Quick Look, like Finder</li>
@@ -967,7 +968,6 @@
         <ul>
           <li><span class="e">🤖</span>Agent workflows: lay out your agents' steps in a visual editor</li>
           <li><span class="e">📬</span>Inbox: everything your agents need from you, in one place</li>
-          <li><span class="e">💻</span>Windows app</li>
           <li><span class="e">📅</span>Calendar and timeline views</li>
         </ul>
       </div>
@@ -990,10 +990,10 @@
     <div class="center"><div class="kicker">Questions</div><h2 class="big">Good questions.</h2></div>
     <div class="faq">
       <details><summary>Is it really free?</summary><p>Yes. Workspace is in beta and free, and the version you download stays free to use.</p></details>
-      <details><summary>Which agents does it work with?</summary><p>Any agent that reads and writes files on your Mac, like Claude Code and Codex. Workspace teaches them how it works, so they can make pages and databases for you.</p></details>
-      <details><summary>Where are my notes kept?</summary><p>In a normal folder on your Mac, as Markdown files and SQLite databases. There's no account, your notes stay on your Mac, and you can open your files with any other app.</p></details>
+      <details><summary>Which agents does it work with?</summary><p>Any agent that reads and writes files on your computer, like Claude Code and Codex. Workspace teaches them how it works, so they can make pages and databases for you.</p></details>
+      <details><summary>Where are my notes kept?</summary><p>In a normal folder on your computer, as Markdown files and SQLite databases. There's no account, your notes stay on your computer, and you can open your files with any other app.</p></details>
       <details><summary>Can I bring my notes from Obsidian or Notion?</summary><p>Yes. Import… in the File menu brings in a Notion or Airtable export, a CSV or Excel file, or a whole Obsidian vault, and shows you what it will make first. You can also hand any export to your agent to bring in with you.</p></details>
-      <details><summary>Does it work on Windows, an Intel Mac or my phone?</summary><p>Not yet. It needs a Mac with Apple silicon (M1 or newer). An iOS app is coming soon, and Windows and Android after that.</p></details>
+      <details><summary>Does it work on Windows, an Intel Mac or my phone?</summary><p>Windows, yes: Workspace runs on Windows 11, signed and updating itself. On a Mac it needs Apple silicon (M1 or newer), so not on an Intel Mac. iPhone and Android apps are on the roadmap.</p></details>
       <details><summary>Who makes it?</summary><p>Me, Brian. I'm building Workspace in NYC, mostly with a team of AI agents working in Workspace itself. I'd love to hear what you think: <a href="mailto:brian@brianhirsh.com?subject=Workspace">brian@brianhirsh.com</a>.</p></details>
     </div>
   </section>
@@ -1004,10 +1004,10 @@
       <source data-dark media="(prefers-color-scheme: dark)" srcset="/workspace/media/workspace-logo-dark.svg">
       <img src="/workspace/media/workspace-logo-light.svg" alt="" width="64" height="64" decoding="async">
     </picture>
-    <h2 class="big">Get Workspace for your Mac.</h2>
-    <p class="lede" style="margin:0 auto">Free, for Macs with Apple silicon.</p>
+    <h2 class="big">Get Workspace.</h2>
+    <p class="lede" style="margin:0 auto">Free, for Mac (Apple silicon) and Windows 11.</p>
     <div class="ctas">
-      <a class="btn for-mac" href="/workspace/download/">Download for Mac <span aria-hidden="true">→</span></a>
+      <a class="btn for-mac" href="/workspace/download/">Download for <span class="os-name">Mac</span> <span aria-hidden="true">→</span></a>
       <a class="btn for-phone" href="/workspace/signup/">Email me the download link <span aria-hidden="true">→</span></a>
     </div>
     <p class="secondary for-mac">Want an email when there's a new build? <a href="/workspace/signup/">Sign up</a></p>
@@ -1494,5 +1494,14 @@
 })();
 </script>
 
+<script>
+// On Windows, the download buttons say "Download for Windows" (22 Nov 2026); the download page itself picks the installer.
+(function () {
+  var ua = navigator.userAgent || '';
+  var plat = (navigator.userAgentData && navigator.userAgentData.platform) || navigator.platform || '';
+  if (/iPhone|iPad|iPod|Android|Mobile/i.test(ua) || !/Win/i.test(plat + ' ' + ua)) return;
+  [].forEach.call(document.querySelectorAll('.os-name'), function (el) { el.textContent = 'Windows'; });
+})();
+</script>
 </body>
 </html>

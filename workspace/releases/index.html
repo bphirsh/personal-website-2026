@@ -4,12 +4,12 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Workspace release notes</title>
-<meta name="description" content="What changed in each version of Workspace, the Mac app for the files people and their AI agents work on together.">
+<meta name="description" content="What changed in each version of Workspace, the app for Mac and Windows for the files people and their AI agents work on together.">
 <link rel="canonical" href="https://www.brianhirsh.com/workspace/releases/">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Brian Hirsh">
 <meta property="og:title" content="Workspace release notes">
-<meta property="og:description" content="What changed in each version of Workspace, the Mac app for the files people and their AI agents work on together.">
+<meta property="og:description" content="What changed in each version of Workspace, the app for Mac and Windows for the files people and their AI agents work on together.">
 <meta property="og:url" content="https://www.brianhirsh.com/workspace/releases/">
 <meta property="og:image" content="https://www.brianhirsh.com/og/workspace-download.png">
 <meta name="twitter:card" content="summary_large_image">
@@ -56,8 +56,29 @@
     </div>
     <!-- Release notes (row "Release notes and terms on the website", 9 Nov 2026). Newest first. One section per published version: its number, its date, and what someone using the app would notice, in plain words. Write it at each release, from the app's Build Log, in the same voice as the rest of the site. At the same time, update the roadmap on /workspace/ (section#roadmap) and on /workspace/try/ (section#roadmap): move anything this release ships into a Shipped leg for its version, and take it out of Next, Soon or Future (Brian, 10 Nov 2026). -->
     <div class="doc">
+      <section class="release" id="v1.3.2">
+        <h2>1.3.2 <span class="latest">Latest</span></h2>
+        <time datetime="2026-11-22">22 November 2026</time>
+        <p>Workspace comes to Windows. It runs on Windows 11, signed, installs just for you with no administrator needed, and updates itself like the Mac app does. <a href="/workspace/download/">Download it</a>.</p>
+        <h3>🪟 Windows, the Windows way</h3>
+        <ul>
+          <li>Windows' own keys: Ctrl instead of ⌘, F11 for full screen, Ctrl+Y to redo, Alt+Left and Alt+Right for Back and Forward, Ctrl+Tab between tabs, Ctrl+W to close a tab, and F2 to rename.</li>
+          <li>The window has Windows' own minimise, maximise and close buttons in your theme's colours, the left bar sits on Mica, and the menu opens with Alt or the button at the left of the tab bar.</li>
+          <li>Windows' own words: File Explorer, the Recycle Bin, this PC, and Preview for Quick Look. Delete moves a file to the Recycle Bin, with Undo.</li>
+          <li>Open a file from File Explorer and it opens in Workspace, in the window already running if there is one.</li>
+          <li>Open in Browser lets Windows pick your app for web pages, and Open in Terminal, VS Code, Cursor, Claude Code or Codex all work, with the terminal opening in Windows Terminal.</li>
+          <li>Your agents get sqlite3 with Workspace, and every database tells them where it is and how to use it.</li>
+          <li>Uninstalling gives .md and .html files back to the app that opened them before.</li>
+          <li>Not shown on Windows yet: HEIC pictures and Apple Lossless, AIFF and ProRes files. They say so instead of looking broken.</li>
+        </ul>
+        <h3>💻 On the Mac too</h3>
+        <ul>
+          <li>Claude in Terminal and iTerm is offered only when Claude Code is installed, instead of opening a terminal that says the command was not found.</li>
+        </ul>
+      </section>
+
       <section class="release" id="v1.3.1">
-        <h2>1.3.1 <span class="latest">Latest</span></h2>
+        <h2>1.3.1</h2>
         <time datetime="2026-11-22">22 November 2026</time>
         <p>Your agents get their own command for Workspace, spreadsheets open in a viewer, and pasting from other apps comes in clean.</p>
         <h3>🤖 Agents</h3>
