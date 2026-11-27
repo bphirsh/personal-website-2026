@@ -73,6 +73,11 @@ nav .logo {
   text-decoration: none;
 }
 
+/* The landing page's top left: the pigeon and the name. The logo's own margin (a tenth each side) is taken back so the tile lines up with the text. */
+nav .logo.ws-logo { display: inline-flex; align-items: center; gap: 8px; }
+nav .logo.ws-logo picture { display: contents; }
+nav .logo.ws-logo img { display: block; width: 36px; height: 36px; margin: -4px 0 -4px -4px; flex: none; }
+
 nav .logo .logo-italic {
   font-style: italic;
   color: var(--accent);

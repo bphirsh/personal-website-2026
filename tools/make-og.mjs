@@ -4,7 +4,7 @@
  *
  *   node tools/make-og.mjs [card file names…]
  *
- * Each card is a small HTML page in the site's style (the cream background, DM Serif Display and Outfit), drawn to a 1200×630 PNG in og/ by headless Chrome. Brian's own pages carry the 😁, the Workspace pages carry the Workspace mark. The words are the image text in Marketing/Beta Signups/Link previews.md: the part before the first " · " is the heading, the rest the line under it. The Workspace icons (favicon PNGs, the touch icon, the manifest icons) are drawn from workspace/media/workspace-logo-light.svg the same way, into workspace/media/. Run it again when the words or the mark change, and commit the result; nothing is drawn at deploy time. Given card file names (as workspace-download.png), it draws only those cards and no icons.
+ * Each card is a small HTML page in the site's style (the cream background, DM Serif Display and Outfit), drawn to a 1200×630 PNG in og/ by headless Chrome. Brian's own pages carry the 😁, the Workspace pages carry the Workspace mark. The words are the image text in Marketing/Beta Signups/Link previews.md: the part before the first " · " is the heading, the rest the line under it. The Workspace icons (favicon PNGs, the touch icon, the manifest icons) are drawn from workspace/media/workspace-logo-micro.svg (the favicons) and workspace-icon-full.svg (the rest) the same way, into workspace/media/. Run it again when the words or the mark change, and commit the result; nothing is drawn at deploy time. Given card file names (as workspace-download.png), it draws only those cards and no icons.
  */
 
 import { execFileSync } from 'node:child_process';
@@ -16,6 +16,9 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const chrome = '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome';
 const logo = pathToFileURL(join(root, 'workspace/media/workspace-logo-light.svg')).href;
+// The icons fill their square: the favicons from the pigeon drawn for small sizes, the rest from the full pigeon without the page logo's margin (26 Nov 2026).
+const micro = pathToFileURL(join(root, 'workspace/media/workspace-logo-micro.svg')).href;
+const full = pathToFileURL(join(root, 'workspace/media/workspace-icon-full.svg')).href;
 const work = mkdtempSync(join(tmpdir(), 'make-og-'));
 
 // From Link previews.md, "Image text", 27 Oct 2026; the signup and download cards reworded 9 Nov 2026, when the download went public.
@@ -25,15 +28,15 @@ export const CARDS = [
   { file: 'workspace.png', mark: 'workspace', text: 'A place for you + agents to collaborate', foot: 'brianhirsh.com/workspace' },
   { file: 'workspace-try.png', mark: 'workspace', text: 'Your AI makes it. You open it here.', foot: 'brianhirsh.com/workspace/try' },
   { file: 'workspace-signup.png', mark: 'workspace', text: 'New Workspace builds, by email', foot: 'brianhirsh.com/workspace/signup' },
-  { file: 'workspace-download.png', mark: 'workspace', text: 'Download Workspace · Free beta for Mac', foot: 'brianhirsh.com/workspace/download' },
+  { file: 'workspace-download.png', mark: 'workspace', text: 'Download Workspace · Free beta for Mac and Windows', foot: 'brianhirsh.com/workspace/download' },
 ];
 
 const ICONS = [
-  { file: 'workspace-favicon-16.png', size: 16 },
-  { file: 'workspace-favicon-32.png', size: 32 },
-  { file: 'workspace-apple-touch-icon.png', size: 180, solid: true },
-  { file: 'workspace-icon-192.png', size: 192 },
-  { file: 'workspace-icon-512.png', size: 512 },
+  { file: 'workspace-favicon-16.png', size: 16, src: micro },
+  { file: 'workspace-favicon-32.png', size: 32, src: micro },
+  { file: 'workspace-apple-touch-icon.png', size: 180, solid: true, src: full },
+  { file: 'workspace-icon-192.png', size: 192, src: full },
+  { file: 'workspace-icon-512.png', size: 512, src: full },
 ];
 
 const esc = (s) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;');
@@ -63,12 +66,12 @@ ${art}
 <div class="foot">${esc(foot)}</div>`;
 }
 
-function icon({ size, solid }) {
+function icon({ size, solid, src }) {
   // The touch icon is a full square (iOS rounds it, and turns transparent corners black), so the mark sits on the cream.
   return `<!doctype html><meta charset="utf-8"><style>
   html, body { margin: 0; width: ${size}px; height: ${size}px; overflow: hidden; background: ${solid ? '#F4F1EC' : 'transparent'}; }
   img { display: block; width: ${size}px; height: ${size}px; }
-</style><img src="${logo}" alt="">`;
+</style><img src="${src}" alt="">`;
 }
 
 function draw(html, out, w, h, transparent) {

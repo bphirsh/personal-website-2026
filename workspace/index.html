@@ -574,7 +574,8 @@
 <div class="site-wrapper wide-wrapper">
 
   <nav>
-    <a href="/" class="logo">Brian <span class="logo-italic">Hirsh</span></a>
+    <!-- Top left is Workspace, not Brian Hirsh (Brian, 26 Nov 2026): the page's name was nowhere above the fold. The footer's "Brian" still goes to the main page. -->
+    <a href="/workspace/" class="logo ws-logo"><picture><source data-dark media="(prefers-color-scheme: dark)" srcset="/workspace/media/workspace-logo-dark.svg"><img src="/workspace/media/workspace-logo-light.svg" alt="" width="36" height="36"></picture>Workspace</a>
     <!-- The app's themes, as its Settings shows them: day left of the diagonal, night right. Filled in by the script at the end from window.wsTheme. -->
     <!-- The style picker, as on /try: "Style" and one square per theme of the app, each its ground and accent split on the diagonal. Day or night follows the visitor's Mac. -->
     <div class="style-pick" id="themeBar" role="radiogroup" aria-label="Style"><span class="style-label">Style</span></div>
