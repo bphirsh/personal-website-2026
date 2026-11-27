@@ -29,6 +29,10 @@ export const CARDS = [
   { file: 'workspace-try.png', mark: 'workspace', text: 'Your AI makes it. You open it here.', foot: 'brianhirsh.com/workspace/try' },
   { file: 'workspace-signup.png', mark: 'workspace', text: 'New Workspace builds, by email', foot: 'brianhirsh.com/workspace/signup' },
   { file: 'workspace-download.png', mark: 'workspace', text: 'Download Workspace · Free beta for Mac and Windows', foot: 'brianhirsh.com/workspace/download' },
+  // The releases, privacy and terms pages had borrowed the download card; each has its own since 27 Nov 2026 (Brian).
+  { file: 'workspace-releases.png', mark: 'workspace', text: 'Workspace release notes · What changed in each version', foot: 'brianhirsh.com/workspace/releases' },
+  { file: 'workspace-privacy.png', mark: 'workspace', text: 'Workspace privacy · What it sends, and what it never sends', foot: 'brianhirsh.com/workspace/privacy' },
+  { file: 'workspace-terms.png', mark: 'workspace', text: 'Workspace terms of use · A free app for Mac and Windows', foot: 'brianhirsh.com/workspace/terms' },
 ];
 
 const ICONS = [
